@@ -9,8 +9,10 @@ function Prisustva() {
   const [polaznikId, setPolaznikId] = useState('');
   const [radionicaId, setRadionicaId] = useState('');
   const [status, setStatus] = useState('PRISUTAN');
-  const [error, setError] = useState(null);
   const [filterRadionica, setFilterRadionica] = useState('');
+  const [sortBy, setSortBy] = useState('');
+  const [error, setError] = useState(null);
+  const [editId, setEditId] = useState(null);
   const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
@@ -40,38 +42,52 @@ function Prisustva() {
     fetchData();
   }, []);
 
-  const handleAdd = () => {
+  const handleAddOrUpdate = () => {
     if (!polaznikId || !radionicaId) {
       setError("Molimo odaberite polaznika i radionicu.");
       return;
     }
 
-    fetch(`${baseUrl}/api/prisustva`, {
-      method: 'POST',
+    const method = editId ? "PUT" : "POST";
+    const url = editId ? `${baseUrl}/api/prisustva/${editId}` : `${baseUrl}/api/prisustva`;
+
+    fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ polaznikId, radionicaId, status })
     })
       .then(res => {
-        if (!res.ok) throw new Error("Greška kod slanja podataka");
+        if (!res.ok) throw new Error("Greška kod spremanja podataka");
         return res.json();
       })
       .then(() => {
-        return fetch(`${baseUrl}/api/prisustva/view`)
-          .then(res => res.json())
-          .then(setPrisustva);
+        setPolaznikId('');
+        setRadionicaId('');
+        setStatus('PRISUTAN');
+        setEditId(null);
+        setError(null);
+        return fetch(`${baseUrl}/api/prisustva/view`).then(res => res.json()).then(setPrisustva);
       })
       .catch(err => {
         console.error(err);
-        setError("Neuspješno dodavanje prisustva.");
+        setError("Greška prilikom dodavanja ili ažuriranja.");
       });
+  };
+
+  const handleEdit = (prisustvo) => {
+    const polaznik = polaznici.find(p => `${p.ime} ${p.prezime}` === prisustvo.polaznikImePrezime);
+    const radionica = radionice.find(r => r.naziv === prisustvo.radionicaNaziv);
+    if (!polaznik || !radionica) return;
+    setPolaznikId(polaznik.id);
+    setRadionicaId(radionica.id);
+    setStatus(prisustvo.status);
+    setEditId(prisustvo.id);
   };
 
   const handleDelete = (id) => {
     if (!window.confirm("Jeste li sigurni da želite obrisati ovo prisustvo?")) return;
 
-    fetch(`${baseUrl}/api/prisustva/${id}`, {
-      method: 'DELETE'
-    })
+    fetch(`${baseUrl}/api/prisustva/${id}`, { method: 'DELETE' })
       .then(() => {
         setPrisustva(prisustva.filter(p => p.id !== id));
       })
@@ -85,10 +101,16 @@ function Prisustva() {
     ? prisustva.filter(p => p.radionicaNaziv === filterRadionica)
     : prisustva;
 
-  const brojPoStatusu = (status) => filtriranaPrisustva.filter(p => p.status === status).length;
+  const sortiranaPrisustva = [...filtriranaPrisustva].sort((a, b) => {
+    if (!sortBy) return 0;
+    return a[sortBy].localeCompare(b[sortBy]);
+  });
+
+  const brojPoStatusu = (status) =>
+    filtriranaPrisustva.filter(p => p.status === status).length;
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", maxWidth: "700px", margin: "0 auto" }}>
+    <div style={{ fontFamily: "Arial, sans-serif", maxWidth: "800px", margin: "0 auto" }}>
       <h2>Prisustva</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
@@ -113,7 +135,9 @@ function Prisustva() {
           <option value="IZOSTAO">Izostao</option>
         </select>
 
-        <button onClick={handleAdd}>Dodaj prisustvo</button>
+        <button onClick={handleAddOrUpdate}>
+          {editId ? "Spremi izmjene" : "Dodaj prisustvo"}
+        </button>
       </div>
 
       <div style={{ marginBottom: "1rem" }}>
@@ -124,13 +148,22 @@ function Prisustva() {
             <option key={r.id} value={r.naziv}>{r.naziv}</option>
           ))}
         </select>
+
+        <label style={{ marginLeft: "1rem" }}>Sortiraj po: </label>
+        <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+          <option value="">Bez sortiranja</option>
+          <option value="polaznikImePrezime">Polaznik</option>
+          <option value="radionicaNaziv">Radionica</option>
+          <option value="status">Status</option>
+        </select>
       </div>
 
       <ul>
-        {Array.isArray(filtriranaPrisustva) && filtriranaPrisustva.map((p, index) => (
+        {sortiranaPrisustva.map((p, index) => (
           <li key={index}>
             {p.polaznikImePrezime} – {p.radionicaNaziv} ({p.status})
-            <button onClick={() => handleDelete(p.id)} style={{ marginLeft: '1rem' }}>Obriši</button>
+            <button onClick={() => handleEdit(p)} style={{ marginLeft: '0.5rem' }}>Uredi</button>
+            <button onClick={() => handleDelete(p.id)} style={{ marginLeft: '0.5rem' }}>Obriši</button>
           </li>
         ))}
       </ul>
