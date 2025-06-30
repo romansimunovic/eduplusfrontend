@@ -10,74 +10,84 @@ function Prisustva() {
   const [radionicaId, setRadionicaId] = useState('');
   const [status, setStatus] = useState('PRISUTAN');
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-
-  const fetchData = async () => {
-    setError(null);
-    try {
-      const [pRes, rRes, prRes] = await Promise.all([
-        fetch(`${baseUrl}/api/polaznici`),
-        fetch(`${baseUrl}/api/radionice`),
-        fetch(`${baseUrl}/api/prisustva/view`)
-      ]);
-
-      if (!pRes.ok || !rRes.ok || !prRes.ok) {
-        throw new Error("Greška prilikom dohvaćanja podataka.");
-      }
-
-      const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
-        pRes.json(),
-        rRes.json(),
-        prRes.json()
-      ]);
-
-      setPolaznici(polazniciData);
-      setRadionice(radioniceData);
-      setPrisustva(prisustvaData);
-    } catch (err) {
-      setError("Došlo je do greške prilikom učitavanja podataka.");
-      console.error(err);
-    }
-  };
+  const [filterRadionica, setFilterRadionica] = useState('');
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [pRes, rRes, prRes] = await Promise.all([
+          fetch(`${baseUrl}/api/polaznici`),
+          fetch(`${baseUrl}/api/radionice`),
+          fetch(`${baseUrl}/api/prisustva/view`)
+        ]);
+
+        const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
+          pRes.ok ? pRes.json() : [],
+          rRes.ok ? rRes.json() : [],
+          prRes.ok ? prRes.json() : []
+        ]);
+
+        setPolaznici(polazniciData);
+        setRadionice(radioniceData);
+        setPrisustva(prisustvaData);
+      } catch (err) {
+        setError("Došlo je do greške prilikom dohvaćanja podataka.");
+        console.error(err);
+      }
+    };
+
     fetchData();
   }, []);
 
-  const handleAdd = async () => {
-    setError(null);
-    setSuccess(null);
-
-    if (!polaznikId || !radionicaId || !status) {
-      setError("Sva polja su obavezna.");
+  const handleAdd = () => {
+    if (!polaznikId || !radionicaId) {
+      setError("Molimo odaberite polaznika i radionicu.");
       return;
     }
 
-    try {
-      const res = await fetch(`${baseUrl}/api/prisustva`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ polaznikId, radionicaId, status })
+    fetch(`${baseUrl}/api/prisustva`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ polaznikId, radionicaId, status })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Greška kod slanja podataka");
+        return res.json();
+      })
+      .then(() => {
+        return fetch(`${baseUrl}/api/prisustva/view`)
+          .then(res => res.json())
+          .then(setPrisustva);
+      })
+      .catch(err => {
+        console.error(err);
+        setError("Neuspješno dodavanje prisustva.");
       });
-
-      if (!res.ok) throw new Error("Greška kod dodavanja prisustva.");
-
-      await fetchData();
-      setPolaznikId('');
-      setRadionicaId('');
-      setStatus('PRISUTAN');
-      setSuccess("Prisustvo uspješno dodano.");
-    } catch (err) {
-      setError("Neuspješno dodavanje prisustva.");
-      console.error(err);
-    }
   };
+
+  const handleDelete = (id) => {
+    if (!window.confirm("Jeste li sigurni da želite obrisati ovo prisustvo?")) return;
+
+    fetch(`${baseUrl}/api/prisustva/${id}`, {
+      method: 'DELETE'
+    })
+      .then(() => {
+        setPrisustva(prisustva.filter(p => p.id !== id));
+      })
+      .catch(err => {
+        console.error(err);
+        setError("Greška prilikom brisanja prisustva.");
+      });
+  };
+
+  const filtriranaPrisustva = filterRadionica
+    ? prisustva.filter(p => p.radionicaNaziv === filterRadionica)
+    : prisustva;
 
   return (
     <div>
       <h2>Prisustva</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
 
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem" }}>
         <select value={polaznikId} onChange={e => setPolaznikId(e.target.value)}>
@@ -103,10 +113,21 @@ function Prisustva() {
         <button onClick={handleAdd}>Dodaj prisustvo</button>
       </div>
 
+      <div style={{ marginBottom: "1rem" }}>
+        <label>Filtriraj po radionici:</label>
+        <select value={filterRadionica} onChange={e => setFilterRadionica(e.target.value)}>
+          <option value="">Sve</option>
+          {radionice.map(r => (
+            <option key={r.id} value={r.naziv}>{r.naziv}</option>
+          ))}
+        </select>
+      </div>
+
       <ul>
-        {prisustva.map((p, index) => (
+        {Array.isArray(filtriranaPrisustva) && filtriranaPrisustva.map((p, index) => (
           <li key={index}>
             {p.polaznikImePrezime} – {p.radionicaNaziv} ({p.status})
+            <button onClick={() => handleDelete(p.id)} style={{ marginLeft: '1rem' }}>Obriši</button>
           </li>
         ))}
       </ul>
