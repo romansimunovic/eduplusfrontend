@@ -9,6 +9,7 @@ function Polaznici() {
   const [email, setEmail] = useState("");
   const [godinaRođenja, setGodinaRođenja] = useState("");
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchPolaznici = async () => {
     try {
@@ -55,6 +56,25 @@ function Polaznici() {
       });
   };
 
+  const handleDelete = (id) => {
+    if (!window.confirm("Jeste li sigurni da želite obrisati ovog polaznika?")) return;
+
+    fetch(`${baseUrl}/api/polaznici/${id}`, {
+      method: 'DELETE'
+    })
+      .then(() => {
+        setPolaznici(polaznici.filter(p => p.id !== id));
+      })
+      .catch(err => {
+        console.error("Greška kod brisanja:", err);
+        setError("Neuspješno brisanje polaznika.");
+      });
+  };
+
+  const filtriraniPolaznici = polaznici.filter(p =>
+    `${p.ime} ${p.prezime}`.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div>
       <h2>Polaznici</h2>
@@ -66,9 +86,21 @@ function Polaznici() {
       <input value={godinaRođenja} onChange={e => setGodinaRođenja(e.target.value)} placeholder="Godina rođenja" type="number" />
       <button onClick={handleAdd}>Dodaj</button>
 
+      <div style={{ marginTop: "1rem" }}>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          placeholder="Pretraži polaznike po imenu"
+        />
+      </div>
+
       <ul>
-        {polaznici.map(p => (
-          <li key={p.id}>{p.ime} {p.prezime} ({p.email}, {p.godinaRođenja})</li>
+        {filtriraniPolaznici.map(p => (
+          <li key={p.id}>
+            {p.ime} {p.prezime} ({p.email}, {p.godinaRođenja})
+            <button onClick={() => handleDelete(p.id)} style={{ marginLeft: '1rem' }}>Obriši</button>
+          </li>
         ))}
       </ul>
     </div>
