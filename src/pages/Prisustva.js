@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+const API = process.env.REACT_APP_API_BASE_URL;
+
 function Prisustva() {
   const [prisustva, setPrisustva] = useState([]);
   const [polaznici, setPolaznici] = useState([]);
@@ -9,13 +11,13 @@ function Prisustva() {
   const [status, setStatus] = useState('PRISUTAN');
 
   useEffect(() => {
-    fetch('/api/prisustva').then(res => res.json()).then(setPrisustva);
-    fetch('/api/polaznici').then(res => res.json()).then(setPolaznici);
-    fetch('/api/radionice').then(res => res.json()).then(setRadionice);
+    fetch(`${API}/api/prisustva`).then(res => res.json()).then(setPrisustva);
+    fetch(`${API}/api/polaznici`).then(res => res.json()).then(setPolaznici);
+    fetch(`${API}/api/radionice`).then(res => res.json()).then(setRadionice);
   }, []);
 
   const handleAdd = () => {
-    fetch(`/api/prisustva`, {
+    fetch(`${API}/api/prisustva`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ polaznikId, radionicaId, status })
