@@ -10,60 +10,69 @@ function Prisustva() {
   const [radionicaId, setRadionicaId] = useState('');
   const [status, setStatus] = useState('PRISUTAN');
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    try {
+      const [pRes, rRes, prRes] = await Promise.all([
+        fetch(`${baseUrl}/api/polaznici`),
+        fetch(`${baseUrl}/api/radionice`),
+        fetch(`${baseUrl}/api/prisustva/view`)
+      ]);
+
+      if (!pRes.ok || !rRes.ok || !prRes.ok) {
+        throw new Error("Neuspješno dohvaćanje podataka");
+      }
+
+      const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
+        pRes.json(), rRes.json(), prRes.json()
+      ]);
+
+      setPolaznici(polazniciData);
+      setRadionice(radioniceData);
+      setPrisustva(prisustvaData);
+    } catch (err) {
+      console.error(err);
+      setError("Greška prilikom učitavanja podataka.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [pRes, rRes, prRes] = await Promise.all([
-          fetch(`${baseUrl}/api/polaznici`),
-          fetch(`${baseUrl}/api/radionice`),
-          fetch(`${baseUrl}/api/prisustva/view`)
-        ]);
-
-        const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
-          pRes.ok ? pRes.json() : [],
-          rRes.ok ? rRes.json() : [],
-          prRes.ok ? prRes.json() : []
-        ]);
-
-        setPolaznici(polazniciData);
-        setRadionice(radioniceData);
-        setPrisustva(prisustvaData);
-      } catch (err) {
-        setError("Došlo je do greške prilikom dohvaćanja podataka.");
-        console.error(err);
-      }
-    };
-
     fetchData();
   }, []);
 
-  const handleAdd = () => {
-    if (!polaznikId || !radionicaId) {
-      setError("Molimo odaberite polaznika i radionicu.");
+  const handleAdd = async () => {
+    setError(null);
+
+    if (!polaznikId || !radionicaId || !status) {
+      setError("Molimo ispunite sva polja.");
       return;
     }
 
-    fetch(`${baseUrl}/api/prisustva`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ polaznikId, radionicaId, status })
-    })
-      .then(res => {
-        if (!res.ok) throw new Error("Greška kod slanja podataka");
-        return res.json();
-      })
-      .then(() => {
-        // Refreshamo prikaz
-        return fetch(`${baseUrl}/api/prisustva/view`)
-          .then(res => res.json())
-          .then(setPrisustva);
-      })
-      .catch(err => {
-        console.error(err);
-        setError("Neuspješno dodavanje prisustva.");
+    try {
+      const res = await fetch(`${baseUrl}/api/prisustva`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ polaznikId, radionicaId, status })
       });
+
+      if (!res.ok) {
+        throw new Error("Dodavanje nije uspjelo.");
+      }
+
+      await fetchData(); // ponovno učitaj prisustva
+      setPolaznikId('');
+      setRadionicaId('');
+      setStatus('PRISUTAN');
+    } catch (err) {
+      console.error(err);
+      setError("Neuspješno dodavanje prisustva.");
+    }
   };
+
+  if (loading) return <p>Učitavanje podataka...</p>;
 
   return (
     <div>
