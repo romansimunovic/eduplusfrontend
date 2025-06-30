@@ -12,34 +12,35 @@ function Prisustva() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [pRes, rRes, prRes] = await Promise.all([
-          fetch(`${baseUrl}/api/polaznici`),
-          fetch(`${baseUrl}/api/radionice`),
-          fetch(`${baseUrl}/api/prisustva/view`)
-        ]);
+  const fetchData = async () => {
+    setError(null);
+    try {
+      const [pRes, rRes, prRes] = await Promise.all([
+        fetch(`${baseUrl}/api/polaznici`),
+        fetch(`${baseUrl}/api/radionice`),
+        fetch(`${baseUrl}/api/prisustva/view`)
+      ]);
 
-        if (!pRes.ok || !rRes.ok || !prRes.ok) {
-          throw new Error("Greška kod dohvaćanja podataka.");
-        }
-
-        const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
-          pRes.json(),
-          rRes.json(),
-          prRes.json()
-        ]);
-
-        setPolaznici(Array.isArray(polazniciData) ? polazniciData : []);
-        setRadionice(Array.isArray(radioniceData) ? radioniceData : []);
-        setPrisustva(Array.isArray(prisustvaData) ? prisustvaData : []);
-      } catch (err) {
-        setError("Ne mogu dohvatiti podatke. Provjeri backend.");
-        console.error(err);
+      if (!pRes.ok || !rRes.ok || !prRes.ok) {
+        throw new Error("Greška prilikom dohvaćanja podataka.");
       }
-    };
 
+      const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
+        pRes.json(),
+        rRes.json(),
+        prRes.json()
+      ]);
+
+      setPolaznici(polazniciData);
+      setRadionice(radioniceData);
+      setPrisustva(prisustvaData);
+    } catch (err) {
+      setError("Došlo je do greške prilikom učitavanja podataka.");
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -48,7 +49,7 @@ function Prisustva() {
     setSuccess(null);
 
     if (!polaznikId || !radionicaId || !status) {
-      setError("Molimo popunite sva polja.");
+      setError("Sva polja su obavezna.");
       return;
     }
 
@@ -59,18 +60,13 @@ function Prisustva() {
         body: JSON.stringify({ polaznikId, radionicaId, status })
       });
 
-      if (!res.ok) throw new Error("Greška kod slanja.");
+      if (!res.ok) throw new Error("Greška kod dodavanja prisustva.");
 
-      // osvježavanje liste prisustva
-      const refresh = await fetch(`${baseUrl}/api/prisustva/view`);
-      if (!refresh.ok) throw new Error("Ne mogu osvježiti prikaz.");
-      const data = await refresh.json();
-      setPrisustva(Array.isArray(data) ? data : []);
-
+      await fetchData();
       setPolaznikId('');
       setRadionicaId('');
       setStatus('PRISUTAN');
-      setSuccess("Prisustvo uspješno dodano!");
+      setSuccess("Prisustvo uspješno dodano.");
     } catch (err) {
       setError("Neuspješno dodavanje prisustva.");
       console.error(err);
@@ -80,9 +76,8 @@ function Prisustva() {
   return (
     <div>
       <h2>Prisustva</h2>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {success && <p style={{ color: 'green' }}>{success}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {success && <p style={{ color: "green" }}>{success}</p>}
 
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem" }}>
         <select value={polaznikId} onChange={e => setPolaznikId(e.target.value)}>
@@ -109,8 +104,10 @@ function Prisustva() {
       </div>
 
       <ul>
-        {prisustva.map((p, i) => (
-          <li key={i}>{p.polaznikImePrezime} – {p.radionicaNaziv} ({p.status})</li>
+        {prisustva.map((p, index) => (
+          <li key={index}>
+            {p.polaznikImePrezime} – {p.radionicaNaziv} ({p.status})
+          </li>
         ))}
       </ul>
     </div>
