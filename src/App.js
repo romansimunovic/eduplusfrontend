@@ -1,29 +1,26 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Polaznici from "./pages/Polaznici";
-import Radionice from "./pages/Radionice";
-import Prisustva from "./pages/Prisustva";
-import Evidencija from "./pages/Evidencija";
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Radionice from './Radionice';
+import Polaznici from './Polaznici';
+import Prisustva from './Prisustva';
 
-export default function App() {
+function App() {
   return (
     <Router>
-      <div style={{ padding: "20px" }}>
-        <h1>Edukator+</h1>
-        <nav style={{ marginBottom: "20px" }}>
-          <Link to="/polaznici" style={{ marginRight: "10px" }}>Polaznici</Link>
-          <Link to="/radionice" style={{ marginRight: "10px" }}>Radionice</Link>
-          <Link to="/prisustva" style={{ marginRight: "10px" }}>Prisustva</Link>
-          <Link to="/evidencija">Evidentiraj</Link>
-        </nav>
-        <Routes>
-          <Route path="/polaznici" element={<Polaznici />} />
-          <Route path="/radionice" element={<Radionice />} />
-          <Route path="/prisustva" element={<Prisustva />} />
-          <Route path="/evidencija" element={<Evidencija />} />
-          <Route path="*" element={<div>404 – Stranica ne postoji</div>} />
-        </Routes>
-      </div>
+      <nav>
+        <ul>
+          <li><Link to="/">Radionice</Link></li>
+          <li><Link to="/polaznici">Polaznici</Link></li>
+          <li><Link to="/prisustva">Prisustva</Link></li>
+        </ul>
+      </nav>
+      <Routes>
+        <Route path="/" element={<Radionice />} />
+        <Route path="/polaznici" element={<Polaznici />} />
+        <Route path="/prisustva" element={<Prisustva />} />
+      </Routes>
     </Router>
   );
 }
+
+export default App;
