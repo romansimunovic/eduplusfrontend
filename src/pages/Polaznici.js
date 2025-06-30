@@ -10,6 +10,7 @@ function Polaznici() {
   const [godinaRođenja, setGodinaRođenja] = useState("");
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortKey, setSortKey] = useState("");
 
   const fetchPolaznici = async () => {
     try {
@@ -71,20 +72,28 @@ function Polaznici() {
       });
   };
 
+  const handleSort = (key) => {
+    const sorted = [...polaznici].sort((a, b) => a[key].localeCompare(b[key]));
+    setPolaznici(sorted);
+    setSortKey(key);
+  };
+
   const filtriraniPolaznici = polaznici.filter(p =>
     `${p.ime} ${p.prezime}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div>
+    <div style={{ fontFamily: "Arial, sans-serif", maxWidth: "600px", margin: "0 auto" }}>
       <h2>Polaznici</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <input value={ime} onChange={e => setIme(e.target.value)} placeholder="Ime" />
-      <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
-      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-      <input value={godinaRođenja} onChange={e => setGodinaRođenja(e.target.value)} placeholder="Godina rođenja" type="number" />
-      <button onClick={handleAdd}>Dodaj</button>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <input value={ime} onChange={e => setIme(e.target.value)} placeholder="Ime" />
+        <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
+        <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+        <input value={godinaRođenja} onChange={e => setGodinaRođenja(e.target.value)} placeholder="Godina rođenja" type="number" />
+        <button onClick={handleAdd}>Dodaj</button>
+      </div>
 
       <div style={{ marginTop: "1rem" }}>
         <input
@@ -95,7 +104,15 @@ function Polaznici() {
         />
       </div>
 
-      <ul>
+      <div style={{ marginTop: "1rem" }}>
+        <select onChange={(e) => handleSort(e.target.value)} value={sortKey}>
+          <option value="">Sortiraj</option>
+          <option value="ime">Po imenu</option>
+          <option value="prezime">Po prezimenu</option>
+        </select>
+      </div>
+
+      <ul style={{ marginTop: "1rem" }}>
         {filtriraniPolaznici.map(p => (
           <li key={p.id}>
             {p.ime} {p.prezime} ({p.email}, {p.godinaRođenja})
@@ -103,21 +120,10 @@ function Polaznici() {
           </li>
         ))}
       </ul>
+
+      <p style={{ marginTop: "1rem" }}>Ukupno polaznika: {filtriraniPolaznici.length}</p>
     </div>
   );
-
-<select onChange={(e) => {
-  const val = e.target.value;
-  const sorted = [...polaznici].sort((a, b) =>
-    a[val].localeCompare(b[val])
-  );
-  setPolaznici(sorted);
-}}>
-  <option value="">Sortiraj</option>
-  <option value="ime">Po imenu</option>
-  <option value="prezime">Po prezimenu</option>
-</select>
-
 }
 
 export default Polaznici;
