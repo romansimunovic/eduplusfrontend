@@ -104,7 +104,7 @@ function Polaznici() {
   );
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", maxWidth: "600px", margin: "0 auto" }}>
+    <div style={{ fontFamily: "Arial, sans-serif", maxWidth: "700px", margin: "0 auto" }}>
       <h2>Polaznici</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
