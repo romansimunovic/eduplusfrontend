@@ -11,11 +11,10 @@ function Radionice() {
   const fetchRadionice = async () => {
     try {
       const res = await fetch(`${baseUrl}/api/radionice`);
-      if (!res.ok) throw new Error("Greška kod dohvaćanja radionica.");
       const data = await res.json();
       setRadionice(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError("Ne mogu dohvatiti radionice.");
+      setError("Greška kod dohvaćanja radionica.");
       console.error(err);
     }
   };
@@ -29,7 +28,7 @@ function Radionice() {
     setSuccess(null);
 
     if (!naziv.trim()) {
-      setError("Unesi naziv radionice.");
+      setError("Naziv radionice je obavezan.");
       return;
     }
 
@@ -40,11 +39,10 @@ function Radionice() {
         body: JSON.stringify({ naziv })
       });
 
-      if (!res.ok) throw new Error("Greška kod dodavanja radionice.");
-
-      await fetchRadionice();
-      setNaziv('');
-      setSuccess("Radionica uspješno dodana!");
+      if (!res.ok) throw new Error("Dodavanje nije uspjelo.");
+      setNaziv("");
+      setSuccess("Radionica uspješno dodana.");
+      fetchRadionice();
     } catch (err) {
       setError("Neuspješno dodavanje radionice.");
       console.error(err);
@@ -55,8 +53,8 @@ function Radionice() {
     <div>
       <h2>Radionice</h2>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {success && <p style={{ color: 'green' }}>{success}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {success && <p style={{ color: "green" }}>{success}</p>}
 
       <input
         type="text"
