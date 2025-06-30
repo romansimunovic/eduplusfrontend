@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+const API = process.env.REACT_APP_API_BASE_URL;
+
 function Polaznici() {
   const [polaznici, setPolaznici] = useState([]);
   const [ime, setIme] = useState('');
@@ -7,13 +9,13 @@ function Polaznici() {
   const [email, setEmail] = useState('');
 
   useEffect(() => {
-    fetch('/api/polaznici')
+    fetch(`${API}/api/polaznici`)
       .then(res => res.json())
       .then(data => setPolaznici(data));
   }, []);
 
   const handleAdd = () => {
-    fetch('/api/polaznici', {
+    fetch(`${API}/api/polaznici`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ime, prezime, email })
@@ -25,24 +27,9 @@ function Polaznici() {
   return (
     <div>
       <h2>Polaznici</h2>
-      <input
-        type="text"
-        placeholder="Ime"
-        value={ime}
-        onChange={e => setIme(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Prezime"
-        value={prezime}
-        onChange={e => setPrezime(e.target.value)}
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-      />
+      <input type="text" placeholder="Ime" value={ime} onChange={e => setIme(e.target.value)} />
+      <input type="text" placeholder="Prezime" value={prezime} onChange={e => setPrezime(e.target.value)} />
+      <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
       <button onClick={handleAdd}>Dodaj polaznika</button>
       <ul>
         {polaznici.map(p => (
