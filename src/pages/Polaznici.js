@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const API = process.env.REACT_APP_API_BASE_URL;
+const baseUrl = "https://eduplusbackend.onrender.com";
 
 function Polaznici() {
   const [polaznici, setPolaznici] = useState([]);
@@ -9,13 +9,13 @@ function Polaznici() {
   const [email, setEmail] = useState('');
 
   useEffect(() => {
-    fetch(`${API}/api/polaznici`)
+    fetch(`${baseUrl}/api/polaznici`)
       .then(res => res.json())
       .then(data => setPolaznici(data));
   }, []);
 
   const handleAdd = () => {
-    fetch(`${API}/api/polaznici`, {
+    fetch(`${baseUrl}/api/polaznici`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ime, prezime, email })
