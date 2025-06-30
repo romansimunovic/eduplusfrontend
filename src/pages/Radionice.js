@@ -1,52 +1,40 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 function Radionice() {
   const [radionice, setRadionice] = useState([]);
-  const [naziv, setNaziv] = useState("");
-  const [opis, setOpis] = useState("");
+  const [naziv, setNaziv] = useState('');
 
   useEffect(() => {
-    fetch("https://eduplusbackend.onrender.com/api/radionice")
+    fetch('/api/radionice')
       .then(res => res.json())
-      .then(setRadionice);
+      .then(data => setRadionice(data));
   }, []);
 
-  const handleDodaj = () => {
-    const nova = { naziv, opis };
-    fetch("https://eduplusbackend.onrender.com/api/radionice", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nova),
+  const handleAdd = () => {
+    fetch('/api/radionice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ naziv })
     })
-      .then(res => res.json())
-      .then(novaRadionica => {
-        setRadionice(prev => [...prev, novaRadionica]);
-        setNaziv("");
-        setOpis("");
-      });
+    .then(res => res.json())
+    .then(newRadionica => setRadionice([...radionice, newRadionica]));
   };
 
   return (
-    <div className="p-4">
+    <div>
       <h2>Radionice</h2>
+      <input
+        type="text"
+        placeholder="Naziv radionice"
+        value={naziv}
+        onChange={e => setNaziv(e.target.value)}
+      />
+      <button onClick={handleAdd}>Dodaj radionicu</button>
       <ul>
         {radionice.map(r => (
-          <li key={r.id}>{r.naziv} - {r.opis}</li>
+          <li key={r.id}>{r.naziv}</li>
         ))}
       </ul>
-      <div className="mt-4">
-        <input
-          placeholder="Naziv"
-          value={naziv}
-          onChange={(e) => setNaziv(e.target.value)}
-        />
-        <input
-          placeholder="Opis"
-          value={opis}
-          onChange={(e) => setOpis(e.target.value)}
-        />
-        <button onClick={handleDodaj}>Dodaj radionicu</button>
-      </div>
     </div>
   );
 }
