@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import Radionice from './Radionice';
-import Polaznici from './Polaznici';
-import Prisustva from './Prisustva';
+import Radionice from './pages/Radionice';
+import Polaznici from './pages/Polaznici';
+import Prisustva from './pages/Prisustva';
 
 function App() {
   return (
