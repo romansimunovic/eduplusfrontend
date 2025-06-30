@@ -9,86 +9,98 @@ function Prisustva() {
   const [polaznikId, setPolaznikId] = useState('');
   const [radionicaId, setRadionicaId] = useState('');
   const [status, setStatus] = useState('PRISUTAN');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${baseUrl}/api/prisustva/view`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setPrisustva(data);
-        else setPrisustva([]);
-      });
+    const fetchData = async () => {
+      try {
+        const [pRes, rRes, prRes] = await Promise.all([
+          fetch(`${baseUrl}/api/polaznici`),
+          fetch(`${baseUrl}/api/radionice`),
+          fetch(`${baseUrl}/api/prisustva/view`)
+        ]);
 
-    fetch(`${baseUrl}/api/polaznici`)
-      .then(res => res.json())
-      .then(setPolaznici);
+        const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
+          pRes.ok ? pRes.json() : [],
+          rRes.ok ? rRes.json() : [],
+          prRes.ok ? prRes.json() : []
+        ]);
 
-    fetch(`${baseUrl}/api/radionice`)
-      .then(res => res.json())
-      .then(setRadionice);
+        setPolaznici(polazniciData);
+        setRadionice(radioniceData);
+        setPrisustva(prisustvaData);
+      } catch (err) {
+        setError("Došlo je do greške prilikom dohvaćanja podataka.");
+        console.error(err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleAdd = () => {
+    if (!polaznikId || !radionicaId) {
+      setError("Molimo odaberite polaznika i radionicu.");
+      return;
+    }
+
     fetch(`${baseUrl}/api/prisustva`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        polaznikId: parseInt(polaznikId),
-        radionicaId: parseInt(radionicaId),
-        status: status
-      })
+      body: JSON.stringify({ polaznikId, radionicaId, status })
     })
       .then(res => {
-        if (!res.ok) {
-          throw new Error("Greška prilikom dodavanja prisustva.");
-        }
+        if (!res.ok) throw new Error("Greška kod slanja podataka");
         return res.json();
       })
       .then(() => {
-        // Osvježi prikaz nakon dodavanja
-        return fetch(`${baseUrl}/api/prisustva/view`);
+        // Refreshamo prikaz
+        return fetch(`${baseUrl}/api/prisustva/view`)
+          .then(res => res.json())
+          .then(setPrisustva);
       })
-      .then(res => res.json())
-      .then(setPrisustva)
-      .catch(err => alert(err.message));
+      .catch(err => {
+        console.error(err);
+        setError("Neuspješno dodavanje prisustva.");
+      });
   };
 
   return (
     <div>
       <h2>Prisustva</h2>
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <select value={polaznikId} onChange={e => setPolaznikId(e.target.value)}>
-        <option value="">Odaberi polaznika</option>
-        {polaznici.map(p => (
-          <option key={p.id} value={p.id}>{p.ime} {p.prezime}</option>
-        ))}
-      </select>
-
-      <select value={radionicaId} onChange={e => setRadionicaId(e.target.value)}>
-        <option value="">Odaberi radionicu</option>
-        {radionice.map(r => (
-          <option key={r.id} value={r.id}>{r.naziv}</option>
-        ))}
-      </select>
-
-      <select value={status} onChange={e => setStatus(e.target.value)}>
-        <option value="PRISUTAN">Prisutno</option>
-        <option value="ODUSTAO">Odustao</option>
-        <option value="IZOSTAO">Izostao</option>
-      </select>
-
-      <button onClick={handleAdd}>Dodaj prisustvo</button>
-
-      {prisustva.length > 0 ? (
-        <ul>
-          {prisustva.map(p => (
-            <li key={p.id}>
-              {p.imePrezime} – {p.nazivRadionice} ({p.status})
-            </li>
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+        <select value={polaznikId} onChange={e => setPolaznikId(e.target.value)}>
+          <option value="">Odaberi polaznika</option>
+          {polaznici.map(p => (
+            <option key={p.id} value={p.id}>{p.ime} {p.prezime}</option>
           ))}
-        </ul>
-      ) : (
-        <p>Nema prisustava za prikaz.</p>
-      )}
+        </select>
+
+        <select value={radionicaId} onChange={e => setRadionicaId(e.target.value)}>
+          <option value="">Odaberi radionicu</option>
+          {radionice.map(r => (
+            <option key={r.id} value={r.id}>{r.naziv}</option>
+          ))}
+        </select>
+
+        <select value={status} onChange={e => setStatus(e.target.value)}>
+          <option value="PRISUTAN">Prisutno</option>
+          <option value="ODUSTAO">Odustao</option>
+          <option value="IZOSTAO">Izostao</option>
+        </select>
+
+        <button onClick={handleAdd}>Dodaj prisustvo</button>
+      </div>
+
+      <ul>
+        {Array.isArray(prisustva) && prisustva.map((p, index) => (
+          <li key={index}>
+            {p.polaznikImePrezime} – {p.radionicaNaziv} ({p.status})
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
