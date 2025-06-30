@@ -7,18 +7,18 @@ function Polaznici() {
   const [ime, setIme] = useState("");
   const [prezime, setPrezime] = useState("");
   const [email, setEmail] = useState("");
-  const [godinaRodjenja, setGodinaRodjenja] = useState("");
+  const [godinaRođenja, setGodinaRođenja] = useState("");
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
 
   const fetchPolaznici = async () => {
     try {
       const res = await fetch(`${baseUrl}/api/polaznici`);
+      if (!res.ok) throw new Error("Neuspješno dohvaćanje polaznika");
       const data = await res.json();
       setPolaznici(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError("Greška kod dohvaćanja polaznika.");
-      console.error(err);
+      console.error("Greška kod dohvata polaznika:", err);
+      setError("Neuspješno dohvaćanje podataka o polaznicima.");
     }
   };
 
@@ -26,52 +26,44 @@ function Polaznici() {
     fetchPolaznici();
   }, []);
 
-  const handleAdd = async () => {
-    setError(null);
-    setSuccess(null);
-
-    if (!ime || !prezime || !email || !godinaRodjenja) {
+  const handleAdd = () => {
+    if (!ime || !prezime || !email || !godinaRođenja) {
       setError("Sva polja su obavezna.");
       return;
     }
 
-    try {
-      const res = await fetch(`${baseUrl}/api/polaznici`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ime,
-          prezime,
-          email,
-          godinaRođenja: parseInt(godinaRodjenja)
-        })
+    fetch(`${baseUrl}/api/polaznici`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ime, prezime, email, godinaRođenja: parseInt(godinaRođenja) })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Greška kod dodavanja polaznika");
+        return res.json();
+      })
+      .then(newPolaznik => {
+        setPolaznici([...polaznici, newPolaznik]);
+        setIme("");
+        setPrezime("");
+        setEmail("");
+        setGodinaRođenja("");
+        setError(null);
+      })
+      .catch(err => {
+        console.error("Greška kod dodavanja:", err);
+        setError("Neuspješno dodavanje polaznika.");
       });
-
-      if (!res.ok) throw new Error("Dodavanje nije uspjelo.");
-      setIme("");
-      setPrezime("");
-      setEmail("");
-      setGodinaRodjenja("");
-      setSuccess("Polaznik uspješno dodan.");
-      fetchPolaznici();
-    } catch (err) {
-      setError("Neuspješno dodavanje polaznika.");
-      console.error(err);
-    }
   };
 
   return (
     <div>
       <h2>Polaznici</h2>
-
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
 
       <input value={ime} onChange={e => setIme(e.target.value)} placeholder="Ime" />
       <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
       <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-      <input value={godinaRodjenja} onChange={e => setGodinaRodjenja(e.target.value)} placeholder="Godina rođenja" type="number" />
-
+      <input value={godinaRođenja} onChange={e => setGodinaRođenja(e.target.value)} placeholder="Godina rođenja" type="number" />
       <button onClick={handleAdd}>Dodaj</button>
 
       <ul>
