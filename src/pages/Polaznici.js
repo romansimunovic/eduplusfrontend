@@ -11,6 +11,8 @@ function Polaznici() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState("");
+  const [editId, setEditId] = useState(null);
+  const [showStats, setShowStats] = useState(false);
 
   const fetchPolaznici = async () => {
     try {
@@ -28,32 +30,43 @@ function Polaznici() {
     fetchPolaznici();
   }, []);
 
-  const handleAdd = () => {
+  const handleAddOrUpdate = () => {
     if (!ime || !prezime || !email || !godinaRođenja) {
       setError("Sva polja su obavezna.");
       return;
     }
 
-    fetch(`${baseUrl}/api/polaznici`, {
-      method: 'POST',
+    const payload = {
+      ime,
+      prezime,
+      email,
+      godinaRođenja: parseInt(godinaRođenja)
+    };
+
+    const method = editId ? 'PUT' : 'POST';
+    const url = editId ? `${baseUrl}/api/polaznici/${editId}` : `${baseUrl}/api/polaznici`;
+
+    fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ime, prezime, email, godinaRođenja: parseInt(godinaRođenja) })
+      body: JSON.stringify(payload)
     })
       .then(res => {
-        if (!res.ok) throw new Error("Greška kod dodavanja polaznika");
+        if (!res.ok) throw new Error("Greška kod spremanja polaznika");
         return res.json();
       })
-      .then(newPolaznik => {
-        setPolaznici([...polaznici, newPolaznik]);
+      .then(() => {
+        fetchPolaznici();
         setIme("");
         setPrezime("");
         setEmail("");
         setGodinaRođenja("");
+        setEditId(null);
         setError(null);
       })
       .catch(err => {
-        console.error("Greška kod dodavanja:", err);
-        setError("Neuspješno dodavanje polaznika.");
+        console.error("Greška kod spremanja:", err);
+        setError("Neuspješno spremanje polaznika.");
       });
   };
 
@@ -78,6 +91,14 @@ function Polaznici() {
     setSortKey(key);
   };
 
+  const handleEdit = (polaznik) => {
+    setIme(polaznik.ime);
+    setPrezime(polaznik.prezime);
+    setEmail(polaznik.email);
+    setGodinaRođenja(polaznik.godinaRođenja);
+    setEditId(polaznik.id);
+  };
+
   const filtriraniPolaznici = polaznici.filter(p =>
     `${p.ime} ${p.prezime}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -92,7 +113,7 @@ function Polaznici() {
         <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
         <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
         <input value={godinaRođenja} onChange={e => setGodinaRođenja(e.target.value)} placeholder="Godina rođenja" type="number" />
-        <button onClick={handleAdd}>Dodaj</button>
+        <button onClick={handleAddOrUpdate}>{editId ? "Spremi izmjene" : "Dodaj"}</button>
       </div>
 
       <div style={{ marginTop: "1rem" }}>
@@ -116,12 +137,23 @@ function Polaznici() {
         {filtriraniPolaznici.map(p => (
           <li key={p.id}>
             {p.ime} {p.prezime} ({p.email}, {p.godinaRođenja})
-            <button onClick={() => handleDelete(p.id)} style={{ marginLeft: '1rem' }}>Obriši</button>
+            <button onClick={() => handleEdit(p)} style={{ marginLeft: '0.5rem' }}>Uredi</button>
+            <button onClick={() => handleDelete(p.id)} style={{ marginLeft: '0.5rem' }}>Obriši</button>
           </li>
         ))}
       </ul>
 
       <p style={{ marginTop: "1rem" }}>Ukupno polaznika: {filtriraniPolaznici.length}</p>
+      <button onClick={() => setShowStats(!showStats)} style={{ marginTop: "0.5rem" }}>
+        {showStats ? "Sakrij statistiku" : "Prikaži statistiku"}
+      </button>
+
+      {showStats && (
+        <div style={{ marginTop: "1rem", backgroundColor: "#f1f1f1", padding: "1rem" }}>
+          <p>Broj polaznika rođenih prije 2000.: {polaznici.filter(p => p.godinaRođenja < 2000).length}</p>
+          <p>Broj polaznika rođenih od 2000. nadalje: {polaznici.filter(p => p.godinaRođenja >= 2000).length}</p>
+        </div>
+      )}
     </div>
   );
 }
