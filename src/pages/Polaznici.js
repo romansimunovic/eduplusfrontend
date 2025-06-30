@@ -105,6 +105,19 @@ function Polaznici() {
       </ul>
     </div>
   );
+
+<select onChange={(e) => {
+  const val = e.target.value;
+  const sorted = [...polaznici].sort((a, b) =>
+    a[val].localeCompare(b[val])
+  );
+  setPolaznici(sorted);
+}}>
+  <option value="">Sortiraj</option>
+  <option value="ime">Po imenu</option>
+  <option value="prezime">Po prezimenu</option>
+</select>
+
 }
 
 export default Polaznici;
