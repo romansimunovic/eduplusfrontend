@@ -11,31 +11,32 @@ function Prisustva() {
   const [status, setStatus] = useState('PRISUTAN');
   const [error, setError] = useState(null);
   const [filterRadionica, setFilterRadionica] = useState('');
-
-  const fetchData = async () => {
-    try {
-      const [pRes, rRes, prRes] = await Promise.all([
-        fetch(`${baseUrl}/api/polaznici`),
-        fetch(`${baseUrl}/api/radionice`),
-        fetch(`${baseUrl}/api/prisustva/view`)
-      ]);
-
-      const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
-        pRes.ok ? pRes.json() : [],
-        rRes.ok ? rRes.json() : [],
-        prRes.ok ? prRes.json() : []
-      ]);
-
-      setPolaznici(polazniciData);
-      setRadionice(radioniceData);
-      setPrisustva(prisustvaData);
-    } catch (err) {
-      setError("Došlo je do greške prilikom dohvaćanja podataka.");
-      console.error(err);
-    }
-  };
+  const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [pRes, rRes, prRes] = await Promise.all([
+          fetch(`${baseUrl}/api/polaznici`),
+          fetch(`${baseUrl}/api/radionice`),
+          fetch(`${baseUrl}/api/prisustva/view`)
+        ]);
+
+        const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
+          pRes.ok ? pRes.json() : [],
+          rRes.ok ? rRes.json() : [],
+          prRes.ok ? prRes.json() : []
+        ]);
+
+        setPolaznici(polazniciData);
+        setRadionice(radioniceData);
+        setPrisustva(prisustvaData);
+      } catch (err) {
+        setError("Došlo je do greške prilikom dohvaćanja podataka.");
+        console.error(err);
+      }
+    };
+
     fetchData();
   }, []);
 
@@ -54,7 +55,11 @@ function Prisustva() {
         if (!res.ok) throw new Error("Greška kod slanja podataka");
         return res.json();
       })
-      .then(() => fetchData())
+      .then(() => {
+        return fetch(`${baseUrl}/api/prisustva/view`)
+          .then(res => res.json())
+          .then(setPrisustva);
+      })
       .catch(err => {
         console.error(err);
         setError("Neuspješno dodavanje prisustva.");
@@ -67,9 +72,11 @@ function Prisustva() {
     fetch(`${baseUrl}/api/prisustva/${id}`, {
       method: 'DELETE'
     })
-      .then(() => fetchData())
+      .then(() => {
+        setPrisustva(prisustva.filter(p => p.id !== id));
+      })
       .catch(err => {
-        console.error("Greška prilikom brisanja prisustva.", err);
+        console.error(err);
         setError("Greška prilikom brisanja prisustva.");
       });
   };
@@ -85,7 +92,7 @@ function Prisustva() {
       <h2>Prisustva</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
         <select value={polaznikId} onChange={e => setPolaznikId(e.target.value)}>
           <option value="">Odaberi polaznika</option>
           {polaznici.map(p => (
@@ -119,9 +126,6 @@ function Prisustva() {
         </select>
       </div>
 
-      <p>Ukupno prisustava: {filtriranaPrisustva.length}</p>
-      <p>Prisutnih: {brojPoStatusu("PRISUTAN")} | Izostali: {brojPoStatusu("IZOSTAO")} | Odustali: {brojPoStatusu("ODUSTAO")}</p>
-
       <ul>
         {Array.isArray(filtriranaPrisustva) && filtriranaPrisustva.map((p, index) => (
           <li key={index}>
@@ -130,6 +134,19 @@ function Prisustva() {
           </li>
         ))}
       </ul>
+
+      <button onClick={() => setShowStats(!showStats)} style={{ marginTop: "1rem" }}>
+        {showStats ? "Sakrij statistiku" : "Prikaži statistiku"}
+      </button>
+
+      {showStats && (
+        <div style={{ backgroundColor: "#f1f1f1", padding: "1rem", marginTop: "1rem" }}>
+          <p>Ukupno prisustava: {filtriranaPrisustva.length}</p>
+          <p>Prisutno: {brojPoStatusu("PRISUTAN")}</p>
+          <p>Izostalo: {brojPoStatusu("IZOSTAO")}</p>
+          <p>Odustalo: {brojPoStatusu("ODUSTAO")}</p>
+        </div>
+      )}
     </div>
   );
 }
