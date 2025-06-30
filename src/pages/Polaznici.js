@@ -52,3 +52,5 @@ function Polaznici() {
     </div>
   );
 }
+
+export default Polaznici;
