@@ -5,28 +5,65 @@ const baseUrl = "https://eduplusbackend.onrender.com";
 function Radionice() {
   const [radionice, setRadionice] = useState([]);
   const [naziv, setNaziv] = useState('');
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+
+  const fetchRadionice = async () => {
+    try {
+      const res = await fetch(`${baseUrl}/api/radionice`);
+      if (!res.ok) throw new Error("Neuspješan dohvat radionica.");
+      const data = await res.json();
+      setRadionice(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setError("Greška prilikom dohvaćanja radionica.");
+    }
+  };
 
   useEffect(() => {
-    fetch(`${baseUrl}/api/radionice`)
-      .then(res => res.json())
-      .then(data => setRadionice(data));
+    fetchRadionice();
   }, []);
 
-  const handleAdd = () => {
-    fetch(`${baseUrl}/api/radionice`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ naziv })
-    })
-    .then(res => res.json())
-    .then(newRadionica => setRadionice([...radionice, newRadionica]));
+  const handleAdd = async () => {
+    setError(null);
+    setSuccess(null);
+
+    if (!naziv.trim()) {
+      setError("Naziv ne smije biti prazan.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${baseUrl}/api/radionice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ naziv })
+      });
+
+      if (!res.ok) throw new Error("Greška prilikom dodavanja radionice.");
+      await fetchRadionice();
+      setNaziv('');
+      setSuccess("Radionica dodana uspješno.");
+    } catch (err) {
+      console.error(err);
+      setError("Dodavanje radionice nije uspjelo.");
+    }
   };
 
   return (
     <div>
       <h2>Radionice</h2>
-      <input type="text" placeholder="Naziv radionice" value={naziv} onChange={e => setNaziv(e.target.value)} />
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {success && <p style={{ color: "green" }}>{success}</p>}
+
+      <input
+        type="text"
+        placeholder="Naziv radionice"
+        value={naziv}
+        onChange={e => setNaziv(e.target.value)}
+      />
       <button onClick={handleAdd}>Dodaj radionicu</button>
+
       <ul>
         {radionice.map(r => (
           <li key={r.id}>{r.naziv}</li>
