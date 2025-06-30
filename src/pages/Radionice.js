@@ -11,12 +11,12 @@ function Radionice() {
   const fetchRadionice = async () => {
     try {
       const res = await fetch(`${baseUrl}/api/radionice`);
-      if (!res.ok) throw new Error("Neuspješan dohvat radionica.");
+      if (!res.ok) throw new Error("Greška kod dohvaćanja radionica.");
       const data = await res.json();
       setRadionice(Array.isArray(data) ? data : []);
     } catch (err) {
+      setError("Ne mogu dohvatiti radionice.");
       console.error(err);
-      setError("Greška prilikom dohvaćanja radionica.");
     }
   };
 
@@ -29,7 +29,7 @@ function Radionice() {
     setSuccess(null);
 
     if (!naziv.trim()) {
-      setError("Naziv ne smije biti prazan.");
+      setError("Unesi naziv radionice.");
       return;
     }
 
@@ -40,21 +40,23 @@ function Radionice() {
         body: JSON.stringify({ naziv })
       });
 
-      if (!res.ok) throw new Error("Greška prilikom dodavanja radionice.");
+      if (!res.ok) throw new Error("Greška kod dodavanja radionice.");
+
       await fetchRadionice();
       setNaziv('');
-      setSuccess("Radionica dodana uspješno.");
+      setSuccess("Radionica uspješno dodana!");
     } catch (err) {
+      setError("Neuspješno dodavanje radionice.");
       console.error(err);
-      setError("Dodavanje radionice nije uspjelo.");
     }
   };
 
   return (
     <div>
       <h2>Radionice</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
+
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {success && <p style={{ color: 'green' }}>{success}</p>}
 
       <input
         type="text"
