@@ -2,109 +2,181 @@ import React, { useEffect, useState } from 'react';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
 
-function Radionice() {
+function Prisustva() {
+  const [prisustva, setPrisustva] = useState([]);
+  const [polaznici, setPolaznici] = useState([]);
   const [radionice, setRadionice] = useState([]);
-  const [naziv, setNaziv] = useState('');
+  const [polaznikId, setPolaznikId] = useState('');
+  const [radionicaId, setRadionicaId] = useState('');
+  const [status, setStatus] = useState('PRISUTAN');
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const fetchRadionice = async () => {
-    try {
-      const res = await fetch(`${baseUrl}/api/radionice`);
-      if (!res.ok) throw new Error("Greška kod dohvaćanja radionica");
-      const data = await res.json();
-      setRadionice(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-      setError("Neuspješno dohvaćanje radionica.");
-    }
-  };
+  const [filterRadionica, setFilterRadionica] = useState('');
+  const [filterPolaznik, setFilterPolaznik] = useState('');
+  const [showStats, setShowStats] = useState(false);
+  const [sortKey, setSortKey] = useState('');
 
   useEffect(() => {
-    fetchRadionice();
+    const fetchData = async () => {
+      try {
+        const [pRes, rRes, prRes] = await Promise.all([
+          fetch(`${baseUrl}/api/polaznici`),
+          fetch(`${baseUrl}/api/radionice`),
+          fetch(`${baseUrl}/api/prisustva/view`)
+        ]);
+
+        const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
+          pRes.ok ? pRes.json() : [],
+          rRes.ok ? rRes.json() : [],
+          prRes.ok ? prRes.json() : []
+        ]);
+
+        setPolaznici(polazniciData);
+        setRadionice(radioniceData);
+        setPrisustva(prisustvaData);
+      } catch (err) {
+        setError("Došlo je do greške prilikom dohvaćanja podataka.");
+        console.error(err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleAdd = () => {
-    if (!naziv.trim()) {
-      setError("Naziv radionice ne smije biti prazan.");
+    if (!polaznikId || !radionicaId) {
+      setError("Molimo odaberite polaznika i radionicu.");
       return;
     }
 
-    fetch(`${baseUrl}/api/radionice`, {
+    fetch(`${baseUrl}/api/prisustva`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ naziv: naziv.trim() })
+      body: JSON.stringify({ polaznikId, radionicaId, status })
     })
       .then(res => {
-        if (!res.ok) throw new Error("Greška kod dodavanja radionice");
+        if (!res.ok) throw new Error("Greška kod slanja podataka");
         return res.json();
       })
-      .then(newRadionica => {
-        setRadionice([...radionice, newRadionica]);
-        setNaziv('');
-        setError(null);
+      .then(() => {
+        return fetch(`${baseUrl}/api/prisustva/view`)
+          .then(res => res.json())
+          .then(setPrisustva);
       })
       .catch(err => {
         console.error(err);
-        setError("Neuspješno dodavanje radionice.");
+        setError("Neuspješno dodavanje prisustva.");
       });
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("Jeste li sigurni da želite obrisati ovu radionicu?")) return;
+    if (!window.confirm("Jeste li sigurni da želite obrisati ovo prisustvo?")) return;
 
-    fetch(`${baseUrl}/api/radionice/${id}`, {
+    fetch(`${baseUrl}/api/prisustva/${id}`, {
       method: 'DELETE'
     })
       .then(() => {
-        setRadionice(radionice.filter(r => r.id !== id));
+        setPrisustva(prisustva.filter(p => p.id !== id));
       })
       .catch(err => {
         console.error(err);
-        setError("Neuspješno brisanje radionice.");
+        setError("Greška prilikom brisanja prisustva.");
       });
   };
 
-  const filtriraneRadionice = radionice.filter(r =>
-    r.naziv.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  let filtriranaPrisustva = [...prisustva];
+  if (filterRadionica) {
+    filtriranaPrisustva = filtriranaPrisustva.filter(p => p.radionicaNaziv === filterRadionica);
+  }
+  if (filterPolaznik) {
+    filtriranaPrisustva = filtriranaPrisustva.filter(p => p.polaznikImePrezime.toLowerCase().includes(filterPolaznik.toLowerCase()));
+  }
+  if (sortKey) {
+    filtriranaPrisustva.sort((a, b) => a[sortKey].localeCompare(b[sortKey]));
+  }
+
+  const brojPoStatusu = (status) => filtriranaPrisustva.filter(p => p.status === status).length;
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", maxWidth: "600px", margin: "0 auto" }}>
-      <h2>Radionice</h2>
+    <div style={{ fontFamily: "Arial, sans-serif", maxWidth: "700px", margin: "0 auto" }}>
+      <h2>Prisustva</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <input
-          type="text"
-          placeholder="Naziv nove radionice"
-          value={naziv}
-          onChange={e => setNaziv(e.target.value)}
-        />
-        <button onClick={handleAdd}>Dodaj radionicu</button>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+        <select value={polaznikId} onChange={e => setPolaznikId(e.target.value)}>
+          <option value="">Odaberi polaznika</option>
+          {polaznici.map(p => (
+            <option key={p.id} value={p.id}>{p.ime} {p.prezime}</option>
+          ))}
+        </select>
+
+        <select value={radionicaId} onChange={e => setRadionicaId(e.target.value)}>
+          <option value="">Odaberi radionicu</option>
+          {radionice.map(r => (
+            <option key={r.id} value={r.id}>{r.naziv}</option>
+          ))}
+        </select>
+
+        <select value={status} onChange={e => setStatus(e.target.value)}>
+          <option value="PRISUTAN">Prisutno</option>
+          <option value="ODUSTAO">Odustao</option>
+          <option value="IZOSTAO">Izostao</option>
+        </select>
+
+        <button onClick={handleAdd}>Dodaj prisustvo</button>
       </div>
 
-      <div style={{ marginTop: "1rem" }}>
-        <input
-          type="text"
-          placeholder="Pretraži radionice"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-        />
+      <div style={{ marginBottom: "1rem", display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <label>Filtriraj po radionici:
+          <select value={filterRadionica} onChange={e => setFilterRadionica(e.target.value)}>
+            <option value="">Sve</option>
+            {radionice.map(r => (
+              <option key={r.id} value={r.naziv}>{r.naziv}</option>
+            ))}
+          </select>
+        </label>
+
+        <label>Filtriraj po polazniku:
+          <input
+            type="text"
+            value={filterPolaznik}
+            onChange={e => setFilterPolaznik(e.target.value)}
+            placeholder="Unesi ime i/ili prezime"
+          />
+        </label>
+
+        <label>Sortiraj po:
+          <select value={sortKey} onChange={e => setSortKey(e.target.value)}>
+            <option value="">Bez sortiranja</option>
+            <option value="polaznikImePrezime">Polazniku</option>
+            <option value="radionicaNaziv">Radionici</option>
+            <option value="status">Statusu</option>
+          </select>
+        </label>
       </div>
 
-      <ul style={{ marginTop: "1rem" }}>
-        {filtriraneRadionice.map(r => (
-          <li key={r.id}>
-            {r.naziv}
-            <button onClick={() => handleDelete(r.id)} style={{ marginLeft: "1rem" }}>Obriši</button>
+      <ul>
+        {Array.isArray(filtriranaPrisustva) && filtriranaPrisustva.map((p, index) => (
+          <li key={index}>
+            {p.polaznikImePrezime} – {p.radionicaNaziv} ({p.status})
+            <button onClick={() => handleDelete(p.id)} style={{ marginLeft: '1rem' }}>Obriši</button>
           </li>
         ))}
       </ul>
 
-      <p style={{ marginTop: "1rem" }}>Ukupno radionica: {filtriraneRadionice.length}</p>
+      <button onClick={() => setShowStats(!showStats)} style={{ marginTop: "1rem" }}>
+        {showStats ? "Sakrij statistiku" : "Prikaži statistiku"}
+      </button>
+
+      {showStats && (
+        <div style={{ backgroundColor: "#f1f1f1", padding: "1rem", marginTop: "1rem" }}>
+          <p>Ukupno prisustava: {filtriranaPrisustva.length}</p>
+          <p>Prisutno: {brojPoStatusu("PRISUTAN")}</p>
+          <p>Izostalo: {brojPoStatusu("IZOSTAO")}</p>
+          <p>Odustalo: {brojPoStatusu("ODUSTAO")}</p>
+        </div>
+      )}
     </div>
   );
 }
 
-export default Radionice;
+export default Prisustva;
