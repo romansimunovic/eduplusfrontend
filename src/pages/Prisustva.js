@@ -53,3 +53,5 @@ function Prisustva() {
     </div>
   );
 }
+
+export default Prisustva;
