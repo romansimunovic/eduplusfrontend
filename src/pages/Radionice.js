@@ -70,17 +70,19 @@ function Radionice() {
   );
 
   return (
-    <div>
+    <div style={{ fontFamily: "Arial, sans-serif", maxWidth: "600px", margin: "0 auto" }}>
       <h2>Radionice</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <input
-        type="text"
-        placeholder="Naziv nove radionice"
-        value={naziv}
-        onChange={e => setNaziv(e.target.value)}
-      />
-      <button onClick={handleAdd}>Dodaj radionicu</button>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <input
+          type="text"
+          placeholder="Naziv nove radionice"
+          value={naziv}
+          onChange={e => setNaziv(e.target.value)}
+        />
+        <button onClick={handleAdd}>Dodaj radionicu</button>
+      </div>
 
       <div style={{ marginTop: "1rem" }}>
         <input
@@ -91,7 +93,7 @@ function Radionice() {
         />
       </div>
 
-      <ul>
+      <ul style={{ marginTop: "1rem" }}>
         {filtriraneRadionice.map(r => (
           <li key={r.id}>
             {r.naziv}
@@ -99,6 +101,8 @@ function Radionice() {
           </li>
         ))}
       </ul>
+
+      <p style={{ marginTop: "1rem" }}>Ukupno radionica: {filtriraneRadionice.length}</p>
     </div>
   );
 }
