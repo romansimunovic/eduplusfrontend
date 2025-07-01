@@ -29,7 +29,7 @@ function Radionice() {
     fetchRadionice();
   }, []);
 
-  const handleAddOrUpdate = () => {
+  const handleAddOrUpdate = async () => {
     if (!naziv.trim() || !datum) {
       setError("Naziv i datum su obavezni.");
       return;
@@ -40,37 +40,40 @@ function Radionice() {
       ? `${baseUrl}/api/radionice/${editId}`
       : `${baseUrl}/api/radionice`;
 
-    const formattedDate = new Date(datum).toISOString().split('T')[0];
-
-    fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ naziv: naziv.trim(), datum: formattedDate })
-    })
-      .then(res => {
-        if (!res.ok) throw new Error("Greška kod spremanja radionice");
-        return res.json();
-      })
-      .then(() => {
-        fetchRadionice();
-        setNaziv('');
-        setDatum('');
-        setEditId(null);
-        setError(null);
-      })
-      .catch(err => {
-        console.error(err);
-        setError("Neuspješno spremanje radionice.");
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          naziv: naziv.trim(),
+          datum // ovdje je ključ – ISO format već dolazi iz <input type="date" />
+        }),
       });
+
+      console.log("STATUS:", response.status);
+
+      if (!response.ok) {
+        const errMsg = await response.text();
+        throw new Error(`Greška: ${errMsg}`);
+      }
+
+      await response.json();
+      fetchRadionice();
+      setNaziv('');
+      setDatum('');
+      setEditId(null);
+      setError(null);
+    } catch (err) {
+      console.error("Greška kod spremanja radionice:", err);
+      setError("Neuspješno spremanje radionice.");
+    }
   };
 
   const handleDelete = (id) => {
     if (!window.confirm("Jeste li sigurni da želite obrisati ovu radionicu?")) return;
 
     fetch(`${baseUrl}/api/radionice/${id}`, { method: 'DELETE' })
-      .then(() => {
-        setRadionice(radionice.filter(r => r.id !== id));
-      })
+      .then(() => setRadionice(radionice.filter(r => r.id !== id)))
       .catch(err => {
         console.error(err);
         setError("Neuspješno brisanje radionice.");
@@ -84,11 +87,11 @@ function Radionice() {
   };
 
   const handleSort = () => {
-    const sorted = [...radionice].sort((a, b) => {
-      return sortOrder === 'asc'
+    const sorted = [...radionice].sort((a, b) =>
+      sortOrder === 'asc'
         ? a.naziv.localeCompare(b.naziv)
-        : b.naziv.localeCompare(a.naziv);
-    });
+        : b.naziv.localeCompare(a.naziv)
+    );
     setRadionice(sorted);
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
@@ -96,6 +99,11 @@ function Radionice() {
   const filtriraneRadionice = radionice.filter(r =>
     r.naziv.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const formatirajDatum = (isoDatum) => {
+    const [yyyy, mm, dd] = isoDatum.split("-");
+    return `${dd}.${mm}.${yyyy}.`;
+  };
 
   return (
     <div className="container">
@@ -134,7 +142,7 @@ function Radionice() {
       <ul>
         {filtriraneRadionice.map(r => (
           <li key={r.id}>
-            <Link to={`/radionica/${r.id}`}><strong>{r.naziv}</strong></Link> – {r.datum}
+            <Link to={`/radionica/${r.id}`}><strong>{r.naziv}</strong></Link> – {formatirajDatum(r.datum)}
             <div>
               <button className="edit" onClick={() => handleEdit(r)}>Uredi</button>
               <button className="delete" onClick={() => handleDelete(r.id)}>Obriši</button>
