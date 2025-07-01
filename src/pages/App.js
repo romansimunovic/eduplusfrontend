@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Radionice from './Radionice';
 import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
-import './pages/App.css'; // obavezno da CSS stilovi rade
+import './App.css';
 
 function App() {
   return (
