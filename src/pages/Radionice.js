@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import './App.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
 
@@ -91,11 +92,11 @@ function Radionice() {
   );
 
   return (
-    <div style={{ fontFamily: "Arial", maxWidth: "600px", margin: "0 auto" }}>
+    <div className="container">
       <h2>Radionice</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
+      <div className="flex-row">
         <input
           type="text"
           placeholder="Naziv radionice"
@@ -107,14 +108,14 @@ function Radionice() {
         </button>
       </div>
 
-      <div style={{ marginBottom: "1rem" }}>
+      <div className="flex-row">
         <input
           type="text"
           placeholder="Pretraži radionice"
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
-        <button onClick={handleSort} style={{ marginLeft: '1rem' }}>
+        <button onClick={handleSort}>
           Sortiraj {sortOrder === 'asc' ? '⏶' : '⏷'}
         </button>
       </div>
@@ -123,8 +124,10 @@ function Radionice() {
         {filtriraneRadionice.map(r => (
           <li key={r.id}>
             {r.naziv}
-            <button onClick={() => handleEdit(r)} style={{ marginLeft: "1rem" }}>Uredi</button>
-            <button onClick={() => handleDelete(r.id)} style={{ marginLeft: "0.5rem" }}>Obriši</button>
+            <div>
+              <button className="edit" onClick={() => handleEdit(r)}>Uredi</button>
+              <button className="delete" onClick={() => handleDelete(r.id)}>Obriši</button>
+            </div>
           </li>
         ))}
       </ul>
