@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import '.pages/App.css';
+import './App.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
 
