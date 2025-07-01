@@ -45,7 +45,7 @@ function Radionice() {
     fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ naziv: naziv.trim(), datum: formattedDate })
+    body: JSON.stringify({ naziv: naziv.trim(), datum })
     })
       .then(res => {
         if (!res.ok) throw new Error("Greška kod spremanja radionice");
