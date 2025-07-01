@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Radionice from './Radionice';
 import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
-import RadionicaDetalji from './components/RadionicaDetalji'; // ispravno
+import RadionicaDetalji from './RadionicaDetalji'; 
+
 import './App.css';
 
 function App() {
@@ -26,7 +27,7 @@ function App() {
         <Route path="/" element={<Radionice />} />
         <Route path="/polaznici" element={<Polaznici />} />
         <Route path="/prisustva" element={<Prisustva />} />
-        <Route path="/radionica/:id" element={<RadionicaDetalji />} /> {/* točna ruta */}
+        <Route path="/radionice/:id" element={<RadionicaDetalji />} /> {/* ✅ */}
       </Routes>
     </Router>
   );
