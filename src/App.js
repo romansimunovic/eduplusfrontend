@@ -3,17 +3,24 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Radionice from './pages/Radionice';
 import Polaznici from './pages/Polaznici';
 import Prisustva from './pages/Prisustva';
+import './App.css'; // obavezno da CSS stilovi rade
 
 function App() {
   return (
     <Router>
+      <div className="header-banner">
+        <h1>EdukatorPlus</h1>
+        <p>Digitalna platforma za evidenciju edukacija, polaznika i prisustva</p>
+      </div>
+
       <nav>
-        <ul>
+        <ul className="nav-links">
           <li><Link to="/">Radionice</Link></li>
           <li><Link to="/polaznici">Polaznici</Link></li>
           <li><Link to="/prisustva">Prisustva</Link></li>
         </ul>
       </nav>
+
       <Routes>
         <Route path="/" element={<Radionice />} />
         <Route path="/polaznici" element={<Polaznici />} />
