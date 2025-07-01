@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import './App.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
@@ -6,6 +7,7 @@ const baseUrl = "https://eduplusbackend.onrender.com";
 function Radionice() {
   const [radionice, setRadionice] = useState([]);
   const [naziv, setNaziv] = useState('');
+  const [datum, setDatum] = useState('');
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
@@ -28,8 +30,8 @@ function Radionice() {
   }, []);
 
   const handleAddOrUpdate = () => {
-    if (!naziv.trim()) {
-      setError("Naziv radionice ne smije biti prazan.");
+    if (!naziv.trim() || !datum) {
+      setError("Naziv i datum su obavezni.");
       return;
     }
 
@@ -39,7 +41,7 @@ function Radionice() {
     fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ naziv: naziv.trim() })
+      body: JSON.stringify({ naziv: naziv.trim(), datum })
     })
       .then(res => {
         if (!res.ok) throw new Error("Greška kod spremanja radionice");
@@ -48,6 +50,7 @@ function Radionice() {
       .then(() => {
         fetchRadionice();
         setNaziv('');
+        setDatum('');
         setEditId(null);
         setError(null);
       })
@@ -60,9 +63,7 @@ function Radionice() {
   const handleDelete = (id) => {
     if (!window.confirm("Jeste li sigurni da želite obrisati ovu radionicu?")) return;
 
-    fetch(`${baseUrl}/api/radionice/${id}`, {
-      method: 'DELETE'
-    })
+    fetch(`${baseUrl}/api/radionice/${id}`, { method: 'DELETE' })
       .then(() => {
         setRadionice(radionice.filter(r => r.id !== id));
       })
@@ -74,6 +75,7 @@ function Radionice() {
 
   const handleEdit = (radionica) => {
     setNaziv(radionica.naziv);
+    setDatum(radionica.datum);
     setEditId(radionica.id);
   };
 
@@ -94,7 +96,7 @@ function Radionice() {
   return (
     <div className="container">
       <h2>Radionice</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="error">{error}</p>}
 
       <div className="flex-row">
         <input
@@ -102,6 +104,11 @@ function Radionice() {
           placeholder="Naziv radionice"
           value={naziv}
           onChange={e => setNaziv(e.target.value)}
+        />
+        <input
+          type="date"
+          value={datum}
+          onChange={e => setDatum(e.target.value)}
         />
         <button onClick={handleAddOrUpdate}>
           {editId ? "Spremi promjene" : "Dodaj radionicu"}
@@ -123,7 +130,7 @@ function Radionice() {
       <ul>
         {filtriraneRadionice.map(r => (
           <li key={r.id}>
-            {r.naziv}
+            <Link to={`/radionica/${r.id}`}><strong>{r.naziv}</strong></Link> – {r.datum}
             <div>
               <button className="edit" onClick={() => handleEdit(r)}>Uredi</button>
               <button className="delete" onClick={() => handleDelete(r.id)}>Obriši</button>
