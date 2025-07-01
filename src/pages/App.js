@@ -4,7 +4,7 @@ import Radionice from './Radionice';
 import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
 import RadionicaDetalji from './RadionicaDetalji';
-import Dashboard from './Dashboard'; // 👈 Dodano
+import Dashboard from './Dashboard'; 
 
 import './App.css';
 
