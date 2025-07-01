@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import '../pages/App.css'; // stilovi
+import '../pages/App.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
 
@@ -46,6 +46,7 @@ function RadionicaDetalji() {
         <>
           <h2>{radionica.naziv}</h2>
           <p><strong>ID radionice:</strong> {radionica.id}</p>
+          <p><strong>Datum održavanja:</strong> {radionica.datum}</p>
 
           <div className="stat-box">
             <p><strong>Ukupno prijavljenih:</strong> {prisustva.length}</p>
