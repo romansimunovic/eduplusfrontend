@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import './App.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
 
@@ -110,11 +111,11 @@ function Prisustva() {
     filtriranaPrisustva.filter(p => p.status === status).length;
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", maxWidth: "800px", margin: "0 auto" }}>
+    <div className="container">
       <h2>Prisustva</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+      <div className="flex-row">
         <select value={polaznikId} onChange={e => setPolaznikId(e.target.value)}>
           <option value="">Odaberi polaznika</option>
           {polaznici.map(p => (
@@ -140,7 +141,7 @@ function Prisustva() {
         </button>
       </div>
 
-      <div style={{ marginBottom: "1rem" }}>
+      <div className="flex-row">
         <label>Filtriraj po radionici: </label>
         <select value={filterRadionica} onChange={e => setFilterRadionica(e.target.value)}>
           <option value="">Sve</option>
@@ -149,7 +150,7 @@ function Prisustva() {
           ))}
         </select>
 
-        <label style={{ marginLeft: "1rem" }}>Sortiraj po: </label>
+        <label>Sortiraj po: </label>
         <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
           <option value="">Bez sortiranja</option>
           <option value="polaznikImePrezime">Polaznik</option>
@@ -162,8 +163,10 @@ function Prisustva() {
         {sortiranaPrisustva.map((p, index) => (
           <li key={index}>
             {p.polaznikImePrezime} – {p.radionicaNaziv} ({p.status})
-            <button onClick={() => handleEdit(p)} style={{ marginLeft: '0.5rem' }}>Uredi</button>
-            <button onClick={() => handleDelete(p.id)} style={{ marginLeft: '0.5rem' }}>Obriši</button>
+            <div>
+              <button className="edit" onClick={() => handleEdit(p)}>Uredi</button>
+              <button className="delete" onClick={() => handleDelete(p.id)}>Obriši</button>
+            </div>
           </li>
         ))}
       </ul>
@@ -173,7 +176,7 @@ function Prisustva() {
       </button>
 
       {showStats && (
-        <div style={{ backgroundColor: "#f1f1f1", padding: "1rem", marginTop: "1rem" }}>
+        <div className="stat-box">
           <p>Ukupno prisustava: {filtriranaPrisustva.length}</p>
           <p>Prisutno: {brojPoStatusu("PRISUTAN")}</p>
           <p>Izostalo: {brojPoStatusu("IZOSTAO")}</p>
