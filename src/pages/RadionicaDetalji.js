@@ -9,6 +9,19 @@ function RadionicaDetalji() {
   const [radionica, setRadionica] = useState(null);
   const [prisustva, setPrisustva] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const formatirajDatum = (datumString) => {
+    try {
+      return new Date(datumString).toLocaleDateString("hr-HR", {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return datumString;
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,15 +31,20 @@ function RadionicaDetalji() {
           fetch(`${baseUrl}/api/prisustva/view`)
         ]);
 
+        if (!radionicaRes.ok || !prisustvaRes.ok) {
+          throw new Error("Neuspješno dohvaćanje podataka");
+        }
+
         const radionicaData = await radionicaRes.json();
         const prisustvaData = await prisustvaRes.json();
 
         setRadionica(radionicaData);
-        const filtrirana = prisustvaData.filter(p => p.radionicaId === parseInt(id));
-        setPrisustva(filtrirana);
+        setPrisustva(prisustvaData.filter(p => p.radionicaId === parseInt(id)));
       } catch (err) {
         console.error(err);
         setError("Greška kod dohvaćanja podataka o radionici.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -36,9 +54,11 @@ function RadionicaDetalji() {
   const brojPoStatusu = (status) =>
     prisustva.filter(p => p.status === status).length;
 
+  if (loading) return <p>Učitavanje...</p>;
+
   return (
     <div className="container">
-      <Link to="/" style={{ display: 'block', marginBottom: '1rem' }}>← Natrag na popis radionica</Link>
+      <Link to="/" className="back-link">← Natrag na popis radionica</Link>
 
       {error && <p className="error">{error}</p>}
 
@@ -46,32 +66,32 @@ function RadionicaDetalji() {
         <>
           <h2>{radionica.naziv}</h2>
           <p><strong>ID radionice:</strong> {radionica.id}</p>
-          <p><strong>Datum održavanja:</strong> {radionica.datum}</p>
+          <p><strong>Datum održavanja:</strong> {formatirajDatum(radionica.datum)}</p>
 
           <div className="stat-box">
             <p><strong>Ukupno prijavljenih:</strong> {prisustva.length}</p>
-            <p>Prisutni: {brojPoStatusu("PRISUTAN")}</p>
-            <p>Izostali: {brojPoStatusu("IZOSTAO")}</p>
-            <p>Odustali: {brojPoStatusu("ODUSTAO")}</p>
+            <p><strong>Prisutni:</strong> {brojPoStatusu("PRISUTAN")}</p>
+            <p><strong>Izostali:</strong> {brojPoStatusu("IZOSTAO")}</p>
+            <p><strong>Odustali:</strong> {brojPoStatusu("ODUSTAO")}</p>
           </div>
 
           <hr />
 
-          <h3>Polaznici</h3>
+          <h3>Popis polaznika</h3>
           {prisustva.length === 0 ? (
             <p>Nema prijavljenih polaznika za ovu radionicu.</p>
           ) : (
             <ul>
               {prisustva.map((p, index) => (
                 <li key={index}>
-                  {p.polaznikImePrezime} – <strong>{p.status}</strong>
+                  <strong>{p.polaznikImePrezime}</strong> — <span>{p.status}</span>
                 </li>
               ))}
             </ul>
           )}
         </>
       ) : (
-        <p>Učitavanje...</p>
+        <p>Radionica nije pronađena.</p>
       )}
     </div>
   );
