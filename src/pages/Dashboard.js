@@ -1,38 +1,28 @@
 import React, { useEffect, useState } from 'react';
 
-const baseUrl = "https://eduplusbackend.onrender.com";
-
 function Dashboard() {
-  const [brojRadionica, setBrojRadionica] = useState(0);
-  const [brojPolaznika, setBrojPolaznika] = useState(0);
-  const [brojPrisustava, setBrojPrisustava] = useState(0);
+  const [radionice, setRadionice] = useState([]);
+  const [polaznici, setPolaznici] = useState([]);
+  const [prisustva, setPrisustva] = useState([]);
+
+  const baseUrl = "https://eduplusbackend.onrender.com";
 
   useEffect(() => {
-    const fetchData = async () => {
-      const [radRes, polRes, priRes] = await Promise.all([
-        fetch(`${baseUrl}/api/radionice`),
-        fetch(`${baseUrl}/api/polaznici`),
-        fetch(`${baseUrl}/api/prisustva/view`)
-      ]);
-      const radionice = await radRes.json();
-      const polaznici = await polRes.json();
-      const prisustva = await priRes.json();
-
-      setBrojRadionica(radionice.length);
-      setBrojPolaznika(polaznici.length);
-      setBrojPrisustava(prisustva.length);
-    };
-
-    fetchData();
+    fetch(`${baseUrl}/api/radionice`).then(res => res.json()).then(setRadionice);
+    fetch(`${baseUrl}/api/polaznici`).then(res => res.json()).then(setPolaznici);
+    fetch(`${baseUrl}/api/prisustva`).then(res => res.json()).then(setPrisustva);
   }, []);
 
   return (
     <div className="container">
-      <h2>Dashboard</h2>
-      <div className="flex-row">
-        <div className="stat-box"><strong>Radionice:</strong> {brojRadionica}</div>
-        <div className="stat-box"><strong>Polaznici:</strong> {brojPolaznika}</div>
-        <div className="stat-box"><strong>Prisustva:</strong> {brojPrisustava}</div>
+      <h2>📊 Pregled trenutnog stanja u sustavu</h2>
+      <p style={{ textAlign: 'center', marginBottom: '2rem', color: '#555' }}>
+        Broj aktivnih radionica, registriranih polaznika i evidentiranih prisustava.
+      </p>
+      <div className="flex-row" style={{ justifyContent: 'center' }}>
+        <div className="stat-box"><strong>Radionice:</strong> {radionice.length}</div>
+        <div className="stat-box"><strong>Polaznici:</strong> {polaznici.length}</div>
+        <div className="stat-box"><strong>Prisustva:</strong> {prisustva.length}</div>
       </div>
     </div>
   );
