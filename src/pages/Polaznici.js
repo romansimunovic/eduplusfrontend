@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import './App.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
 
@@ -104,54 +105,55 @@ function Polaznici() {
   );
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", maxWidth: "700px", margin: "0 auto" }}>
+    <div className="polaznici-container">
       <h2>Polaznici</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="error">{error}</p>}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+      <div className="form">
         <input value={ime} onChange={e => setIme(e.target.value)} placeholder="Ime" />
         <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
         <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
         <input value={godinaRođenja} onChange={e => setGodinaRođenja(e.target.value)} placeholder="Godina rođenja" type="number" />
-        <button onClick={handleAddOrUpdate}>{editId ? "Spremi izmjene" : "Dodaj"}</button>
+        <button onClick={handleAddOrUpdate}>
+          {editId ? "Spremi izmjene" : "Dodaj"}
+        </button>
       </div>
 
-      <div style={{ marginTop: "1rem" }}>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          placeholder="Pretraži polaznike po imenu"
-        />
-      </div>
+      <input
+        className="search"
+        type="text"
+        value={searchTerm}
+        onChange={e => setSearchTerm(e.target.value)}
+        placeholder="Pretraži polaznike po imenu"
+      />
 
-      <div style={{ marginTop: "1rem" }}>
-        <select onChange={(e) => handleSort(e.target.value)} value={sortKey}>
-          <option value="">Sortiraj</option>
-          <option value="ime">Po imenu</option>
-          <option value="prezime">Po prezimenu</option>
-        </select>
-      </div>
+      <select className="sort" onChange={(e) => handleSort(e.target.value)} value={sortKey}>
+        <option value="">Sortiraj</option>
+        <option value="ime">Po imenu</option>
+        <option value="prezime">Po prezimenu</option>
+      </select>
 
-      <ul style={{ marginTop: "1rem" }}>
+      <ul className="list">
         {filtriraniPolaznici.map(p => (
           <li key={p.id}>
-            {p.ime} {p.prezime} ({p.email}, {p.godinaRođenja})
-            <button onClick={() => handleEdit(p)} style={{ marginLeft: '0.5rem' }}>Uredi</button>
-            <button onClick={() => handleDelete(p.id)} style={{ marginLeft: '0.5rem' }}>Obriši</button>
+            <span>{p.ime} {p.prezime} ({p.email}, {p.godinaRođenja})</span>
+            <div>
+              <button onClick={() => handleEdit(p)}>Uredi</button>
+              <button onClick={() => handleDelete(p.id)} className="delete">Obriši</button>
+            </div>
           </li>
         ))}
       </ul>
 
-      <p style={{ marginTop: "1rem" }}>Ukupno polaznika: {filtriraniPolaznici.length}</p>
-      <button onClick={() => setShowStats(!showStats)} style={{ marginTop: "0.5rem" }}>
+      <p className="total">Ukupno: {filtriraniPolaznici.length} polaznika</p>
+      <button onClick={() => setShowStats(!showStats)}>
         {showStats ? "Sakrij statistiku" : "Prikaži statistiku"}
       </button>
 
       {showStats && (
-        <div style={{ marginTop: "1rem", backgroundColor: "#f1f1f1", padding: "1rem" }}>
-          <p>Broj polaznika rođenih prije 2000.: {polaznici.filter(p => p.godinaRođenja < 2000).length}</p>
-          <p>Broj polaznika rođenih od 2000. nadalje: {polaznici.filter(p => p.godinaRođenja >= 2000).length}</p>
+        <div className="stats">
+          <p>Rođeni prije 2000.: {polaznici.filter(p => p.godinaRođenja < 2000).length}</p>
+          <p>Rođeni 2000. i kasnije: {polaznici.filter(p => p.godinaRođenja >= 2000).length}</p>
         </div>
       )}
     </div>
