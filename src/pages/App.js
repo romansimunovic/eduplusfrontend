@@ -18,7 +18,7 @@ function App() {
 
       <nav>
         <ul className="nav-links">
-          <li><Link to="/">Dashboard</Link></li>
+          <li><Link to="/">Početna</Link></li> {/* 🟢 Ovdje promjena */}
           <li><Link to="/radionice">Radionice</Link></li>
           <li><Link to="/polaznici">Polaznici</Link></li>
           <li><Link to="/prisustva">Prisustva</Link></li>
@@ -26,7 +26,7 @@ function App() {
       </nav>
 
       <Routes>
-        <Route path="/" element={<Dashboard />} /> {/* 👈 Početna stranica */}
+        <Route path="/" element={<Dashboard />} />
         <Route path="/radionice" element={<Radionice />} />
         <Route path="/polaznici" element={<Polaznici />} />
         <Route path="/prisustva" element={<Prisustva />} />
