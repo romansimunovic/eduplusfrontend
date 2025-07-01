@@ -11,18 +11,6 @@ function RadionicaDetalji() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const formatirajDatum = (datumString) => {
-    try {
-      return new Date(datumString).toLocaleDateString("hr-HR", {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
-    } catch {
-      return datumString;
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -54,6 +42,16 @@ function RadionicaDetalji() {
   const brojPoStatusu = (status) =>
     prisustva.filter(p => p.status === status).length;
 
+  const formatirajDatum = (datum) => {
+    if (!datum) return '';
+    const d = new Date(datum);
+    return d.toLocaleDateString("hr-HR", {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
   if (loading) return <p>Učitavanje...</p>;
 
   return (
@@ -84,7 +82,7 @@ function RadionicaDetalji() {
             <ul>
               {prisustva.map((p, index) => (
                 <li key={index}>
-                  <strong>{p.polaznikImePrezime}</strong> — <span>{p.status}</span>
+                  <strong>{p.polaznikImePrezime}</strong> — {p.status.toLowerCase()}
                 </li>
               ))}
             </ul>
