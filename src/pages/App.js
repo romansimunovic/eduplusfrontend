@@ -18,7 +18,7 @@ function App() {
 
       <nav>
         <ul className="nav-links">
-          <li><Link to="/">Početna</Link></li> {/* 🟢 Ovdje promjena */}
+          <li><Link to="/">Početna</Link></li> 
           <li><Link to="/radionice">Radionice</Link></li>
           <li><Link to="/polaznici">Polaznici</Link></li>
           <li><Link to="/prisustva">Prisustva</Link></li>
