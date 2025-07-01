@@ -42,14 +42,11 @@ function Radionice() {
 
     const formattedDate = new Date(datum).toISOString().split('T')[0];
 
-const formattedDate = new Date(datum).toISOString().split('T')[0];
-
-fetch(url, {
-  method,
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ naziv: naziv.trim(), datum: formattedDate })
-});
-
+    fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ naziv: naziv.trim(), datum: formattedDate })
+    })
       .then(res => {
         if (!res.ok) throw new Error("Greška kod spremanja radionice");
         return res.json();
