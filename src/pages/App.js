@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Radionice from './Radionice';
 import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
-import RadionicaDetalji from './RadionicaDetalji'; 
+import RadionicaDetalji from './RadionicaDetalji';
+import Dashboard from './Dashboard'; // 👈 Dodano
 
 import './App.css';
 
@@ -17,17 +18,19 @@ function App() {
 
       <nav>
         <ul className="nav-links">
-          <li><Link to="/">Radionice</Link></li>
+          <li><Link to="/">Dashboard</Link></li>
+          <li><Link to="/radionice">Radionice</Link></li>
           <li><Link to="/polaznici">Polaznici</Link></li>
           <li><Link to="/prisustva">Prisustva</Link></li>
         </ul>
       </nav>
 
       <Routes>
-        <Route path="/" element={<Radionice />} />
+        <Route path="/" element={<Dashboard />} /> {/* 👈 Početna stranica */}
+        <Route path="/radionice" element={<Radionice />} />
         <Route path="/polaznici" element={<Polaznici />} />
         <Route path="/prisustva" element={<Prisustva />} />
-        <Route path="/radionice/:id" element={<RadionicaDetalji />} /> {/* ✅ */}
+        <Route path="/radionice/:id" element={<RadionicaDetalji />} />
       </Routes>
     </Router>
   );
