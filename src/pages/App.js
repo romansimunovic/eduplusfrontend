@@ -5,15 +5,12 @@ import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
 import RadionicaDetalji from './RadionicaDetalji';
 import Dashboard from './Dashboard';
-import DarkModeToggle from './DarkModeToggle'; 
 
 import './App.css';
 
 function App() {
   return (
     <Router>
-      <DarkModeToggle /> {/* ⬅️ pozicionirano u gornji desni kut */}
-
       <div className="header-banner">
         <h1>EdukatorPlus</h1>
         <p>Digitalna platforma za evidenciju edukacija, polaznika i prisustva</p>
