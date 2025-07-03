@@ -33,6 +33,72 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* DARK MODE */
+body.dark-mode {
+  background-color: #1e1e2f;
+  color: #e0e0e0;
+}
+
+body.dark-mode .container {
+  background-color: #2c2c3e;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode button {
+  background-color: #3a3a50;
+  color: #ffffff;
+  border-color: #555;
+}
+
+body.dark-mode input:focus,
+body.dark-mode select:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+}
+
+body.dark-mode .stat-box {
+  background-color: #383850;
+  border-color: #555;
+}
+
+body.dark-mode .nav-links li a {
+  color: #e0e0e0;
+}
+
+body.dark-mode .nav-links li a:hover {
+  color: #90c2ff;
+}
+
+body.dark-mode .nav-links li a.active {
+  color: #90c2ff;
+  border-bottom: 2px solid #90c2ff;
+}
+
+body.dark-mode .header-banner {
+  background: linear-gradient(to right, #33335c, #1e1e3f);
+}
+
+body.dark-mode li {
+  background-color: #2a2a3a;
+  border-color: #444;
+  box-shadow: none;
+}
+
+body.dark-mode li:hover {
+  background: #383850;
+}
+
+body.dark-mode button.delete {
+  background-color: #ff6b6b;
+}
+
+body.dark-mode button.edit {
+  background-color: #5aaaff;
+}
+
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
