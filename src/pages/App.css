@@ -50,9 +50,14 @@ select:focus {
 input[type="date"] {
   appearance: none;
   -webkit-appearance: none;
+  width: 100%;
+  padding: 0.7rem 1rem;
   background-color: #ffffff;
-  padding-right: 0.6rem;
   color: #2d3e50;
+  border: 1px solid #cbd6e2;
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-size: 1rem;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
