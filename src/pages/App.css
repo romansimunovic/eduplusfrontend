@@ -46,7 +46,7 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
 }
 
-/* DATUM PICKER - MOBILNA PODRŠKA */
+/* DATUM PICKER */
 input[type="date"] {
   appearance: none;
   -webkit-appearance: none;
@@ -218,65 +218,4 @@ nav {
     align-items: center;
     gap: 1rem;
   }
-
-  /* DARK MODE PODRŠKA */
-body.dark-mode {
-  background-color: #1e1e2f;
-  color: #e0e0e0;
-}
-
-body.dark-mode .container {
-  background-color: #2c2c3e;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-}
-
-body.dark-mode input,
-body.dark-mode select,
-body.dark-mode button {
-  background-color: #3a3a50;
-  color: #ffffff;
-  border-color: #555;
-}
-
-body.dark-mode input:focus,
-body.dark-mode select:focus {
-  border-color: #4a90e2;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
-}
-
-body.dark-mode .stat-box {
-  background-color: #383850;
-  border-color: #555;
-}
-
-body.dark-mode .header-banner {
-  background: linear-gradient(to right, #33335c, #1e1e3f);
-}
-
-body.dark-mode li {
-  background-color: #2a2a3a;
-  border-color: #444;
-}
-
-body.dark-mode li:hover {
-  background: #383850;
-}
-
-body.dark-mode nav {
-  background: #2e2e44;
-}
-
-body.dark-mode .nav-links li a {
-  color: #e0e0e0;
-}
-
-body.dark-mode .nav-links li a:hover {
-  color: #90c2ff;
-}
-
-body.dark-mode .nav-links li a.active {
-  color: #90c2ff;
-  border-bottom: 2px solid #90c2ff;
-}
-
 }
