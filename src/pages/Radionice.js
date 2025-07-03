@@ -46,11 +46,9 @@ function Radionice() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           naziv: naziv.trim(),
-          datum // ovdje je ključ – ISO format već dolazi iz <input type="date" />
+          datum: datum
         }),
       });
-
-      console.log("STATUS:", response.status);
 
       if (!response.ok) {
         const errMsg = await response.text();
@@ -142,7 +140,7 @@ function Radionice() {
       <ul>
         {filtriraneRadionice.map(r => (
           <li key={r.id}>
-            <Link to={`/radionica/${r.id}`}><strong>{r.naziv}</strong></Link> – {formatirajDatum(r.datum)}
+            <Link to={`/radionice/${r.id}`}><strong>{r.naziv}</strong></Link> – {formatirajDatum(r.datum)}
             <div>
               <button className="edit" onClick={() => handleEdit(r)}>Uredi</button>
               <button className="delete" onClick={() => handleDelete(r.id)}>Obriši</button>
