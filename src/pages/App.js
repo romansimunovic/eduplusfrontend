@@ -4,13 +4,16 @@ import Radionice from './Radionice';
 import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
 import RadionicaDetalji from './RadionicaDetalji';
-import Dashboard from './Dashboard'; 
+import Dashboard from './Dashboard';
+import DarkModeToggle from './components/DarkModeToggle'; // ⬅️ novo dodano
 
 import './App.css';
 
 function App() {
   return (
     <Router>
+      <DarkModeToggle /> {/* ⬅️ pozicionirano u gornji desni kut */}
+
       <div className="header-banner">
         <h1>EdukatorPlus</h1>
         <p>Digitalna platforma za evidenciju edukacija, polaznika i prisustva</p>
@@ -18,7 +21,7 @@ function App() {
 
       <nav>
         <ul className="nav-links">
-          <li><Link to="/">Početna</Link></li> 
+          <li><Link to="/">Početna</Link></li>
           <li><Link to="/radionice">Radionice</Link></li>
           <li><Link to="/polaznici">Polaznici</Link></li>
           <li><Link to="/prisustva">Prisustva</Link></li>
