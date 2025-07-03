@@ -1,26 +1,27 @@
 /* GLOBALNI STILOVI */
 body {
-  background-color: #f4f6f8;
+  background-color: #f0f4f8;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 2rem;
-  color: #2c3e50;
+  color: #2d3e50;
 }
 
 h2 {
   text-align: center;
-  color: #1e2a38;
+  color: #2d3e50;
   margin-bottom: 1.5rem;
-  font-size: 1.75rem;
+  font-size: 1.85rem;
+  font-weight: 600;
 }
 
 .container {
   max-width: 900px;
   margin: 0 auto;
-  background: white;
+  background: #ffffff;
   padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
 }
 
 /* INPUTI I FORME */
@@ -28,62 +29,69 @@ input,
 select,
 button {
   font-size: 1rem;
-  padding: 0.6rem 0.9rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  border: 1px solid #cbd6e2;
+  border-radius: 10px;
   outline: none;
   width: 100%;
-  max-width: 300px;
+  max-width: 320px;
   box-sizing: border-box;
-  transition: border-color 0.2s ease;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
 }
 
 input:focus,
 select:focus {
-  border-color: #2ecc71;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
 }
 
 /* DATUM PICKER - MOBILNA PODRŠKA */
 input[type="date"] {
   appearance: none;
   -webkit-appearance: none;
-  background-color: #fff;
+  background-color: #ffffff;
   padding-right: 0.6rem;
-  color: #2c3e50;
+  color: #2d3e50;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(40%);
+  filter: invert(50%);
   cursor: pointer;
 }
 
 /* GUMBI */
 button {
-  background-color: #2ecc71;
+  background-color: #4a90e2;
   color: white;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 button:hover {
-  background-color: #27ae60;
+  background-color: #357abd;
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 button.delete {
-  background-color: #e74c3c;
+  background-color: #e57373;
 }
 
 button.delete:hover {
-  background-color: #c0392b;
+  background-color: #d32f2f;
 }
 
 button.edit {
-  background-color: #3498db;
+  background-color: #64b5f6;
 }
 
 button.edit:hover {
-  background-color: #2980b9;
+  background-color: #42a5f5;
 }
 
 /* LISTE */
@@ -94,69 +102,73 @@ ul {
 
 li {
   background: #ffffff;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e3e8f0;
   padding: 1rem;
-  border-radius: 10px;
-  margin-bottom: 0.75rem;
+  border-radius: 12px;
+  margin-bottom: 0.85rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  transition: background 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 li:hover {
-  background: #f0fdf4;
+  background: #e8f1fb;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
 }
 
 /* LAYOUT */
 .flex-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
 }
 
 /* STATISTIKA */
 .stat-box {
-  background-color: #f9f9f9;
+  background-color: #f5f9ff;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-top: 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid #dbe5f1;
+  font-weight: 500;
 }
 
 /* ZAGLAVLJE */
 .header-banner {
-  background-color: #2ecc71;
+  background: linear-gradient(to right, #4a90e2, #357abd);
   color: white;
-  padding: 1.2rem;
+  padding: 1.5rem;
   text-align: center;
-  border-radius: 12px;
+  border-radius: 16px;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
 .header-banner h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 700;
 }
 
 .header-banner p {
-  margin-top: 0.3rem;
-  font-size: 1rem;
+  margin-top: 0.5rem;
+  font-size: 1.05rem;
   font-weight: 400;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 /* NAVIGACIJA */
 nav {
   background: #ffffff;
   padding: 1rem 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   justify-content: center;
+  border-radius: 12px;
+  margin-bottom: 1rem;
 }
 
 .nav-links {
@@ -169,19 +181,20 @@ nav {
 
 .nav-links li a {
   text-decoration: none;
-  color: #2c3e50;
+  color: #2d3e50;
   font-weight: 600;
   font-size: 1rem;
-  transition: color 0.3s;
+  padding-bottom: 4px;
+  transition: color 0.3s, border-bottom 0.3s;
 }
 
 .nav-links li a:hover {
-  color: #27ae60;
+  color: #4a90e2;
 }
 
 .nav-links li a.active {
-  color: #2ecc71;
-  border-bottom: 2px solid #2ecc71;
+  color: #4a90e2;
+  border-bottom: 2px solid #4a90e2;
 }
 
 /* RESPONSIVNOST */
