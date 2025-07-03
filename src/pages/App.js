@@ -5,7 +5,7 @@ import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
 import RadionicaDetalji from './RadionicaDetalji';
 import Dashboard from './Dashboard';
-import DarkModeToggle from './components/DarkModeToggle'; // ⬅️ novo dodano
+import DarkModeToggle from './DarkModeToggle'; 
 
 import './App.css';
 
