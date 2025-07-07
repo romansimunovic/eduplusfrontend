@@ -67,16 +67,21 @@ function Radionice() {
     }
   };
 
-  const handleDelete = (id) => {
-    if (!window.confirm("Jeste li sigurni da želite obrisati ovu radionicu?")) return;
+const handleDelete = async (id) => {
+  if (!window.confirm("Jeste li sigurni da želite obrisati ovu radionicu?")) return;
+  try {
+    const res = await fetch(`${baseUrl}/api/radionice/${id}`, {
+      method: 'DELETE',
+    });
 
-    fetch(`${baseUrl}/api/radionice/${id}`, { method: 'DELETE' })
-      .then(() => setRadionice(radionice.filter(r => r.id !== id)))
-      .catch(err => {
-        console.error(err);
-        setError("Neuspješno brisanje radionice.");
-      });
-  };
+    if (!res.ok) throw new Error("Brisanje nije uspjelo.");
+
+    fetchRadionice(); // ponovno učitavanje liste
+  } catch (err) {
+    console.error("Greška kod brisanja:", err);
+    setError("Neuspješno brisanje radionice.");
+  }
+};
 
   const handleEdit = (radionica) => {
     setNaziv(radionica.naziv);
