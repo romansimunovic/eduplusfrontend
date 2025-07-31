@@ -109,24 +109,38 @@ function Home() {
           <h3>Popis polaznika i polaznica</h3>
           {selectedRadionica ? (
             <ul style={{ listStyle: 'none', padding: 0 }}>
-              {polaznici.map(p => {
-                const status = getStatusForPolaznik(p, selectedRadionica);
-                return (
-                  <li
-                    key={p.id}
-                    onClick={() => handleToggleStatus(p)}
-                    style={{
-                      padding: '10px',
-                      marginBottom: '5px',
-                      backgroundColor: getColor(status),
-                      cursor: 'pointer',
-                      borderRadius: '5px'
-                    }}
-                  >
-                    {p.ime} {p.prezime}
-                  </li>
-                );
-              })}
+          {polaznici.map(p => {
+  const status = getStatusForPolaznik(p, selectedRadionica);
+
+  const statusLabel = {
+    NEPOZNATO: 'Ne zna se',
+    PRISUTAN: 'Prisutan',
+    IZOSTAO: 'Izostao'
+  }[status];
+
+  return (
+    <li
+      key={p.id}
+      onClick={() => handleToggleStatus(p)}
+      style={{
+        padding: '10px',
+        marginBottom: '5px',
+        backgroundColor: getColor(status),
+        cursor: 'pointer',
+        borderRadius: '5px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        fontWeight: '500'
+      }}
+    >
+      <span>{p.ime} {p.prezime}</span>
+      <span style={{ fontSize: '0.9rem', fontStyle: 'italic', color: '#555' }}>
+        ({statusLabel})
+      </span>
+    </li>
+  );
+})}
             </ul>
           ) : (
             <p>Odaberite radionicu za prikaz polaznika.</p>
