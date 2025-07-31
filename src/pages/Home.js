@@ -25,7 +25,7 @@ function Home() {
         setRadionice(radData);
         setPolaznici(polData);
         setPrisustva(prisData);
-        if (radData.length > 0) setSelectedRadionica(radData[0]); // automatski selektirana prva radionica
+        if (radData.length > 0) setSelectedRadionica(radData[0]);
       })
       .catch(err => console.error("Greška prilikom dohvaćanja podataka", err));
   }, []);
@@ -35,7 +35,7 @@ function Home() {
       p.polaznikImePrezime === `${polaznik.ime} ${polaznik.prezime}` &&
       p.radionicaNaziv === radionica.naziv
     );
-    return zapis ? zapis.status : 'ODUSTAO'; // default ako nema zapisa
+    return zapis ? zapis.status : 'ODUSTAO';
   };
 
   const handleToggleStatus = (polaznik) => {
@@ -68,9 +68,9 @@ function Home() {
 
   const getColor = (status) => {
     switch (status) {
-      case 'PRISUTAN': return '#d4f7d4';
-      case 'IZOSTAO': return '#f8d7da';
-      case 'ODUSTAO': return '#ffffff';
+      case 'PRISUTAN': return '#b8e6b8';  // jasno svjetlozelena
+      case 'IZOSTAO': return '#f5b5b5';   // jasno svjetlocrvena
+      case 'ODUSTAO': return '#ffffff';  // bijela
       default: return '#ffffff';
     }
   };
@@ -89,11 +89,13 @@ function Home() {
                 key={r.id}
                 onClick={() => setSelectedRadionica(r)}
                 style={{
-                  padding: '10px',
-                  marginBottom: '5px',
+                  padding: '12px',
+                  marginBottom: '8px',
                   backgroundColor: selectedRadionica?.id === r.id ? '#e8f1fb' : '#f1f1f1',
                   cursor: 'pointer',
-                  borderRadius: '5px'
+                  borderRadius: '5px',
+                  border: selectedRadionica?.id === r.id ? '2px solid #0077cc' : '1px solid #ccc',
+                  fontWeight: selectedRadionica?.id === r.id ? 'bold' : 'normal'
                 }}
               >
                 {r.naziv}
