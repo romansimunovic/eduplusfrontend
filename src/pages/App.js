@@ -4,7 +4,7 @@ import Radionice from './Radionice';
 import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
 import RadionicaDetalji from './RadionicaDetalji';
-import Dashboard from './Dashboard';
+import Home from './Home';
 
 import './App.css';
 
@@ -26,7 +26,7 @@ function App() {
       </nav>
 
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Home />} />
         <Route path="/radionice" element={<Radionice />} />
         <Route path="/polaznici" element={<Polaznici />} />
         <Route path="/prisustva" element={<Prisustva />} />
