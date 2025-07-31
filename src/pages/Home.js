@@ -10,9 +10,9 @@ function Home() {
   const [selectedRadionica, setSelectedRadionica] = useState(null);
 
   const statusCycle = {
+    NEPOZNATO: 'PRISUTAN',
     PRISUTAN: 'IZOSTAO',
-    IZOSTAO: 'ODUSTAO',
-    ODUSTAO: 'PRISUTAN'
+    IZOSTAO: 'NEPOZNATO'
   };
 
   useEffect(() => {
@@ -35,7 +35,7 @@ function Home() {
       p.polaznikImePrezime === `${polaznik.ime} ${polaznik.prezime}` &&
       p.radionicaNaziv === radionica.naziv
     );
-    return zapis ? zapis.status : 'ODUSTAO';
+    return zapis ? zapis.status : 'NEPOZNATO';
   };
 
   const handleToggleStatus = (polaznik) => {
@@ -68,9 +68,9 @@ function Home() {
 
   const getColor = (status) => {
     switch (status) {
-      case 'PRISUTAN': return '#b8e6b8';  // jasno svjetlozelena
-      case 'IZOSTAO': return '#f5b5b5';   // jasno svjetlocrvena
-      case 'ODUSTAO': return '#ffffff';  // bijela
+      case 'PRISUTAN': return '#b8e6b8';   // svijetlozelena
+      case 'IZOSTAO': return '#f5b5b5';    // svijetlocrvena
+      case 'NEPOZNATO': return '#ffffff'; // bijela
       default: return '#ffffff';
     }
   };
