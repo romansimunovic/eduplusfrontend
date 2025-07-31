@@ -6,73 +6,88 @@ const baseUrl = "https://eduplusbackend.onrender.com";
 function Home() {
   const [radionice, setRadionice] = useState([]);
   const [polaznici, setPolaznici] = useState([]);
-  const [prisustva, setPrisustva] = useState({});
+  const [prisustva, setPrisustva] = useState([]);
   const [selectedRadionica, setSelectedRadionica] = useState(null);
 
-  useEffect(() => {
-    fetch(`${baseUrl}/api/radionice`)
-      .then(res => res.json())
-      .then(data => setRadionice(data))
-      .catch(err => console.error("Greška kod dohvaćanja radionica", err));
+  const statusCycle = {
+    PRISUTAN: 'IZOSTAO',
+    IZOSTAO: 'ODUSTAO',
+    ODUSTAO: 'PRISUTAN'
+  };
 
-    fetch(`${baseUrl}/api/polaznici`)
-      .then(res => res.json())
-      .then(data => setPolaznici(data))
-      .catch(err => console.error("Greška kod dohvaćanja polaznika", err));
+  useEffect(() => {
+    Promise.all([
+      fetch(`${baseUrl}/api/radionice`).then(r => r.json()),
+      fetch(`${baseUrl}/api/polaznici`).then(r => r.json()),
+      fetch(`${baseUrl}/api/prisustva/view`).then(r => r.json())
+    ])
+      .then(([radData, polData, prisData]) => {
+        setRadionice(radData);
+        setPolaznici(polData);
+        setPrisustva(prisData);
+        if (radData.length > 0) setSelectedRadionica(radData[0]); // automatski selektirana prva radionica
+      })
+      .catch(err => console.error("Greška prilikom dohvaćanja podataka", err));
   }, []);
 
-  const statusCycle = {
-    UNKNOWN: 'PRESENT',
-    PRESENT: 'ABSENT',
-    ABSENT: 'UNKNOWN'
+  const getStatusForPolaznik = (polaznik, radionica) => {
+    const zapis = prisustva.find(p =>
+      p.polaznikImePrezime === `${polaznik.ime} ${polaznik.prezime}` &&
+      p.radionicaNaziv === radionica.naziv
+    );
+    return zapis ? zapis.status : 'ODUSTAO'; // default ako nema zapisa
   };
 
-  const handleSelectRadionica = (rad) => {
-    setSelectedRadionica(rad);
-    if (!prisustva[rad.id]) {
-      setPrisustva(prev => ({
-        ...prev,
-        [rad.id]: {}
-      }));
-    }
-  };
-
-  const handleToggleStatus = (polaznikId) => {
+  const handleToggleStatus = (polaznik) => {
     if (!selectedRadionica) return;
 
-    const radId = selectedRadionica.id;
-    const current = prisustva[radId]?.[polaznikId] || 'UNKNOWN';
-    const next = statusCycle[current];
+    const imePrezime = `${polaznik.ime} ${polaznik.prezime}`;
+    const radionicaNaziv = selectedRadionica.naziv;
 
-    setPrisustva(prev => ({
-      ...prev,
-      [radId]: {
-        ...prev[radId],
-        [polaznikId]: next
+    setPrisustva(prev => {
+      const novaPrisustva = [...prev];
+      const index = novaPrisustva.findIndex(p =>
+        p.polaznikImePrezime === imePrezime &&
+        p.radionicaNaziv === radionicaNaziv
+      );
+
+      if (index !== -1) {
+        const trenutni = novaPrisustva[index].status;
+        novaPrisustva[index].status = statusCycle[trenutni];
+      } else {
+        novaPrisustva.push({
+          polaznikImePrezime: imePrezime,
+          radionicaNaziv: radionicaNaziv,
+          status: 'PRISUTAN'
+        });
       }
-    }));
+
+      return novaPrisustva;
+    });
   };
 
   const getColor = (status) => {
     switch (status) {
-      case 'PRESENT': return '#d4f7d4'; // zelena
-      case 'ABSENT': return '#f8d7da'; // crvena
-      default: return '#ffffff'; // bijela
+      case 'PRISUTAN': return '#d4f7d4';
+      case 'IZOSTAO': return '#f8d7da';
+      case 'ODUSTAO': return '#ffffff';
+      default: return '#ffffff';
     }
   };
 
   return (
     <div className="container">
       <h2 style={{ textAlign: 'center' }}>Evidencija prisustva</h2>
+
       <div className="flex-row" style={{ display: 'flex', gap: '2rem', marginTop: '20px' }}>
-        {/* Lijevi stupac – radionice */}
+        {/* Lijevi stupac */}
         <div style={{ flex: 1 }}>
-          <h3>Radionice</h3>
+          <h3>Popis svih radionica</h3>
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {radionice.map(r => (
               <li
                 key={r.id}
-                onClick={() => handleSelectRadionica(r)}
+                onClick={() => setSelectedRadionica(r)}
                 style={{
                   padding: '10px',
                   marginBottom: '5px',
@@ -87,17 +102,17 @@ function Home() {
           </ul>
         </div>
 
-        {/* Desni stupac – polaznici */}
+        {/* Desni stupac */}
         <div style={{ flex: 1 }}>
-          <h3>Polaznici</h3>
+          <h3>Popis polaznika i polaznica</h3>
           {selectedRadionica ? (
             <ul style={{ listStyle: 'none', padding: 0 }}>
               {polaznici.map(p => {
-                const status = prisustva[selectedRadionica.id]?.[p.id] || 'UNKNOWN';
+                const status = getStatusForPolaznik(p, selectedRadionica);
                 return (
                   <li
                     key={p.id}
-                    onClick={() => handleToggleStatus(p.id)}
+                    onClick={() => handleToggleStatus(p)}
                     style={{
                       padding: '10px',
                       marginBottom: '5px',
@@ -112,7 +127,7 @@ function Home() {
               })}
             </ul>
           ) : (
-            <p>Odaberite radionicu kako biste vidjeli polaznike.</p>
+            <p>Odaberite radionicu za prikaz polaznika.</p>
           )}
         </div>
       </div>
