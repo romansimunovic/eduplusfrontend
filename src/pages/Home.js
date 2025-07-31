@@ -10,9 +10,15 @@ function Home() {
   const [selectedRadionica, setSelectedRadionica] = useState(null);
 
   useEffect(() => {
-    // Fetch workshops and participants on mount
-    fetch(`${baseUrl}/api/radionice`).then(r => r.json()).then(setRadionice).catch(() => {});
-    fetch(`${baseUrl}/api/polaznici`).then(r => r.json()).then(setPolaznici).catch(() => {});
+    fetch(`${baseUrl}/api/radionice`)
+      .then(res => res.json())
+      .then(data => setRadionice(data))
+      .catch(err => console.error("Greška kod dohvaćanja radionica", err));
+
+    fetch(`${baseUrl}/api/polaznici`)
+      .then(res => res.json())
+      .then(data => setPolaznici(data))
+      .catch(err => console.error("Greška kod dohvaćanja polaznika", err));
   }, []);
 
   const statusCycle = {
@@ -23,56 +29,56 @@ function Home() {
 
   const handleSelectRadionica = (rad) => {
     setSelectedRadionica(rad);
+    if (!prisustva[rad.id]) {
+      setPrisustva(prev => ({
+        ...prev,
+        [rad.id]: {}
+      }));
+    }
   };
 
   const handleToggleStatus = (polaznikId) => {
     if (!selectedRadionica) return;
+
     const radId = selectedRadionica.id;
-    setPrisustva(prev => {
-      const current = prev[radId]?.[polaznikId] || 'UNKNOWN';
-      const next = statusCycle[current];
-      return {
-        ...prev,
-        [radId]: {
-          ...prev[radId],
-          [polaznikId]: next
-        }
-      };
-    });
+    const current = prisustva[radId]?.[polaznikId] || 'UNKNOWN';
+    const next = statusCycle[current];
+
+    setPrisustva(prev => ({
+      ...prev,
+      [radId]: {
+        ...prev[radId],
+        [polaznikId]: next
+      }
+    }));
   };
 
   const getColor = (status) => {
-    if (status === 'PRESENT') return '#d4f7d4';
-    if (status === 'ABSENT') return '#f8d7da';
-    return '#ffffff';
+    switch (status) {
+      case 'PRESENT': return '#d4f7d4'; // zelena
+      case 'ABSENT': return '#f8d7da'; // crvena
+      default: return '#ffffff'; // bijela
+    }
   };
-
-  const polazniciList = selectedRadionica ? polaznici.map(p => {
-    const status = prisustva[selectedRadionica.id]?.[p.id] || 'UNKNOWN';
-    return (
-      <li
-        key={p.id}
-        onClick={() => handleToggleStatus(p.id)}
-        style={{ backgroundColor: getColor(status), cursor: 'pointer' }}
-      >
-        {p.ime} {p.prezime}
-      </li>
-    );
-  }) : <p>Odaberite radionicu za evidenciju.</p>;
 
   return (
     <div className="container">
-      <h2>Evidencija prisustva</h2>
-      <div className="flex-row" style={{ alignItems: 'flex-start' }}>
+      <h2 style={{ textAlign: 'center' }}>Evidencija prisustva</h2>
+      <div className="flex-row" style={{ display: 'flex', gap: '2rem', marginTop: '20px' }}>
+        {/* Lijevi stupac – radionice */}
         <div style={{ flex: 1 }}>
-          <ul>
+          <h3>Radionice</h3>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
             {radionice.map(r => (
               <li
                 key={r.id}
                 onClick={() => handleSelectRadionica(r)}
                 style={{
+                  padding: '10px',
+                  marginBottom: '5px',
+                  backgroundColor: selectedRadionica?.id === r.id ? '#e8f1fb' : '#f1f1f1',
                   cursor: 'pointer',
-                  backgroundColor: selectedRadionica && selectedRadionica.id === r.id ? '#e8f1fb' : '#fff'
+                  borderRadius: '5px'
                 }}
               >
                 {r.naziv}
@@ -80,10 +86,34 @@ function Home() {
             ))}
           </ul>
         </div>
+
+        {/* Desni stupac – polaznici */}
         <div style={{ flex: 1 }}>
-          <ul>
-            {selectedRadionica ? polazniciList : <li>Odaberite radionicu</li>}
-          </ul>
+          <h3>Polaznici</h3>
+          {selectedRadionica ? (
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {polaznici.map(p => {
+                const status = prisustva[selectedRadionica.id]?.[p.id] || 'UNKNOWN';
+                return (
+                  <li
+                    key={p.id}
+                    onClick={() => handleToggleStatus(p.id)}
+                    style={{
+                      padding: '10px',
+                      marginBottom: '5px',
+                      backgroundColor: getColor(status),
+                      cursor: 'pointer',
+                      borderRadius: '5px'
+                    }}
+                  >
+                    {p.ime} {p.prezime}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p>Odaberite radionicu kako biste vidjeli polaznike.</p>
+          )}
         </div>
       </div>
     </div>
