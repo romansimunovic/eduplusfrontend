@@ -1,6 +1,6 @@
+// Polaznici.js
 import React, { useEffect, useState } from 'react';
 import './App.css';
-
 
 const baseUrl = "https://eduplusbackend.onrender.com";
 
@@ -10,6 +10,10 @@ function Polaznici() {
   const [prezime, setPrezime] = useState("");
   const [email, setEmail] = useState("");
   const [godinaRodenja, setGodinaRodenja] = useState("");
+  const [spol, setSpol] = useState("");
+  const [telefon, setTelefon] = useState("");
+  const [grad, setGrad] = useState("");
+  const [status, setStatus] = useState("");
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState("");
@@ -33,7 +37,7 @@ function Polaznici() {
   }, []);
 
   const handleAddOrUpdate = () => {
-    if (!ime || !prezime || !email || !godinaRodenja) {
+    if (!ime || !prezime || !email || !godinaRodenja || !spol || !telefon || !grad || !status) {
       setError("Sva polja su obavezna.");
       return;
     }
@@ -42,7 +46,11 @@ function Polaznici() {
       ime,
       prezime,
       email,
-      godinaRodenja: parseInt(godinaRodenja)
+      godinaRodenja: parseInt(godinaRodenja),
+      spol,
+      telefon,
+      grad,
+      status
     };
 
     const method = editId ? 'PUT' : 'POST';
@@ -59,12 +67,9 @@ function Polaznici() {
       })
       .then(() => {
         fetchPolaznici();
-        setIme("");
-        setPrezime("");
-        setEmail("");
-        setGodinaRodenja("");
-        setEditId(null);
-        setError(null);
+        setIme(""); setPrezime(""); setEmail(""); setGodinaRodenja("");
+        setSpol(""); setTelefon(""); setGrad(""); setStatus("");
+        setEditId(null); setError(null);
       })
       .catch(err => {
         console.error("Greška kod spremanja:", err);
@@ -75,12 +80,8 @@ function Polaznici() {
   const handleDelete = (id) => {
     if (!window.confirm("Jeste li sigurni da želite obrisati ovog polaznika?")) return;
 
-    fetch(`${baseUrl}/api/polaznici/${id}`, {
-      method: 'DELETE'
-    })
-      .then(() => {
-        setPolaznici(polaznici.filter(p => p.id !== id));
-      })
+    fetch(`${baseUrl}/api/polaznici/${id}`, { method: 'DELETE' })
+      .then(() => setPolaznici(polaznici.filter(p => p.id !== id)))
       .catch(err => {
         console.error("Greška kod brisanja:", err);
         setError("Neuspješno brisanje polaznika.");
@@ -98,6 +99,10 @@ function Polaznici() {
     setPrezime(polaznik.prezime);
     setEmail(polaznik.email);
     setGodinaRodenja(polaznik.godinaRodenja);
+    setSpol(polaznik.spol);
+    setTelefon(polaznik.telefon);
+    setGrad(polaznik.grad);
+    setStatus(polaznik.status);
     setEditId(polaznik.id);
   };
 
@@ -115,6 +120,25 @@ function Polaznici() {
         <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
         <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
         <input value={godinaRodenja} onChange={e => setGodinaRodenja(e.target.value)} placeholder="Godina rođenja" type="number" />
+
+        <select value={spol} onChange={e => setSpol(e.target.value)}>
+          <option value="">Odaberi spol</option>
+          <option value="M">Muški</option>
+          <option value="Ž">Ženski</option>
+          <option value="Drugo">Drugo</option>
+        </select>
+
+        <input value={telefon} onChange={e => setTelefon(e.target.value)} placeholder="Broj mobitela" />
+        <input value={grad} onChange={e => setGrad(e.target.value)} placeholder="Grad" />
+
+        <select value={status} onChange={e => setStatus(e.target.value)}>
+          <option value="">Status</option>
+          <option value="student">Student</option>
+          <option value="zaposlen">Zaposlen</option>
+          <option value="učenik">Učenik</option>
+          <option value="nezaposlen">Nezaposlen</option>
+        </select>
+
         <button onClick={handleAddOrUpdate}>
           {editId ? "Spremi izmjene" : "Dodaj"}
         </button>
@@ -137,7 +161,7 @@ function Polaznici() {
       <ul className="list">
         {filtriraniPolaznici.map(p => (
           <li key={p.id}>
-            <span>{p.ime} {p.prezime} ({p.email}, {p.godinaRodenja})</span>
+            <span>{p.ime} {p.prezime} ({p.email}, {p.godinaRodenja}, {p.grad})</span>
             <div>
               <button onClick={() => handleEdit(p)}>Uredi</button>
               <button onClick={() => handleDelete(p.id)} className="delete">Obriši</button>
