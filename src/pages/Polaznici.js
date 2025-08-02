@@ -139,7 +139,7 @@ function Polaznici() {
         {filtrirani.map(p => (
           <li key={p.id}>
             <span>
-              {p.ime} {p.prezime} ({p.email}) — {p.grad}, {p.godinaRodenja} • {p.spol}, {p.status}
+          {p.ime} {p.prezime} ({p.email}) — {p.grad}, {p.godinaRodenja} • {p.spol}, {p.status} • 📞 {p.telefon}
             </span>
             <div>
               <button onClick={() => handleEdit(p)}>Uredi</button>
