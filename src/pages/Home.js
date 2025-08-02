@@ -102,10 +102,10 @@ function Home() {
     try {
       await fetch(`${baseUrl}/api/dev/seed`, { method: "POST" });
 
-      // delay 500ms prije fetchanja
+      // delay prije fetchanja
       setTimeout(() => {
         fetchAll();
-      }, 300);
+      }, 50);
     } catch (err) {
       console.error("Greška kod generiranja podataka:", err);
     }
