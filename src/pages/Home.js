@@ -35,13 +35,6 @@ function Home() {
     }
   };
 
-  const getStatus = (polaznikId) => {
-    const zapis = prisustva.find(p =>
-      p.polaznikId === polaznikId && p.radionicaId === selectedRadionica?.id
-    );
-    return zapis ? zapis.status : "NEPOZNATO";
-  };
-
   const getStatusLabel = (status, spol) => {
     const zensko = spol?.toLowerCase().startsWith("ž");
     switch (status) {
@@ -88,9 +81,9 @@ function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+
       if (!res.ok) throw new Error("Greška u spremanju statusa");
 
-      // lokalni update bez refetcha
       setPrisustva(prev => {
         if (current) {
           return prev.map(p =>
@@ -116,16 +109,16 @@ function Home() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2 style={{ textAlign: "center" }}>📋 EdukatorPlus – Evidencija prisustva</h2>
+      <h2 style={{ textAlign: "center" }}>EdukatorPlus – Evidencija prisustva</h2>
 
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-        <button onClick={handleGenerateData}>🔄 Generiraj nove podatke</button>
+        <button onClick={handleGenerateData}>Generiraj nove podatke</button>
       </div>
 
       <div style={{ display: "flex", gap: "2rem" }}>
         {/* Lijevi stupac */}
         <div style={{ flex: 1 }}>
-          <h3>📚 Radionice</h3>
+          <h3> Popis svih radionica</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {radionice.map(r => (
               <li key={r.id}
@@ -147,19 +140,20 @@ function Home() {
 
         {/* Desni stupac */}
         <div style={{ flex: 1 }}>
-          <h3>👥 Sudionici / Sudionice</h3>
+          <h3> Popis sudionika</h3>
           {selectedRadionica ? (
             <ul style={{ listStyle: "none", padding: 0 }}>
-              {polaznici
-                .filter(p => prisustva.some(pr =>
-                  pr.radionicaId === selectedRadionica.id && pr.polaznikId === p.id))
-                .map(p => {
-                  const status = getStatus(p.id);
+              {prisustva
+                .filter(pr => pr.radionicaId === selectedRadionica.id)
+                .map(pr => {
+                  const polaznik = polaznici.find(p => p.id === pr.polaznikId);
+                  if (!polaznik) return null;
+
                   return (
-                    <li key={p.id}
-                        onClick={() => handleClick(p)}
+                    <li key={polaznik.id}
+                        onClick={() => handleClick(polaznik)}
                         style={{
-                          backgroundColor: getColor(status),
+                          backgroundColor: getColor(pr.status),
                           padding: "10px",
                           marginBottom: "8px",
                           borderRadius: "6px",
@@ -168,14 +162,16 @@ function Home() {
                           alignItems: "center",
                           cursor: "pointer"
                         }}>
-                      <span>{p.ime} {p.prezime}</span>
-                      <span style={{ fontStyle: "italic" }}>{getStatusLabel(status, p.spol)}</span>
+                      <span>{polaznik.ime} {polaznik.prezime}</span>
+                      <span style={{ fontStyle: "italic" }}>
+                        {getStatusLabel(pr.status, polaznik.spol)}
+                      </span>
                     </li>
                   );
                 })}
             </ul>
           ) : (
-            <p>⬅️ Odaberi radionicu za prikaz sudionika.</p>
+            <p>Odaberi radionicu za prikaz sudionika.</p>
           )}
         </div>
       </div>
