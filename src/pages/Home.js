@@ -98,82 +98,80 @@ function Home() {
     }
   };
 
-  const getStatusLabel = (status) => {
+  const getStatusLabel = (status, spol) => {
     switch (status) {
-      case 'PRISUTAN': return 'Prisutan';
-      case 'IZOSTAO': return 'Izostao';
-      case 'ODUSTAO': return 'Odustao';
+      case 'PRISUTAN': return spol === 'Žensko' ? 'Prisutna' : 'Prisutan';
+      case 'IZOSTAO': return spol === 'Žensko' ? 'Izostala' : 'Izostao';
+      case 'ODUSTAO': return spol === 'Žensko' ? 'Odustala' : 'Odustao';
       case 'NEPOZNATO': default: return 'Ne zna se';
     }
   };
 
   return (
-  <div>
-    <h2 style={{ textAlign: 'center' }}>Evidencija prisustva</h2>
+    <div>
+      <h2 style={{ textAlign: 'center' }}>Evidencija prisustva</h2>
 
-    {/* Gumb za regeneraciju - ostaje fiksan i ne ovisi o stanju ispod */}
-    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-      <button onClick={regenerateData}>Generiraj nove podatke</button>
-    </div>
-
-    {/* Glavni prikaz */}
-    <div style={{ display: 'flex', gap: '2rem', marginTop: '20px' }}>
-      <div style={{ flex: 1 }}>
-        <h3>Popis svih radionica</h3>
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {radionice.map(r => (
-            <li
-              key={r.id}
-              onClick={() => setSelectedRadionica(r)}
-              style={{
-                padding: '10px',
-                marginBottom: '8px',
-                backgroundColor: selectedRadionica?.id === r.id ? '#e8f1fb' : '#f1f1f1',
-                cursor: 'pointer',
-                border: selectedRadionica?.id === r.id ? '2px solid #0077cc' : '1px solid #ccc'
-              }}
-            >
-              {r.naziv}
-            </li>
-          ))}
-        </ul>
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <button onClick={regenerateData}>Generiraj nove podatke</button>
       </div>
 
-      <div style={{ flex: 1 }}>
-        <h3>Popis polaznika i polaznica</h3>
-        {selectedRadionica ? (
+      <div style={{ display: 'flex', gap: '2rem', marginTop: '20px' }}>
+        <div style={{ flex: 1 }}>
+          <h3>Popis svih radionica</h3>
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {polaznici.map(p => {
-              const status = getStatusForPolaznik(p, selectedRadionica);
-              return (
-                <li
-                  key={p.id}
-                  onClick={() => handleToggleStatus(p)}
-                  style={{
-                    padding: '10px',
-                    marginBottom: '5px',
-                    backgroundColor: getColor(status),
-                    cursor: 'pointer',
-                    borderRadius: '5px',
-                    display: 'flex',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <span>{p.ime} {p.prezime}</span>
-                  <span style={{ fontStyle: 'italic' }}>
-                    ({getStatusLabel(status)})
-                  </span>
-                </li>
-              );
-            })}
+            {radionice.map(r => (
+              <li
+                key={r.id}
+                onClick={() => setSelectedRadionica(r)}
+                style={{
+                  padding: '10px',
+                  marginBottom: '8px',
+                  backgroundColor: selectedRadionica?.id === r.id ? '#e8f1fb' : '#f1f1f1',
+                  cursor: 'pointer',
+                  border: selectedRadionica?.id === r.id ? '2px solid #0077cc' : '1px solid #ccc'
+                }}
+              >
+                {r.naziv}
+              </li>
+            ))}
           </ul>
-        ) : (
-          <p>Odaberite radionicu za prikaz polaznika.</p>
-        )}
+        </div>
+
+        <div style={{ flex: 1 }}>
+          <h3>Popis polaznika i polaznica</h3>
+          {selectedRadionica ? (
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {polaznici.map(p => {
+                const status = getStatusForPolaznik(p, selectedRadionica);
+                return (
+                  <li
+                    key={p.id}
+                    onClick={() => handleToggleStatus(p)}
+                    style={{
+                      padding: '10px',
+                      marginBottom: '5px',
+                      backgroundColor: getColor(status),
+                      cursor: 'pointer',
+                      borderRadius: '5px',
+                      display: 'flex',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <span>{p.ime} {p.prezime}</span>
+                    <span style={{ fontStyle: 'italic' }}>
+                      ({getStatusLabel(status, p.spol)})
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p>Odaberite radionicu za prikaz polaznika.</p>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
 
 export default Home;
