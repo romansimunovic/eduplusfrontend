@@ -94,6 +94,29 @@ function Home() {
     }
   };
 
+
+  const handleSaveStatus = (polaznik, status) => {
+  if (!selectedRadionica) return;
+
+  const payload = {
+    polaznikId: polaznik.id,
+    radionicaId: selectedRadionica.id,
+    status: status
+  };
+
+  fetch(`${baseUrl}/api/prisustva`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Greška kod spremanja prisustva');
+      }
+    })
+    .catch(err => console.error(err));
+};
+
   return (
     <div className="container">
       <h2 style={{ textAlign: 'center' }}>Evidencija prisustva</h2>
