@@ -89,6 +89,14 @@ function Prisustva() {
       .catch(err => setError("Greška prilikom brisanja prisustva."));
   };
 
+  const prikaziStatus = (status, spol) => {
+  const jeZensko = spol && spol.toLowerCase() === 'žensko';
+  if (status === 'PRISUTAN') return jeZensko ? 'Prisutna' : 'Prisutan';
+  if (status === 'IZOSTAO') return jeZensko ? 'Izostala' : 'Izostao';
+  if (status === 'ODUSTAO') return jeZensko ? 'Odustala' : 'Odustao';
+  return 'Nepoznato';
+};
+
   const filtrirano = filterRadionica
     ? prisustva.filter(p => p.radionicaNaziv === filterRadionica)
     : prisustva;
