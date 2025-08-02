@@ -98,18 +98,14 @@ function Home() {
     }
   };
 
-  const handleGenerateData = async () => {
-    try {
-      await fetch(`${baseUrl}/api/dev/seed`, { method: "POST" });
-
-      // delay prije fetchanja
-      setTimeout(() => {
-        fetchAll();
-      }, 50);
-    } catch (err) {
-      console.error("Greška kod generiranja podataka:", err);
-    }
-  };
+ const handleGenerateData = async () => {
+  try {
+    await fetch(`${baseUrl}/api/dev/seed`, { method: "POST" });
+    await fetchAll(); // nema kašnjenja
+  } catch (err) {
+    console.error("Greška kod generiranja podataka:", err);
+  }
+};
 
   return (
     <div style={{ padding: "20px" }}>
