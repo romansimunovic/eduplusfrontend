@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import './App.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
 
@@ -12,7 +11,8 @@ function Home() {
   const statusCycle = {
     NEPOZNATO: 'PRISUTAN',
     PRISUTAN: 'IZOSTAO',
-    IZOSTAO: 'NEPOZNATO'
+    IZOSTAO: 'ODUSTAO',
+    ODUSTAO: 'NEPOZNATO'
   };
 
   useEffect(() => {
@@ -36,7 +36,7 @@ function Home() {
 
   const regenerateData = () => {
     fetch(`${baseUrl}/api/dev/seed`, { method: 'POST' })
-      .then(() => window.location.reload())
+      .then(() => fetchData())
       .catch(() => alert("Greška prilikom regeneracije podataka."));
   };
 
@@ -46,6 +46,26 @@ function Home() {
       p.radionicaNaziv === radionica.naziv
     );
     return zapis ? zapis.status : 'NEPOZNATO';
+  };
+
+  const handleSaveStatus = (polaznik, status) => {
+    if (!selectedRadionica) return;
+
+    const payload = {
+      polaznikId: polaznik.id,
+      radionicaId: selectedRadionica.id,
+      status: status
+    };
+
+    fetch(`${baseUrl}/api/prisustva`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Greška kod spremanja prisustva');
+      })
+      .catch(err => console.error(err));
   };
 
   const handleToggleStatus = (polaznik) => {
@@ -63,13 +83,17 @@ function Home() {
 
       if (index !== -1) {
         const trenutni = novaPrisustva[index].status;
-        novaPrisustva[index].status = statusCycle[trenutni];
+        const novi = statusCycle[trenutni];
+        novaPrisustva[index].status = novi;
+        handleSaveStatus(polaznik, novi);
       } else {
+        const status = 'PRISUTAN';
         novaPrisustva.push({
           polaznikImePrezime: imePrezime,
           radionicaNaziv: radionicaNaziv,
-          status: 'PRISUTAN'
+          status: status
         });
+        handleSaveStatus(polaznik, status);
       }
 
       return novaPrisustva;
@@ -80,8 +104,8 @@ function Home() {
     switch (status) {
       case 'PRISUTAN': return '#b8e6b8';
       case 'IZOSTAO': return '#f5b5b5';
-      case 'NEPOZNATO': return '#ffffff';
-      default: return '#ffffff';
+      case 'ODUSTAO': return '#f0e68c';
+      case 'NEPOZNATO': default: return '#ffffff';
     }
   };
 
@@ -89,58 +113,20 @@ function Home() {
     switch (status) {
       case 'PRISUTAN': return 'Prisutan';
       case 'IZOSTAO': return 'Izostao';
-      case 'NEPOZNATO': return 'Ne zna se';
-      default: return '';
+      case 'ODUSTAO': return 'Odustao';
+      case 'NEPOZNATO': default: return 'Ne zna se';
     }
   };
 
-
-  const handleSaveStatus = (polaznik, status) => {
-  if (!selectedRadionica) return;
-
-  const payload = {
-    polaznikId: polaznik.id,
-    radionicaId: selectedRadionica.id,
-    status: status
-  };
-
-  fetch(`${baseUrl}/api/prisustva`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Greška kod spremanja prisustva');
-      }
-    })
-    .catch(err => console.error(err));
-};
-
   return (
-    <div className="container">
+    <div>
       <h2 style={{ textAlign: 'center' }}>Evidencija prisustva</h2>
 
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <button
-          onClick={regenerateData}
-          style={{
-            backgroundColor: '#ffb347',
-            color: '#333',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: '600',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-          }}
-        >
-          🔄 Generiraj nove podatke
-        </button>
+        <button onClick={regenerateData}>🔄 Generiraj nove podatke</button>
       </div>
 
-      <div className="flex-row" style={{ display: 'flex', gap: '2rem', marginTop: '20px' }}>
-        {/* Lijevi stupac */}
+      <div style={{ display: 'flex', gap: '2rem', marginTop: '20px' }}>
         <div style={{ flex: 1 }}>
           <h3>Popis svih radionica</h3>
           <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -149,13 +135,11 @@ function Home() {
                 key={r.id}
                 onClick={() => setSelectedRadionica(r)}
                 style={{
-                  padding: '12px',
+                  padding: '10px',
                   marginBottom: '8px',
                   backgroundColor: selectedRadionica?.id === r.id ? '#e8f1fb' : '#f1f1f1',
                   cursor: 'pointer',
-                  borderRadius: '5px',
-                  border: selectedRadionica?.id === r.id ? '2px solid #0077cc' : '1px solid #ccc',
-                  fontWeight: selectedRadionica?.id === r.id ? 'bold' : 'normal'
+                  border: selectedRadionica?.id === r.id ? '2px solid #0077cc' : '1px solid #ccc'
                 }}
               >
                 {r.naziv}
@@ -164,7 +148,6 @@ function Home() {
           </ul>
         </div>
 
-        {/* Desni stupac */}
         <div style={{ flex: 1 }}>
           <h3>Popis polaznika i polaznica</h3>
           {selectedRadionica ? (
@@ -182,13 +165,11 @@ function Home() {
                       cursor: 'pointer',
                       borderRadius: '5px',
                       display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      fontWeight: '500'
+                      justifyContent: 'space-between'
                     }}
                   >
                     <span>{p.ime} {p.prezime}</span>
-                    <span style={{ fontSize: '0.9rem', fontStyle: 'italic', color: '#555' }}>
+                    <span style={{ fontStyle: 'italic' }}>
                       ({getStatusLabel(status)})
                     </span>
                   </li>
