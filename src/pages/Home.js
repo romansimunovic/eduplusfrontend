@@ -7,7 +7,6 @@ function Home() {
   const [polaznici, setPolaznici] = useState([]);
   const [prisustva, setPrisustva] = useState([]);
   const [selectedRadionica, setSelectedRadionica] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const statusCycle = {
     NEPOZNATO: 'PRISUTAN',
@@ -17,68 +16,62 @@ function Home() {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchAll();
   }, []);
 
-  const fetchData = () => {
-    const previousSelectedId = selectedRadionica?.id;
-    setLoading(true);
-
-    Promise.all([
-      fetch(`${baseUrl}/api/radionice`).then(r => r.json()),
-      fetch(`${baseUrl}/api/polaznici`).then(r => r.json()),
-      fetch(`${baseUrl}/api/prisustva/view`).then(r => r.json())
-    ])
-      .then(([radData, polData, prisData]) => {
-        setRadionice(radData);
-        setPolaznici(polData);
-        setPrisustva(prisData);
-
-        const stillExists = radData.find(r => r.id === previousSelectedId);
-        setSelectedRadionica(stillExists || radData[0] || null);
-      })
-      .catch(err => console.error("Greška prilikom dohvaćanja podataka", err))
-      .finally(() => setLoading(false));
-  };
-
-  const regenerateData = () => {
-    setLoading(true);
-    fetch(`${baseUrl}/api/dev/seed`, { method: 'POST' })
-      .then(() => fetchData())
-      .catch(() => alert("Greška prilikom regeneracije podataka."))
-      .finally(() => setLoading(false));
-  };
-
-  const getStatusForPolaznik = (polaznik, radionica) => {
-    const zapis = prisustva.find(p =>
-      p.polaznikImePrezime === `${polaznik.ime} ${polaznik.prezime}` &&
-      p.radionicaNaziv === radionica.naziv
-    );
-    return zapis ? zapis.status : 'NEPOZNATO';
-  };
-
-  const getStatusLabel = (status, spol) => {
-    const jeZensko = spol?.toUpperCase() === 'Ž';
-    switch (status) {
-      case 'PRISUTAN': return jeZensko ? 'Prisutna' : 'Prisutan';
-      case 'IZOSTAO': return jeZensko ? 'Izostala' : 'Izostao';
-      case 'ODUSTAO': return jeZensko ? 'Odustala' : 'Odustao';
-      case 'NEPOZNATO': default: return 'Nepoznato';
+  const fetchAll = async () => {
+    try {
+      const [r, p, pr] = await Promise.all([
+        fetch(`${baseUrl}/api/radionice`).then(res => res.json()),
+        fetch(`${baseUrl}/api/polaznici`).then(res => res.json()),
+        fetch(`${baseUrl}/api/prisustva/view`).then(res => res.json())
+      ]);
+      setRadionice(r);
+      setPolaznici(p);
+      setPrisustva(pr);
+      setSelectedRadionica(r[0] || null);
+    } catch (err) {
+      console.error("Greška pri dohvaćanju podataka", err);
     }
   };
 
-  const handleToggleStatus = (polaznik) => {
-    if (!selectedRadionica || !polaznik) return;
+  const getStatus = (polaznik) => {
+    const zapis = prisustva.find(p =>
+      p.polaznikImePrezime === `${polaznik.ime} ${polaznik.prezime}` &&
+      p.radionicaNaziv === selectedRadionica?.naziv
+    );
+    return zapis ? zapis.status : "NEPOZNATO";
+  };
+
+  const getStatusLabel = (status, spol) => {
+    const ž = spol?.toUpperCase() === "Ž";
+    switch (status) {
+      case 'PRISUTAN': return ž ? 'Prisutna' : 'Prisutan';
+      case 'IZOSTAO': return ž ? 'Izostala' : 'Izostao';
+      case 'ODUSTAO': return ž ? 'Odustala' : 'Odustao';
+      default: return 'Nepoznato';
+    }
+  };
+
+  const getColor = (status) => {
+    switch (status) {
+      case 'PRISUTAN': return '#c8facc';
+      case 'IZOSTAO': return '#ffcaca';
+      case 'ODUSTAO': return '#f0e68c';
+      default: return '#ffffff';
+    }
+  };
+
+  const handleClick = async (polaznik) => {
+    if (!selectedRadionica) return;
 
     const imePrezime = `${polaznik.ime} ${polaznik.prezime}`;
-    const radionicaNaziv = selectedRadionica.naziv;
-
     const zapis = prisustva.find(p =>
       p.polaznikImePrezime === imePrezime &&
-      p.radionicaNaziv === radionicaNaziv
+      p.radionicaNaziv === selectedRadionica.naziv
     );
 
-    const currentStatus = zapis ? zapis.status : 'NEPOZNATO';
+    const currentStatus = zapis ? zapis.status : "NEPOZNATO";
     const newStatus = statusCycle[currentStatus];
 
     const payload = {
@@ -87,62 +80,48 @@ function Home() {
       status: newStatus
     };
 
-    const isExisting = !!(zapis && zapis.id);
-    const endpoint = isExisting ? `${baseUrl}/api/prisustva/${zapis.id}` : `${baseUrl}/api/prisustva`;
-    const method = isExisting ? 'PUT' : 'POST';
+    const endpoint = zapis ? `${baseUrl}/api/prisustva/${zapis.id}` : `${baseUrl}/api/prisustva`;
+    const method = zapis ? "PUT" : "POST";
 
-    fetch(endpoint, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(() => {
-        const updated = isExisting
-          ? prisustva.map(p => p.id === zapis.id ? { ...p, status: newStatus } : p)
-          : [...prisustva, {
-              polaznikImePrezime: imePrezime,
-              radionicaNaziv: radionicaNaziv,
-              status: newStatus,
-              rodnoOsjetljivTekst: getStatusLabel(newStatus, polaznik.spol)
-            }];
-        setPrisustva(updated);
-      })
-      .catch(err => console.error("Greška kod spremanja prisustva", err));
-  };
-
-  const getColor = (status) => {
-    switch (status) {
-      case 'PRISUTAN': return '#b8e6b8';
-      case 'IZOSTAO': return '#f5b5b5';
-      case 'ODUSTAO': return '#f0e68c';
-      case 'NEPOZNATO': default: return '#ffffff';
+    try {
+      await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      // Lokalno ažuriraj status
+      const updated = zapis
+        ? prisustva.map(p => p.id === zapis.id ? { ...p, status: newStatus } : p)
+        : [...prisustva, {
+            polaznikImePrezime: imePrezime,
+            radionicaNaziv: selectedRadionica.naziv,
+            status: newStatus,
+            rodnoOsjetljivTekst: getStatusLabel(newStatus, polaznik.spol)
+          }];
+      setPrisustva(updated);
+    } catch (err) {
+      console.error("Greška pri spremanju statusa", err);
     }
   };
 
   return (
     <div>
-      <h2 style={{ textAlign: 'center' }}>Evidencija prisustva</h2>
+      <h2 style={{ textAlign: "center" }}>Evidencija prisustva</h2>
 
-      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <button onClick={regenerateData}>Generiraj nove podatke</button>
-      </div>
-
-      <div style={{ display: 'flex', gap: '2rem', marginTop: '20px' }}>
+      <div style={{ display: "flex", gap: "2rem", padding: "20px" }}>
         <div style={{ flex: 1 }}>
-          <h3>Popis svih radionica</h3>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <h3>Radionice</h3>
+          <ul>
             {radionice.map(r => (
-              <li
-                key={r.id}
-                onClick={() => setSelectedRadionica(r)}
-                style={{
-                  padding: '10px',
-                  marginBottom: '8px',
-                  backgroundColor: selectedRadionica?.id === r.id ? '#e8f1fb' : '#f1f1f1',
-                  cursor: 'pointer',
-                  border: selectedRadionica?.id === r.id ? '2px solid #0077cc' : '1px solid #ccc'
-                }}
-              >
+              <li key={r.id}
+                  onClick={() => setSelectedRadionica(r)}
+                  style={{
+                    cursor: "pointer",
+                    backgroundColor: selectedRadionica?.id === r.id ? "#e0f0ff" : "#f9f9f9",
+                    border: "1px solid #ccc",
+                    padding: "8px",
+                    marginBottom: "5px"
+                  }}>
                 {r.naziv}
               </li>
             ))}
@@ -150,36 +129,29 @@ function Home() {
         </div>
 
         <div style={{ flex: 1 }}>
-          <h3>Popis polaznika i polaznica</h3>
+          <h3>Polaznici</h3>
           {selectedRadionica ? (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+            <ul>
               {polaznici.map(p => {
-                const status = getStatusForPolaznik(p, selectedRadionica);
+                const status = getStatus(p);
                 return (
-                  <li
-                    key={p.id}
-                    onClick={() => handleToggleStatus(p)}
-                    style={{
-                      padding: '10px',
-                      marginBottom: '5px',
-                      backgroundColor: getColor(status),
-                      cursor: 'pointer',
-                      borderRadius: '5px',
-                      display: 'flex',
-                      justifyContent: 'space-between'
-                    }}
-                  >
+                  <li key={p.id}
+                      onClick={() => handleClick(p)}
+                      style={{
+                        cursor: "pointer",
+                        backgroundColor: getColor(status),
+                        padding: "8px",
+                        marginBottom: "5px",
+                        display: "flex",
+                        justifyContent: "space-between"
+                      }}>
                     <span>{p.ime} {p.prezime}</span>
-                    <span style={{ fontStyle: 'italic' }}>
-                      ({getStatusLabel(status, p.spol)})
-                    </span>
+                    <span style={{ fontStyle: "italic" }}>{getStatusLabel(status, p.spol)}</span>
                   </li>
                 );
               })}
             </ul>
-          ) : (
-            <p>Odaberite radionicu za prikaz polaznika.</p>
-          )}
+          ) : <p>Odaberi radionicu</p>}
         </div>
       </div>
     </div>
