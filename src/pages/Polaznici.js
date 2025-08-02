@@ -27,8 +27,7 @@ function Polaznici() {
       const data = await res.json();
       setPolaznici(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Greška kod dohvata polaznika:", err);
-      setError("Neuspješno dohvaćanje podataka o polaznicima.");
+      setError("Neuspješno dohvaćanje podataka.");
     }
   };
 
@@ -42,16 +41,13 @@ function Polaznici() {
       return;
     }
 
-    const payload = {
-      ime,
-      prezime,
-      email,
-      godinaRodenja: parseInt(godinaRodenja),
-      spol,
-      telefon,
-      grad,
-      status
-    };
+    const godina = parseInt(godinaRodenja);
+    if (isNaN(godina) || godina < 1900 || godina > new Date().getFullYear()) {
+      setError("Godina rođenja nije ispravna.");
+      return;
+    }
+
+    const payload = { ime, prezime, email, godinaRodenja: godina, spol, telefon, grad, status };
 
     const method = editId ? 'PUT' : 'POST';
     const url = editId ? `${baseUrl}/api/polaznici/${editId}` : `${baseUrl}/api/polaznici`;
@@ -62,30 +58,28 @@ function Polaznici() {
       body: JSON.stringify(payload)
     })
       .then(res => {
-        if (!res.ok) throw new Error("Greška kod spremanja polaznika");
+        if (!res.ok) throw new Error();
         return res.json();
       })
       .then(() => {
         fetchPolaznici();
-        setIme(""); setPrezime(""); setEmail(""); setGodinaRodenja("");
-        setSpol(""); setTelefon(""); setGrad(""); setStatus("");
-        setEditId(null); setError(null);
+        resetForm();
       })
-      .catch(err => {
-        console.error("Greška kod spremanja:", err);
-        setError("Neuspješno spremanje polaznika.");
-      });
+      .catch(() => setError("Greška kod spremanja polaznika."));
+  };
+
+  const resetForm = () => {
+    setIme(""); setPrezime(""); setEmail(""); setGodinaRodenja("");
+    setSpol(""); setTelefon(""); setGrad(""); setStatus("");
+    setEditId(null); setError(null);
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("Jeste li sigurni da želite obrisati ovog polaznika?")) return;
+    if (!window.confirm("Obrisati ovog polaznika?")) return;
 
     fetch(`${baseUrl}/api/polaznici/${id}`, { method: 'DELETE' })
-      .then(() => setPolaznici(polaznici.filter(p => p.id !== id)))
-      .catch(err => {
-        console.error("Greška kod brisanja:", err);
-        setError("Neuspješno brisanje polaznika.");
-      });
+      .then(() => fetchPolaznici())
+      .catch(() => setError("Greška kod brisanja."));
   };
 
   const handleSort = (key) => {
@@ -94,19 +88,12 @@ function Polaznici() {
     setSortKey(key);
   };
 
-  const handleEdit = (polaznik) => {
-    setIme(polaznik.ime);
-    setPrezime(polaznik.prezime);
-    setEmail(polaznik.email);
-    setGodinaRodenja(polaznik.godinaRodenja);
-    setSpol(polaznik.spol);
-    setTelefon(polaznik.telefon);
-    setGrad(polaznik.grad);
-    setStatus(polaznik.status);
-    setEditId(polaznik.id);
+  const handleEdit = (p) => {
+    setIme(p.ime); setPrezime(p.prezime); setEmail(p.email); setGodinaRodenja(p.godinaRodenja);
+    setSpol(p.spol); setTelefon(p.telefon); setGrad(p.grad); setStatus(p.status); setEditId(p.id);
   };
 
-  const filtriraniPolaznici = polaznici.filter(p =>
+  const filtrirani = polaznici.filter(p =>
     `${p.ime} ${p.prezime}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -119,18 +106,15 @@ function Polaznici() {
         <input value={ime} onChange={e => setIme(e.target.value)} placeholder="Ime" />
         <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
         <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-        <input value={godinaRodenja} onChange={e => setGodinaRodenja(e.target.value)} placeholder="Godina rođenja" type="number" />
-
+        <input type="number" value={godinaRodenja} onChange={e => setGodinaRodenja(e.target.value)} placeholder="Godina rođenja" />
         <select value={spol} onChange={e => setSpol(e.target.value)}>
           <option value="">Odaberi spol</option>
           <option value="M">Muški</option>
           <option value="Ž">Ženski</option>
           <option value="Drugo">Drugo</option>
         </select>
-
         <input value={telefon} onChange={e => setTelefon(e.target.value)} placeholder="Broj mobitela" />
         <input value={grad} onChange={e => setGrad(e.target.value)} placeholder="Grad" />
-
         <select value={status} onChange={e => setStatus(e.target.value)}>
           <option value="">Status</option>
           <option value="student">Student</option>
@@ -144,33 +128,28 @@ function Polaznici() {
         </button>
       </div>
 
-      <input
-        className="search"
-        type="text"
-        value={searchTerm}
-        onChange={e => setSearchTerm(e.target.value)}
-        placeholder="Pretraži polaznike po imenu"
-      />
-
-      <select className="sort" onChange={(e) => handleSort(e.target.value)} value={sortKey}>
+      <input className="search" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Pretraži po imenu" />
+      <select className="sort" onChange={e => handleSort(e.target.value)} value={sortKey}>
         <option value="">Sortiraj</option>
         <option value="ime">Po imenu</option>
         <option value="prezime">Po prezimenu</option>
       </select>
 
       <ul className="list">
-        {filtriraniPolaznici.map(p => (
+        {filtrirani.map(p => (
           <li key={p.id}>
-            <span>{p.ime} {p.prezime} ({p.email}, {p.godinaRodenja}, {p.grad})</span>
+            <span>
+              {p.ime} {p.prezime} ({p.email}) — {p.grad}, {p.godinaRodenja} • {p.spol}, {p.status}
+            </span>
             <div>
               <button onClick={() => handleEdit(p)}>Uredi</button>
-              <button onClick={() => handleDelete(p.id)} className="delete">Obriši</button>
+              <button className="delete" onClick={() => handleDelete(p.id)}>Obriši</button>
             </div>
           </li>
         ))}
       </ul>
 
-      <p className="total">Ukupno: {filtriraniPolaznici.length} polaznika</p>
+      <p className="total">Ukupno: {filtrirani.length} polaznika</p>
       <button onClick={() => setShowStats(!showStats)}>
         {showStats ? "Sakrij statistiku" : "Prikaži statistiku"}
       </button>
