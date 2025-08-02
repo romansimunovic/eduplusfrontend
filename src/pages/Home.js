@@ -57,8 +57,18 @@ function Home() {
     return zapis ? zapis.status : 'NEPOZNATO';
   };
 
+  const getStatusLabel = (status, spol) => {
+    const jeZensko = spol?.toUpperCase() === 'Ž';
+    switch (status) {
+      case 'PRISUTAN': return jeZensko ? 'Prisutna' : 'Prisutan';
+      case 'IZOSTAO': return jeZensko ? 'Izostala' : 'Izostao';
+      case 'ODUSTAO': return jeZensko ? 'Odustala' : 'Odustao';
+      case 'NEPOZNATO': default: return 'Nepoznato';
+    }
+  };
+
   const handleToggleStatus = (polaznik) => {
-    if (!selectedRadionica) return;
+    if (!selectedRadionica || !polaznik) return;
 
     const imePrezime = `${polaznik.ime} ${polaznik.prezime}`;
     const radionicaNaziv = selectedRadionica.naziv;
@@ -77,15 +87,26 @@ function Home() {
       status: newStatus
     };
 
-    const endpoint = zapis ? `${baseUrl}/api/prisustva/${zapis.id}` : `${baseUrl}/api/prisustva`;
-    const method = zapis ? 'PUT' : 'POST';
+    const isExisting = !!(zapis && zapis.id);
+    const endpoint = isExisting ? `${baseUrl}/api/prisustva/${zapis.id}` : `${baseUrl}/api/prisustva`;
+    const method = isExisting ? 'PUT' : 'POST';
 
     fetch(endpoint, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
-      .then(() => fetchData())
+      .then(() => {
+        const updated = isExisting
+          ? prisustva.map(p => p.id === zapis.id ? { ...p, status: newStatus } : p)
+          : [...prisustva, {
+              polaznikImePrezime: imePrezime,
+              radionicaNaziv: radionicaNaziv,
+              status: newStatus,
+              rodnoOsjetljivTekst: getStatusLabel(newStatus, polaznik.spol)
+            }];
+        setPrisustva(updated);
+      })
       .catch(err => console.error("Greška kod spremanja prisustva", err));
   };
 
@@ -97,16 +118,6 @@ function Home() {
       case 'NEPOZNATO': default: return '#ffffff';
     }
   };
-
- const getStatusLabel = (status, spol) => {
-  const jeZensko = spol === 'Ž';
-  switch (status) {
-    case 'PRISUTAN': return jeZensko ? 'Prisutna' : 'Prisutan';
-    case 'IZOSTAO': return jeZensko ? 'Izostala' : 'Izostao';
-    case 'ODUSTAO': return jeZensko ? 'Odustala' : 'Odustao';
-    case 'NEPOZNATO': default: return 'Nepoznato';
-  }
-};
 
   return (
     <div>
