@@ -98,14 +98,15 @@ function Home() {
     }
   };
 
-  const getStatusLabel = (status, spol) => {
-    switch (status) {
-      case 'PRISUTAN': return spol === 'Žensko' ? 'Prisutna' : 'Prisutan';
-      case 'IZOSTAO': return spol === 'Žensko' ? 'Izostala' : 'Izostao';
-      case 'ODUSTAO': return spol === 'Žensko' ? 'Odustala' : 'Odustao';
-      case 'NEPOZNATO': default: return 'Ne zna se';
-    }
-  };
+ const getStatusLabel = (status, spol) => {
+  const jeZensko = spol === 'Ž';
+  switch (status) {
+    case 'PRISUTAN': return jeZensko ? 'Prisutna' : 'Prisutan';
+    case 'IZOSTAO': return jeZensko ? 'Izostala' : 'Izostao';
+    case 'ODUSTAO': return jeZensko ? 'Odustala' : 'Odustao';
+    case 'NEPOZNATO': default: return 'Nepoznato';
+  }
+};
 
   return (
     <div>
