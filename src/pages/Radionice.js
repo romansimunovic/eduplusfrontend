@@ -8,7 +8,6 @@ function Radionice() {
   const [radionice, setRadionice] = useState([]);
   const [naziv, setNaziv] = useState('');
   const [datum, setDatum] = useState('');
-  const [opis, setOpis] = useState('');
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
@@ -31,8 +30,8 @@ function Radionice() {
   }, []);
 
   const handleAddOrUpdate = async () => {
-    if (!naziv.trim() || !datum || !opis.trim()) {
-      setError("Sva polja su obavezna.");
+    if (!naziv.trim() || !datum) {
+      setError("Naziv i datum su obavezni.");
       return;
     }
 
@@ -45,11 +44,7 @@ function Radionice() {
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          naziv: naziv.trim(),
-          datum,
-          opis: opis.trim()
-        }),
+        body: JSON.stringify({ naziv: naziv.trim(), datum }),
       });
 
       if (!response.ok) {
@@ -61,7 +56,6 @@ function Radionice() {
       fetchRadionice();
       setNaziv('');
       setDatum('');
-      setOpis('');
       setEditId(null);
       setError(null);
     } catch (err) {
@@ -89,7 +83,6 @@ function Radionice() {
   const handleEdit = (radionica) => {
     setNaziv(radionica.naziv);
     setDatum(radionica.datum);
-    setOpis(radionica.opis || '');
     setEditId(radionica.id);
   };
 
@@ -130,13 +123,7 @@ function Radionice() {
           onChange={e => setDatum(e.target.value)}
         />
       </div>
-      <textarea
-        placeholder="Opis radionice"
-        value={opis}
-        onChange={e => setOpis(e.target.value)}
-        rows={3}
-        style={{ width: '100%', marginTop: '0.5rem' }}
-      />
+
       <div className="flex-row">
         <button onClick={handleAddOrUpdate}>
           {editId ? "Spremi promjene" : "Dodaj radionicu"}
@@ -161,9 +148,6 @@ function Radionice() {
             <Link to={`/radionice/${r.id}`}>
               <strong>{r.naziv}</strong>
             </Link>
-            <div style={{ fontStyle: 'italic', color: '#555', margin: '0.3rem 0' }}>
-              {r.opis}
-            </div>
             <div>
               📅 {formatirajDatum(r.datum)}
             </div>
