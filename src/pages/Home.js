@@ -48,60 +48,36 @@ function Home() {
     return zapis ? zapis.status : 'NEPOZNATO';
   };
 
-  const handleSaveStatus = (polaznik, status) => {
+  const handleToggleStatus = (polaznik) => {
     if (!selectedRadionica) return;
+
+    const imePrezime = `${polaznik.ime} ${polaznik.prezime}`;
+    const radionicaNaziv = selectedRadionica.naziv;
+
+    const zapis = prisustva.find(p =>
+      p.polaznikImePrezime === imePrezime &&
+      p.radionicaNaziv === radionicaNaziv
+    );
+
+    const currentStatus = zapis ? zapis.status : 'NEPOZNATO';
+    const newStatus = statusCycle[currentStatus];
 
     const payload = {
       polaznikId: polaznik.id,
       radionicaId: selectedRadionica.id,
-      status: status
+      status: newStatus
     };
 
-    fetch(`${baseUrl}/api/prisustva`, {
-      method: 'POST',
+    const endpoint = zapis ? `${baseUrl}/api/prisustva/${zapis.id}` : `${baseUrl}/api/prisustva`;
+    const method = zapis ? 'PUT' : 'POST';
+
+    fetch(endpoint, {
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
-      .then(response => {
-        if (!response.ok) throw new Error('Greška kod spremanja prisustva');
-      })
-      .catch(err => console.error(err));
-  };
-
-const handleToggleStatus = (polaznik) => {
-  if (!selectedRadionica) return;
-
-  const imePrezime = `${polaznik.ime} ${polaznik.prezime}`;
-  const radionicaNaziv = selectedRadionica.naziv;
-
-  const zapis = prisustva.find(p =>
-    p.polaznikImePrezime === imePrezime &&
-    p.radionicaNaziv === radionicaNaziv
-  );
-
-  const currentStatus = zapis ? zapis.status : 'NEPOZNATO';
-  const newStatus = statusCycle[currentStatus];
-
-  const payload = {
-    polaznikId: polaznik.id,
-    radionicaId: selectedRadionica.id,
-    status: newStatus
-  };
-
-  const endpoint = zapis ? `${baseUrl}/api/prisustva/${zapis.id}` : `${baseUrl}/api/prisustva`;
-  const method = zapis ? 'PUT' : 'POST';
-
-  fetch(endpoint, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-    .then(() => fetchData()) 
-    .catch(err => console.error("Greška kod spremanja prisustva", err));
-};
-
-      return novaPrisustva;
-    });
+      .then(() => fetchData())
+      .catch(err => console.error("Greška kod spremanja prisustva", err));
   };
 
   const getColor = (status) => {
@@ -127,7 +103,7 @@ const handleToggleStatus = (polaznik) => {
       <h2 style={{ textAlign: 'center' }}>Evidencija prisustva</h2>
 
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <button onClick={regenerateData}>🔄 Generiraj nove podatke</button>
+        <button onClick={regenerateData}>Generiraj nove podatke</button>
       </div>
 
       <div style={{ display: 'flex', gap: '2rem', marginTop: '20px' }}>
