@@ -9,7 +9,7 @@ function Polaznici() {
   const [ime, setIme] = useState("");
   const [prezime, setPrezime] = useState("");
   const [email, setEmail] = useState("");
-  const [godinaRođenja, setGodinaRođenja] = useState("");
+  const [godinaRodenja, setGodinaRodenja] = useState("");
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState("");
@@ -33,7 +33,7 @@ function Polaznici() {
   }, []);
 
   const handleAddOrUpdate = () => {
-    if (!ime || !prezime || !email || !godinaRođenja) {
+    if (!ime || !prezime || !email || !godinaRodenja) {
       setError("Sva polja su obavezna.");
       return;
     }
@@ -42,7 +42,7 @@ function Polaznici() {
       ime,
       prezime,
       email,
-      godinaRođenja: parseInt(godinaRođenja)
+      godinaRodenja: parseInt(godinaRodenja)
     };
 
     const method = editId ? 'PUT' : 'POST';
@@ -62,7 +62,7 @@ function Polaznici() {
         setIme("");
         setPrezime("");
         setEmail("");
-        setGodinaRođenja("");
+        setGodinaRodenja("");
         setEditId(null);
         setError(null);
       })
@@ -97,7 +97,7 @@ function Polaznici() {
     setIme(polaznik.ime);
     setPrezime(polaznik.prezime);
     setEmail(polaznik.email);
-    setGodinaRođenja(polaznik.godinaRođenja);
+    setGodinaRodenja(polaznik.godinaRodenja);
     setEditId(polaznik.id);
   };
 
@@ -114,7 +114,7 @@ function Polaznici() {
         <input value={ime} onChange={e => setIme(e.target.value)} placeholder="Ime" />
         <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
         <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-        <input value={godinaRođenja} onChange={e => setGodinaRođenja(e.target.value)} placeholder="Godina rođenja" type="number" />
+        <input value={godinaRodenja} onChange={e => setGodinaRodenja(e.target.value)} placeholder="Godina rođenja" type="number" />
         <button onClick={handleAddOrUpdate}>
           {editId ? "Spremi izmjene" : "Dodaj"}
         </button>
@@ -137,7 +137,7 @@ function Polaznici() {
       <ul className="list">
         {filtriraniPolaznici.map(p => (
           <li key={p.id}>
-            <span>{p.ime} {p.prezime} ({p.email}, {p.godinaRođenja})</span>
+            <span>{p.ime} {p.prezime} ({p.email}, {p.godinaRodenja})</span>
             <div>
               <button onClick={() => handleEdit(p)}>Uredi</button>
               <button onClick={() => handleDelete(p.id)} className="delete">Obriši</button>
@@ -153,8 +153,8 @@ function Polaznici() {
 
       {showStats && (
         <div className="stats">
-          <p>Rođeni prije 2000.: {polaznici.filter(p => p.godinaRođenja < 2000).length}</p>
-          <p>Rođeni 2000. i kasnije: {polaznici.filter(p => p.godinaRođenja >= 2000).length}</p>
+          <p>Rođeni prije 2000.: {polaznici.filter(p => p.godinaRodenja < 2000).length}</p>
+          <p>Rođeni 2000. i kasnije: {polaznici.filter(p => p.godinaRodenja >= 2000).length}</p>
         </div>
       )}
     </div>
