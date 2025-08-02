@@ -7,6 +7,7 @@ function Home() {
   const [polaznici, setPolaznici] = useState([]);
   const [prisustva, setPrisustva] = useState([]);
   const [selectedRadionica, setSelectedRadionica] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const statusCycle = {
     NEPOZNATO: 'PRISUTAN',
@@ -15,11 +16,8 @@ function Home() {
     ODUSTAO: 'NEPOZNATO'
   };
 
-  useEffect(() => {
-    fetchAll();
-  }, []);
-
   const fetchAll = async () => {
+    setLoading(true);
     try {
       const [r, p, pr] = await Promise.all([
         fetch(`${baseUrl}/api/radionice`).then(res => res.json()),
@@ -33,7 +31,12 @@ function Home() {
     } catch (err) {
       console.error("Greška pri dohvaćanju podataka", err);
     }
+    setLoading(false);
   };
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
 
   const getStatus = (polaznik) => {
     const zapis = prisustva.find(p =>
@@ -44,11 +47,11 @@ function Home() {
   };
 
   const getStatusLabel = (status, spol) => {
-    const ž = spol?.toUpperCase() === "Ž";
+    const zensko = spol?.toLowerCase().startsWith("ž");
     switch (status) {
-      case 'PRISUTAN': return ž ? 'Prisutna' : 'Prisutan';
-      case 'IZOSTAO': return ž ? 'Izostala' : 'Izostao';
-      case 'ODUSTAO': return ž ? 'Odustala' : 'Odustao';
+      case 'PRISUTAN': return zensko ? 'Prisutna' : 'Prisutan';
+      case 'IZOSTAO': return zensko ? 'Izostala' : 'Izostao';
+      case 'ODUSTAO': return zensko ? 'Odustala' : 'Odustao';
       default: return 'Nepoznato';
     }
   };
@@ -89,14 +92,13 @@ function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      // Lokalno ažuriraj status
+
       const updated = zapis
         ? prisustva.map(p => p.id === zapis.id ? { ...p, status: newStatus } : p)
         : [...prisustva, {
             polaznikImePrezime: imePrezime,
             radionicaNaziv: selectedRadionica.naziv,
-            status: newStatus,
-            rodnoOsjetljivTekst: getStatusLabel(newStatus, polaznik.spol)
+            status: newStatus
           }];
       setPrisustva(updated);
     } catch (err) {
@@ -107,10 +109,15 @@ function Home() {
   return (
     <div>
       <h2 style={{ textAlign: "center" }}>Evidencija prisustva</h2>
+      <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+        <button onClick={fetchAll} disabled={loading}>
+          {loading ? "Učitavanje..." : "🔄 Generiraj/Osvježi podatke"}
+        </button>
+      </div>
 
       <div style={{ display: "flex", gap: "2rem", padding: "20px" }}>
         <div style={{ flex: 1 }}>
-          <h3>Radionice</h3>
+          <h3>Popis radionica</h3>
           <ul>
             {radionice.map(r => (
               <li key={r.id}
@@ -129,7 +136,7 @@ function Home() {
         </div>
 
         <div style={{ flex: 1 }}>
-          <h3>Polaznici</h3>
+          <h3>Popis svih polaznika</h3>
           {selectedRadionica ? (
             <ul>
               {polaznici.map(p => {
