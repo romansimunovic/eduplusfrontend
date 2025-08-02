@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+
 import Home from './Home';
 import Radionice from './Radionice';
 import Polaznici from './Polaznici';
@@ -30,9 +31,9 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/radionice" element={<Radionice />} />
+            <Route path="/radionice/:id" element={<RadionicaDetalji />} />
             <Route path="/polaznici" element={<Polaznici />} />
             <Route path="/prisustva" element={<Prisustva />} />
-            <Route path="/radionice/:id" element={<RadionicaDetalji />} />
           </Routes>
         </main>
       </div>
