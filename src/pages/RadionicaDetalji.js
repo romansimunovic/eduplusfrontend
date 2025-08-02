@@ -14,20 +14,23 @@ function RadionicaDetalji() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [radionicaRes, prisustvaRes] = await Promise.all([
-          fetch(`${baseUrl}/api/radionice/${id}`),
-          fetch(`${baseUrl}/api/prisustva/view`)
-        ]);
-
-        if (!radionicaRes.ok || !prisustvaRes.ok) {
-          throw new Error("Neuspješno dohvaćanje podataka");
-        }
-
+        // Dohvati podatke o radionici
+        const radionicaRes = await fetch(`${baseUrl}/api/radionice/${id}`);
+        if (!radionicaRes.ok) throw new Error("Neuspješno dohvaćanje radionice");
         const radionicaData = await radionicaRes.json();
+        setRadionica(radionicaData);
+
+        // Dohvati sva prisustva i filtriraj ih po nazivu radionice
+        const prisustvaRes = await fetch(`${baseUrl}/api/prisustva/view`);
+        if (!prisustvaRes.ok) throw new Error("Neuspješno dohvaćanje prisustava");
         const prisustvaData = await prisustvaRes.json();
 
-        setRadionica(radionicaData);
-        setPrisustva(prisustvaData.filter(p => p.radionicaId === parseInt(id)));
+   
+        const filtrirana = prisustvaData.filter(
+          p => p.radionicaNaziv === radionicaData.naziv
+        );
+
+        setPrisustva(filtrirana);
       } catch (err) {
         console.error(err);
         setError("Greška kod dohvaćanja podataka o radionici.");
