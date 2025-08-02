@@ -142,17 +142,25 @@ const handleDelete = async (id) => {
         </button>
       </div>
 
-      <ul>
-        {filtriraneRadionice.map(r => (
-          <li key={r.id}>
-            <Link to={`/radionice/${r.id}`}><strong>{r.naziv}</strong></Link> – {formatirajDatum(r.datum)}
-            <div>
-              <button className="edit" onClick={() => handleEdit(r)}>Uredi</button>
-              <button className="delete" onClick={() => handleDelete(r.id)}>Obriši</button>
-            </div>
-          </li>
-        ))}
-      </ul>
+ <ul>
+  {filtriraneRadionice.map(r => (
+    <li key={r.id}>
+      <Link to={`/radionice/${r.id}`}>
+        <strong>{r.naziv}</strong>
+      </Link>
+      <div style={{ fontStyle: 'italic', color: '#555', marginBottom: '0.3rem' }}>
+        {r.opis}
+      </div>
+      <div>
+        📅 {formatirajDatum(r.datum)}
+      </div>
+      <div>
+        <button className="edit" onClick={() => handleEdit(r)}>Uredi</button>
+        <button className="delete" onClick={() => handleDelete(r.id)}>Obriši</button>
+      </div>
+    </li>
+  ))}
+</ul>
 
       <p style={{ marginTop: "1rem" }}>Ukupno radionica: {filtriraneRadionice.length}</p>
     </div>
