@@ -24,7 +24,7 @@ function Home() {
       const [radioniceRes, polazniciRes, prisustvaRes] = await Promise.all([
         fetch(`${baseUrl}/api/radionice`).then(res => res.json()),
         fetch(`${baseUrl}/api/polaznici`).then(res => res.json()),
-        fetch(`${baseUrl}/api/prisustva/view`).then(res => res.json())
+        fetch(`${baseUrl}/api/prisustva`).then(res => res.json())
       ]);
       setRadionice(radioniceRes);
       setPolaznici(polazniciRes);
