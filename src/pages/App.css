@@ -1,88 +1,90 @@
-/* GLOBALNO */
+/* FONT I OSNOVNA TEMA */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
 body {
-  background-color: #eef2f7;
-  font-family: 'Segoe UI', Tahoma, sans-serif;
+  font-family: 'Inter', sans-serif;
+  background-color: #f4f5f7;
+  color: #2c2c2c;
   margin: 0;
   padding: 1rem;
-  color: #2e2e2e;
 }
 
+/* NASLOVI */
 h2 {
   text-align: center;
+  font-size: 2rem;
   margin-bottom: 1.5rem;
-  font-size: 1.8rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 h3 {
+  font-size: 1.3rem;
   margin-bottom: 1rem;
-  font-size: 1.2rem;
-  color: #2e2e2e;
+  color: #3a3a3a;
 }
 
 /* KONTEJNER */
 .container {
   max-width: 960px;
   margin: 0 auto;
-  background: #fff;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
 }
 
-/* FORME */
+/* INPUTI I GUMBI */
 input,
 select,
 button {
   font-size: 1rem;
-  padding: 0.6rem 0.9rem;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
   border: 1px solid #ccc;
-  border-radius: 8px;
-  background: #fff;
   outline: none;
   transition: 0.2s ease;
 }
 
 input:focus,
 select:focus {
-  border-color: #4a90e2;
-  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  border-color: #0077cc;
+  box-shadow: 0 0 0 3px rgba(0, 119, 204, 0.2);
 }
 
 button {
-  background-color: #4a90e2;
-  color: white;
-  cursor: pointer;
+  background-color: #0077cc;
+  color: #fff;
   border: none;
-  transition: background-color 0.2s ease;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 button:hover {
-  background-color: #3a7acb;
+  background-color: #005fa3;
 }
 
 button.delete {
-  background-color: #d9534f;
+  background-color: #ff4d4d;
 }
 
 button.delete:hover {
-  background-color: #c9302c;
+  background-color: #e63946;
 }
 
 button.edit {
-  background-color: #5bc0de;
+  background-color: #20c997;
 }
 
 button.edit:hover {
-  background-color: #31b0d5;
+  background-color: #17a689;
 }
 
-/* FLEX */
+/* LAYOUT */
 .flex-row {
   display: flex;
-  gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 /* LISTE */
@@ -93,100 +95,102 @@ ul {
 }
 
 li {
-  padding: 0.8rem;
-  border-radius: 8px;
-  background: #f9f9f9;
+  background: #f9fafb;
   border: 1px solid #ddd;
-  margin-bottom: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease-in-out;
 }
 
 li:hover {
-  background: #e8f1fb;
+  background: #e9f4ff;
 }
 
-/* STATUS BOJE */
+/* STATUS PRISUSTVA */
 .status-prisutan {
-  background-color: #b8e6b8;
+  background-color: #d3f9d8;
 }
 
 .status-izostao {
-  background-color: #f5b5b5;
+  background-color: #ffe0e0;
 }
 
 .status-odustao {
-  background-color: #ffffff;
-  border: 1px solid #ddd;
+  background-color: #fff3cd;
+}
+
+.status-nepoznato {
+  background-color: #f1f1f1;
 }
 
 /* OZNAČENA RADIONICA */
 .radionica-oznacena {
-  border: 2px solid #4a90e2 !important;
-  background-color: #e8f1fb !important;
+  border: 2px solid #0077cc !important;
+  background-color: #e0f0ff !important;
   font-weight: bold;
 }
 
 /* HEADER */
 .header-banner {
-  background: #4a90e2;
+  background: linear-gradient(135deg, #0077cc, #20c997);
   color: white;
-  padding: 1.2rem;
-  border-radius: 12px;
-  margin-bottom: 1rem;
+  padding: 2rem 1rem;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
   text-align: center;
 }
 
 .header-banner h1 {
-  margin: 0;
-  font-size: 1.9rem;
+  font-size: 2.2rem;
   font-weight: 700;
+  margin: 0;
 }
 
 .header-banner p {
-  margin: 0.4rem 0 0;
-  font-weight: 400;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
+  opacity: 0.95;
 }
 
-/* NAV */
+/* NAVIGACIJA */
 nav {
   background: #ffffff;
-  padding: 0.8rem 1.5rem;
+  padding: 1rem;
   margin-bottom: 1rem;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .nav-links {
   display: flex;
-  gap: 1.5rem;
   justify-content: center;
-  padding: 0;
-  margin: 0;
+  gap: 2rem;
 }
 
 .nav-links li a {
   text-decoration: none;
-  font-weight: 600;
   color: #2e2e2e;
+  font-weight: 600;
+  transition: color 0.2s ease;
 }
 
 .nav-links li a:hover {
-  color: #4a90e2;
+  color: #0077cc;
 }
 
 /* STATISTIKA */
 .stat-box {
-  background: #f4f7fb;
+  background: #f0f4f8;
   padding: 1rem;
   border-radius: 10px;
-  border: 1px solid #d0e2ff;
-  margin-top: 1rem;
   font-size: 0.95rem;
+  margin-top: 1rem;
+  border-left: 4px solid #0077cc;
 }
 
-/* RESPONSIVNO */
+/* RESPONSIVE */
 @media (max-width: 768px) {
   .flex-row {
     flex-direction: column;
