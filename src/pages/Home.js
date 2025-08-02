@@ -54,10 +54,10 @@ function Home() {
 
   const getColor = (status) => {
     switch (status) {
-      case 'PRISUTAN': return '#c8facc';      // zelena
-      case 'IZOSTAO': return '#ffcaca';       // crvena
-      case 'ODUSTAO': return '#f0e68c';       // žuta
-      default: return '#ffffff';              // bijela
+      case 'PRISUTAN': return '#c8facc';
+      case 'IZOSTAO': return '#ffcaca';
+      case 'ODUSTAO': return '#f9f3b6';
+      default: return '#ffffff';
     }
   };
 
@@ -67,6 +67,7 @@ function Home() {
     const current = prisustva.find(p =>
       p.polaznikId === polaznik.id && p.radionicaId === selectedRadionica.id
     );
+
     const currentStatus = current ? current.status : "NEPOZNATO";
     const newStatus = statusCycle[currentStatus];
 
@@ -89,15 +90,16 @@ function Home() {
       });
       if (!res.ok) throw new Error("Greška u spremanju statusa");
 
-      // lokalno ažuriranje bez refetcha
-      if (current) {
-        setPrisustva(prev =>
-          prev.map(p => p.id === current.id ? { ...p, status: newStatus } : p)
-        );
-      } else {
-        const newId = Math.random(); // privremeni ID
-        setPrisustva(prev => [...prev, { ...payload, id: newId }]);
-      }
+      // lokalni update bez refetcha
+      setPrisustva(prev => {
+        if (current) {
+          return prev.map(p =>
+            p.id === current.id ? { ...p, status: newStatus } : p
+          );
+        } else {
+          return [...prev, { ...payload, id: Math.random() }];
+        }
+      });
     } catch (err) {
       console.error("Greška prilikom spremanja:", err);
     }
@@ -121,9 +123,9 @@ function Home() {
       </div>
 
       <div style={{ display: "flex", gap: "2rem" }}>
-        {/* Lijevi stupac: Radionice */}
+        {/* Lijevi stupac */}
         <div style={{ flex: 1 }}>
-          <h3>📚 Radionice (NGO sektor)</h3>
+          <h3>📚 Radionice</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {radionice.map(r => (
               <li key={r.id}
@@ -143,41 +145,37 @@ function Home() {
           </ul>
         </div>
 
-        {/* Desni stupac: Polaznici */}
+        {/* Desni stupac */}
         <div style={{ flex: 1 }}>
           <h3>👥 Sudionici / Sudionice</h3>
           {selectedRadionica ? (
             <ul style={{ listStyle: "none", padding: 0 }}>
-              {polaznici.map(p => {
-                const status = getStatus(p.id);
-                const zapisPostoji = prisustva.some(pr =>
-                  pr.radionicaId === selectedRadionica.id && pr.polaznikId === p.id
-                );
-                const boja = zapisPostoji ? getColor(status) : "#f0f0f0";
-                const label = zapisPostoji ? getStatusLabel(status, p.spol) : "Nema zapisa";
-
-                return (
-                  <li key={p.id}
-                      onClick={() => handleClick(p)}
-                      style={{
-                        backgroundColor: boja,
-                        padding: "10px",
-                        marginBottom: "8px",
-                        borderRadius: "6px",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        cursor: "pointer",
-                        opacity: zapisPostoji ? 1 : 0.6
-                      }}>
-                    <span>{p.ime} {p.prezime}</span>
-                    <span style={{ fontStyle: "italic" }}>{label}</span>
-                  </li>
-                );
-              })}
+              {polaznici
+                .filter(p => prisustva.some(pr =>
+                  pr.radionicaId === selectedRadionica.id && pr.polaznikId === p.id))
+                .map(p => {
+                  const status = getStatus(p.id);
+                  return (
+                    <li key={p.id}
+                        onClick={() => handleClick(p)}
+                        style={{
+                          backgroundColor: getColor(status),
+                          padding: "10px",
+                          marginBottom: "8px",
+                          borderRadius: "6px",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          cursor: "pointer"
+                        }}>
+                      <span>{p.ime} {p.prezime}</span>
+                      <span style={{ fontStyle: "italic" }}>{getStatusLabel(status, p.spol)}</span>
+                    </li>
+                  );
+                })}
             </ul>
           ) : (
-            <p>⬅️ Odaberi radionicu s lijeve strane</p>
+            <p>⬅️ Odaberi radionicu za prikaz sudionika.</p>
           )}
         </div>
       </div>
