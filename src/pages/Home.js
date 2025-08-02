@@ -68,33 +68,37 @@ function Home() {
       .catch(err => console.error(err));
   };
 
-  const handleToggleStatus = (polaznik) => {
-    if (!selectedRadionica) return;
+const handleToggleStatus = (polaznik) => {
+  if (!selectedRadionica) return;
 
-    const imePrezime = `${polaznik.ime} ${polaznik.prezime}`;
-    const radionicaNaziv = selectedRadionica.naziv;
+  const imePrezime = `${polaznik.ime} ${polaznik.prezime}`;
+  const radionicaNaziv = selectedRadionica.naziv;
 
-    setPrisustva(prev => {
-      const novaPrisustva = [...prev];
-      const index = novaPrisustva.findIndex(p =>
-        p.polaznikImePrezime === imePrezime &&
-        p.radionicaNaziv === radionicaNaziv
-      );
+  const zapis = prisustva.find(p =>
+    p.polaznikImePrezime === imePrezime &&
+    p.radionicaNaziv === radionicaNaziv
+  );
 
-      if (index !== -1) {
-        const trenutni = novaPrisustva[index].status;
-        const novi = statusCycle[trenutni];
-        novaPrisustva[index].status = novi;
-        handleSaveStatus(polaznik, novi);
-      } else {
-        const status = 'PRISUTAN';
-        novaPrisustva.push({
-          polaznikImePrezime: imePrezime,
-          radionicaNaziv: radionicaNaziv,
-          status: status
-        });
-        handleSaveStatus(polaznik, status);
-      }
+  const currentStatus = zapis ? zapis.status : 'NEPOZNATO';
+  const newStatus = statusCycle[currentStatus];
+
+  const payload = {
+    polaznikId: polaznik.id,
+    radionicaId: selectedRadionica.id,
+    status: newStatus
+  };
+
+  const endpoint = zapis ? `${baseUrl}/api/prisustva/${zapis.id}` : `${baseUrl}/api/prisustva`;
+  const method = zapis ? 'PUT' : 'POST';
+
+  fetch(endpoint, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(() => fetchData()) 
+    .catch(err => console.error("Greška kod spremanja prisustva", err));
+};
 
       return novaPrisustva;
     });
