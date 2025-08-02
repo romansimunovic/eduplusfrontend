@@ -101,7 +101,11 @@ function Home() {
   const handleGenerateData = async () => {
     try {
       await fetch(`${baseUrl}/api/dev/seed`, { method: "POST" });
-      await fetchAll();
+
+      // delay 500ms prije fetchanja
+      setTimeout(() => {
+        fetchAll();
+      }, 500);
     } catch (err) {
       console.error("Greška kod generiranja podataka:", err);
     }
@@ -116,7 +120,6 @@ function Home() {
       </div>
 
       <div style={{ display: "flex", gap: "2rem" }}>
-        {/* Lijevi stupac */}
         <div style={{ flex: 1 }}>
           <h3> Popis svih radionica</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
@@ -138,7 +141,6 @@ function Home() {
           </ul>
         </div>
 
-        {/* Desni stupac */}
         <div style={{ flex: 1 }}>
           <h3> Popis sudionika</h3>
           {selectedRadionica ? (
