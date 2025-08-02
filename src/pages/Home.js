@@ -36,7 +36,9 @@ function Home() {
   };
 
   const getStatus = (polaznikId) => {
-    const zapis = prisustva.find(p => p.polaznikId === polaznikId && p.radionicaId === selectedRadionica?.id);
+    const zapis = prisustva.find(p =>
+      p.polaznikId === polaznikId && p.radionicaId === selectedRadionica?.id
+    );
     return zapis ? zapis.status : "NEPOZNATO";
   };
 
@@ -52,17 +54,19 @@ function Home() {
 
   const getColor = (status) => {
     switch (status) {
-      case 'PRISUTAN': return '#c8facc';
-      case 'IZOSTAO': return '#ffcaca';
-      case 'ODUSTAO': return '#f9f3b6';
-      default: return '#ffffff';
+      case 'PRISUTAN': return '#c8facc';      // zelena
+      case 'IZOSTAO': return '#ffcaca';       // crvena
+      case 'ODUSTAO': return '#f0e68c';       // žuta
+      default: return '#ffffff';              // bijela
     }
   };
 
   const handleClick = async (polaznik) => {
     if (!selectedRadionica) return;
 
-    const current = prisustva.find(p => p.polaznikId === polaznik.id && p.radionicaId === selectedRadionica.id);
+    const current = prisustva.find(p =>
+      p.polaznikId === polaznik.id && p.radionicaId === selectedRadionica.id
+    );
     const currentStatus = current ? current.status : "NEPOZNATO";
     const newStatus = statusCycle[currentStatus];
 
@@ -75,8 +79,7 @@ function Home() {
     const endpoint = current
       ? `${baseUrl}/api/prisustva/${current.id}`
       : `${baseUrl}/api/prisustva`;
-
-    const method = current ? "PUT" : "POST";
+    const method = current ? 'PUT' : 'POST';
 
     try {
       const res = await fetch(endpoint, {
@@ -85,14 +88,16 @@ function Home() {
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error("Greška u spremanju statusa");
-      const updated = [...prisustva];
+
+      // lokalno ažuriranje bez refetcha
       if (current) {
-        const index = updated.findIndex(p => p.id === current.id);
-        updated[index].status = newStatus;
+        setPrisustva(prev =>
+          prev.map(p => p.id === current.id ? { ...p, status: newStatus } : p)
+        );
       } else {
-        updated.push({ ...payload, id: Math.random() });
+        const newId = Math.random(); // privremeni ID
+        setPrisustva(prev => [...prev, { ...payload, id: newId }]);
       }
-      setPrisustva(updated);
     } catch (err) {
       console.error("Greška prilikom spremanja:", err);
     }
@@ -109,27 +114,27 @@ function Home() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2 style={{ textAlign: "center" }}>EdukatorPlus – Evidencija prisustva</h2>
+      <h2 style={{ textAlign: "center" }}>📋 EdukatorPlus – Evidencija prisustva</h2>
 
-      <div style={{ textAlign: "center", margin: "1rem" }}>
+      <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <button onClick={handleGenerateData}>🔄 Generiraj nove podatke</button>
       </div>
 
       <div style={{ display: "flex", gap: "2rem" }}>
-        {/* Radionice */}
+        {/* Lijevi stupac: Radionice */}
         <div style={{ flex: 1 }}>
-          <h3>Radionice (NGO sektor)</h3>
+          <h3>📚 Radionice (NGO sektor)</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {radionice.map(r => (
               <li key={r.id}
                   onClick={() => setSelectedRadionica(r)}
                   style={{
                     cursor: "pointer",
+                    backgroundColor: selectedRadionica?.id === r.id ? "#d4ebff" : "#f3f3f3",
                     padding: "10px",
                     marginBottom: "8px",
-                    border: "1px solid #ccc",
                     borderRadius: "6px",
-                    backgroundColor: selectedRadionica?.id === r.id ? "#d4ebff" : "#f3f3f3"
+                    border: "1px solid #ccc"
                   }}>
                 <strong>{r.naziv}</strong><br />
                 <small>{r.opis}</small>
@@ -138,36 +143,41 @@ function Home() {
           </ul>
         </div>
 
-        {/* Polaznici */}
+        {/* Desni stupac: Polaznici */}
         <div style={{ flex: 1 }}>
-          <h3>Sudionici / Sudionice</h3>
+          <h3>👥 Sudionici / Sudionice</h3>
           {selectedRadionica ? (
             <ul style={{ listStyle: "none", padding: 0 }}>
-              {polaznici
-                .filter(p => prisustva.some(pr => pr.radionicaId === selectedRadionica.id && pr.polaznikId === p.id))
-                .map(p => {
-                  const status = getStatus(p.id);
-                  return (
-                    <li key={p.id}
-                        onClick={() => handleClick(p)}
-                        style={{
-                          backgroundColor: getColor(status),
-                          padding: "10px",
-                          marginBottom: "8px",
-                          borderRadius: "6px",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          cursor: "pointer"
-                        }}>
-                      <span>{p.ime} {p.prezime}</span>
-                      <span style={{ fontStyle: "italic" }}>{getStatusLabel(status, p.spol)}</span>
-                    </li>
-                  );
-                })}
+              {polaznici.map(p => {
+                const status = getStatus(p.id);
+                const zapisPostoji = prisustva.some(pr =>
+                  pr.radionicaId === selectedRadionica.id && pr.polaznikId === p.id
+                );
+                const boja = zapisPostoji ? getColor(status) : "#f0f0f0";
+                const label = zapisPostoji ? getStatusLabel(status, p.spol) : "Nema zapisa";
+
+                return (
+                  <li key={p.id}
+                      onClick={() => handleClick(p)}
+                      style={{
+                        backgroundColor: boja,
+                        padding: "10px",
+                        marginBottom: "8px",
+                        borderRadius: "6px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        opacity: zapisPostoji ? 1 : 0.6
+                      }}>
+                    <span>{p.ime} {p.prezime}</span>
+                    <span style={{ fontStyle: "italic" }}>{label}</span>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
-            <p>Molimo odaberi radionicu s popisa.</p>
+            <p>⬅️ Odaberi radionicu s lijeve strane</p>
           )}
         </div>
       </div>
