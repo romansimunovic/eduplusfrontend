@@ -19,20 +19,25 @@ function Home() {
     fetchData();
   }, []);
 
-  const fetchData = () => {
-    Promise.all([
-      fetch(`${baseUrl}/api/radionice`).then(r => r.json()),
-      fetch(`${baseUrl}/api/polaznici`).then(r => r.json()),
-      fetch(`${baseUrl}/api/prisustva/view`).then(r => r.json())
-    ])
-      .then(([radData, polData, prisData]) => {
-        setRadionice(radData);
-        setPolaznici(polData);
-        setPrisustva(prisData);
-        if (radData.length > 0) setSelectedRadionica(radData[0]);
-      })
-      .catch(err => console.error("Greška prilikom dohvaćanja podataka", err));
-  };
+const fetchData = () => {
+  const previousSelectedId = selectedRadionica?.id;
+
+  Promise.all([
+    fetch(`${baseUrl}/api/radionice`).then(r => r.json()),
+    fetch(`${baseUrl}/api/polaznici`).then(r => r.json()),
+    fetch(`${baseUrl}/api/prisustva/view`).then(r => r.json())
+  ])
+    .then(([radData, polData, prisData]) => {
+      setRadionice(radData);
+      setPolaznici(polData);
+      setPrisustva(prisData);
+
+      // Ovdje ponovno postavljamo selektiranu radionicu ako još postoji
+      const stillExists = radData.find(r => r.id === previousSelectedId);
+      setSelectedRadionica(stillExists || radData[0]); // fallback na prvu samo ako je nema više
+    })
+    .catch(err => console.error("Greška prilikom dohvaćanja podataka", err));
+};
 
   const regenerateData = () => {
     fetch(`${baseUrl}/api/dev/seed`, { method: 'POST' })
