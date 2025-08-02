@@ -105,7 +105,7 @@ function Home() {
       // delay 500ms prije fetchanja
       setTimeout(() => {
         fetchAll();
-      }, 500);
+      }, 300);
     } catch (err) {
       console.error("Greška kod generiranja podataka:", err);
     }
