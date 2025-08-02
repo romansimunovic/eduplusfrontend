@@ -7,6 +7,7 @@ function Home() {
   const [polaznici, setPolaznici] = useState([]);
   const [prisustva, setPrisustva] = useState([]);
   const [selectedRadionica, setSelectedRadionica] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const statusCycle = {
     NEPOZNATO: 'PRISUTAN',
@@ -19,30 +20,33 @@ function Home() {
     fetchData();
   }, []);
 
-const fetchData = () => {
-  const previousSelectedId = selectedRadionica?.id;
+  const fetchData = () => {
+    const previousSelectedId = selectedRadionica?.id;
+    setLoading(true);
 
-  Promise.all([
-    fetch(`${baseUrl}/api/radionice`).then(r => r.json()),
-    fetch(`${baseUrl}/api/polaznici`).then(r => r.json()),
-    fetch(`${baseUrl}/api/prisustva/view`).then(r => r.json())
-  ])
-    .then(([radData, polData, prisData]) => {
-      setRadionice(radData);
-      setPolaznici(polData);
-      setPrisustva(prisData);
+    Promise.all([
+      fetch(`${baseUrl}/api/radionice`).then(r => r.json()),
+      fetch(`${baseUrl}/api/polaznici`).then(r => r.json()),
+      fetch(`${baseUrl}/api/prisustva/view`).then(r => r.json())
+    ])
+      .then(([radData, polData, prisData]) => {
+        setRadionice(radData);
+        setPolaznici(polData);
+        setPrisustva(prisData);
 
-      // Ovdje ponovno postavljamo selektiranu radionicu ako još postoji
-      const stillExists = radData.find(r => r.id === previousSelectedId);
-      setSelectedRadionica(stillExists || radData[0]); // fallback na prvu samo ako je nema više
-    })
-    .catch(err => console.error("Greška prilikom dohvaćanja podataka", err));
-};
+        const stillExists = radData.find(r => r.id === previousSelectedId);
+        setSelectedRadionica(stillExists || radData[0] || null);
+      })
+      .catch(err => console.error("Greška prilikom dohvaćanja podataka", err))
+      .finally(() => setLoading(false));
+  };
 
   const regenerateData = () => {
+    setLoading(true);
     fetch(`${baseUrl}/api/dev/seed`, { method: 'POST' })
       .then(() => fetchData())
-      .catch(() => alert("Greška prilikom regeneracije podataka."));
+      .catch(() => alert("Greška prilikom regeneracije podataka."))
+      .finally(() => setLoading(false));
   };
 
   const getStatusForPolaznik = (polaznik, radionica) => {
@@ -108,29 +112,35 @@ const fetchData = () => {
       <h2 style={{ textAlign: 'center' }}>Evidencija prisustva</h2>
 
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <button onClick={regenerateData}>Generiraj nove podatke</button>
+        <button onClick={regenerateData} disabled={loading}>
+          {loading ? 'Generiram podatke...' : 'Generiraj nove podatke'}
+        </button>
       </div>
 
       <div style={{ display: 'flex', gap: '2rem', marginTop: '20px' }}>
         <div style={{ flex: 1 }}>
           <h3>Popis svih radionica</h3>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {radionice.map(r => (
-              <li
-                key={r.id}
-                onClick={() => setSelectedRadionica(r)}
-                style={{
-                  padding: '10px',
-                  marginBottom: '8px',
-                  backgroundColor: selectedRadionica?.id === r.id ? '#e8f1fb' : '#f1f1f1',
-                  cursor: 'pointer',
-                  border: selectedRadionica?.id === r.id ? '2px solid #0077cc' : '1px solid #ccc'
-                }}
-              >
-                {r.naziv}
-              </li>
-            ))}
-          </ul>
+          {radionice.length === 0 ? (
+            <p style={{ fontStyle: 'italic' }}>Nema dostupnih radionica.</p>
+          ) : (
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {radionice.map(r => (
+                <li
+                  key={r.id}
+                  onClick={() => setSelectedRadionica(r)}
+                  style={{
+                    padding: '10px',
+                    marginBottom: '8px',
+                    backgroundColor: selectedRadionica?.id === r.id ? '#e8f1fb' : '#f1f1f1',
+                    cursor: 'pointer',
+                    border: selectedRadionica?.id === r.id ? '2px solid #0077cc' : '1px solid #ccc'
+                  }}
+                >
+                  {r.naziv}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div style={{ flex: 1 }}>
@@ -162,7 +172,7 @@ const fetchData = () => {
               })}
             </ul>
           ) : (
-            <p>Odaberite radionicu za prikaz polaznika.</p>
+            <p style={{ fontStyle: 'italic' }}>Odaberite radionicu za prikaz polaznika.</p>
           )}
         </div>
       </div>
