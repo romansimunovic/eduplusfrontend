@@ -119,21 +119,21 @@ function Home() {
         <div style={{ flex: 1 }}>
           <h3> Popis svih radionica</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
-            {radionice.map(r => (
-              <li key={r.id}
-                  onClick={() => setSelectedRadionica(r)}
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor: selectedRadionica?.id === r.id ? "#d4ebff" : "#f3f3f3",
-                    padding: "10px",
-                    marginBottom: "8px",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc"
-                  }}>
-                <strong>{r.naziv}</strong><br />
-              </li>
-            ))}
-          </ul>
+  {radionice.map(r => (
+    <li key={r.id}
+        onClick={() => setSelectedRadionica(r)}
+        style={{
+          cursor: "pointer",
+          backgroundColor: selectedRadionica?.id === r.id ? "#d4ebff" : "#f3f3f3",
+          padding: "10px",
+          marginBottom: "8px",
+          borderRadius: "6px",
+          border: "1px solid #ccc"
+        }}>
+      <strong>{r.naziv}</strong>
+    </li>
+  ))}
+</ul>
         </div>
 
         <div style={{ flex: 1 }}>
