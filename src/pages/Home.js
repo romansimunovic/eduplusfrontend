@@ -36,7 +36,7 @@ function Home() {
   };
 
   const getStatusLabel = (status, spol) => {
-    const zensko = spol === 'ženski';
+    const zensko = (spol || '').toUpperCase() === 'Ž';  // podržava 'Ž', 'ž', itd.
     switch (status) {
       case 'PRISUTAN': return zensko ? 'Prisutna' : 'Prisutan';
       case 'IZOSTAO': return zensko ? 'Izostala' : 'Izostao';
