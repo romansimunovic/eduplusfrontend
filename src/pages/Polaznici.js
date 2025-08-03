@@ -14,26 +14,25 @@ function Polaznici() {
   const [telefon, setTelefon] = useState("");
   const [grad, setGrad] = useState("");
   const [status, setStatus] = useState("");
+  const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState("");
-  const [editId, setEditId] = useState(null);
   const [showStats, setShowStats] = useState(false);
-
-  const fetchPolaznici = async () => {
-    try {
-      const res = await fetch(`${baseUrl}/api/polaznici`);
-      if (!res.ok) throw new Error("Neuspješno dohvaćanje polaznika");
-      const data = await res.json();
-      setPolaznici(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setError("Neuspješno dohvaćanje podataka.");
-    }
-  };
 
   useEffect(() => {
     fetchPolaznici();
   }, []);
+
+  const fetchPolaznici = async () => {
+    try {
+      const res = await fetch(`${baseUrl}/api/polaznici`);
+      const data = await res.json();
+      setPolaznici(Array.isArray(data) ? data : []);
+    } catch {
+      setError("Neuspješno dohvaćanje podataka.");
+    }
+  };
 
   const handleAddOrUpdate = () => {
     if (!ime || !prezime || !email || !godinaRodenja || !spol || !telefon || !grad || !status) {
@@ -48,7 +47,6 @@ function Polaznici() {
     }
 
     const payload = { ime, prezime, email, godinaRodenja: godina, spol, telefon, grad, status };
-
     const method = editId ? 'PUT' : 'POST';
     const url = editId ? `${baseUrl}/api/polaznici/${editId}` : `${baseUrl}/api/polaznici`;
 
@@ -74,23 +72,27 @@ function Polaznici() {
     setEditId(null); setError(null);
   };
 
+  const handleEdit = (p) => {
+    setIme(p.ime); setPrezime(p.prezime); setEmail(p.email);
+    setGodinaRodenja(p.godinaRodenja); setSpol(p.spol);
+    setTelefon(p.telefon); setGrad(p.grad); setStatus(p.status);
+    setEditId(p.id);
+  };
+
   const handleDelete = (id) => {
     if (!window.confirm("Obrisati ovog polaznika?")) return;
-
     fetch(`${baseUrl}/api/polaznici/${id}`, { method: 'DELETE' })
       .then(() => fetchPolaznici())
       .catch(() => setError("Greška kod brisanja."));
   };
 
   const handleSort = (key) => {
-    const sorted = [...polaznici].sort((a, b) => a[key].localeCompare(b[key]));
+    const sorted = [...polaznici].sort((a, b) => {
+      if (key === "godinaRodenja") return a[key] - b[key];
+      return a[key].localeCompare(b[key], 'hr');
+    });
     setPolaznici(sorted);
     setSortKey(key);
-  };
-
-  const handleEdit = (p) => {
-    setIme(p.ime); setPrezime(p.prezime); setEmail(p.email); setGodinaRodenja(p.godinaRodenja);
-    setSpol(p.spol); setTelefon(p.telefon); setGrad(p.grad); setStatus(p.status); setEditId(p.id);
   };
 
   const filtrirani = polaznici.filter(p =>
@@ -107,13 +109,16 @@ function Polaznici() {
         <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
         <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
         <input type="number" value={godinaRodenja} onChange={e => setGodinaRodenja(e.target.value)} placeholder="Godina rođenja" />
+        
         <select value={spol} onChange={e => setSpol(e.target.value)}>
           <option value="">Odaberi spol</option>
           <option value="M">Muški</option>
           <option value="Ž">Ženski</option>
         </select>
+        
         <input value={telefon} onChange={e => setTelefon(e.target.value)} placeholder="Broj mobitela" />
         <input value={grad} onChange={e => setGrad(e.target.value)} placeholder="Grad" />
+        
         <select value={status} onChange={e => setStatus(e.target.value)}>
           <option value="">Status</option>
           <option value="student">Student</option>
@@ -127,18 +132,28 @@ function Polaznici() {
         </button>
       </div>
 
-      <input className="search" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Pretraži po imenu" />
+      <input
+        className="search"
+        value={searchTerm}
+        onChange={e => setSearchTerm(e.target.value)}
+        placeholder="Pretraži po imenu"
+      />
+
       <select className="sort" onChange={e => handleSort(e.target.value)} value={sortKey}>
         <option value="">Sortiraj</option>
         <option value="ime">Po imenu</option>
         <option value="prezime">Po prezimenu</option>
+        <option value="spol">Po spolu</option>
+        <option value="grad">Po gradu</option>
+        <option value="status">Po statusu</option>
+        <option value="godinaRodenja">Po godini rođenja</option>
       </select>
 
       <ul className="list">
         {filtrirani.map(p => (
           <li key={p.id}>
             <span>
-          {p.ime} {p.prezime} ({p.email}) — {p.grad}, {p.godinaRodenja} • {p.spol}, {p.status} • 📞 {p.telefon}
+              {p.ime} {p.prezime} ({p.email}) — {p.grad}, {p.godinaRodenja} • {p.spol}, {p.status} • 📞 {p.telefon}
             </span>
             <div>
               <button onClick={() => handleEdit(p)}>Uredi</button>
@@ -149,6 +164,7 @@ function Polaznici() {
       </ul>
 
       <p className="total">Ukupno: {filtrirani.length} polaznika</p>
+
       <button onClick={() => setShowStats(!showStats)}>
         {showStats ? "Sakrij statistiku" : "Prikaži statistiku"}
       </button>
@@ -157,6 +173,8 @@ function Polaznici() {
         <div className="stats">
           <p>Rođeni prije 2000.: {polaznici.filter(p => p.godinaRodenja < 2000).length}</p>
           <p>Rođeni 2000. i kasnije: {polaznici.filter(p => p.godinaRodenja >= 2000).length}</p>
+          <p>Muških: {polaznici.filter(p => p.spol === "M").length}</p>
+          <p>Ženskih: {polaznici.filter(p => p.spol === "Ž").length}</p>
         </div>
       )}
     </div>
