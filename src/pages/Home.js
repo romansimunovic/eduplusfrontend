@@ -35,12 +35,11 @@ function Home() {
     }
   };
 
-  const getStatusLabel = (status, spol) => {
-    const zensko = spol?.toLowerCase().startsWith("ž");
+  const getStatusLabel = (status) => {
     switch (status) {
-      case 'PRISUTAN': return zensko ? 'Prisutna' : 'Prisutan';
-      case 'IZOSTAO': return zensko ? 'Izostala' : 'Izostao';
-      case 'ODUSTAO': return zensko ? 'Odustala' : 'Odustao';
+      case 'PRISUTAN': return 'Prisutan/na';
+      case 'IZOSTAO': return 'Izostao/la';
+      case 'ODUSTAO': return 'Odustao/la';
       default: return 'Nepoznato';
     }
   };
@@ -98,14 +97,14 @@ function Home() {
     }
   };
 
- const handleGenerateData = async () => {
-  try {
-    await fetch(`${baseUrl}/api/dev/seed`, { method: "POST" });
-    await fetchAll(); // nema kašnjenja
-  } catch (err) {
-    console.error("Greška kod generiranja podataka:", err);
-  }
-};
+  const handleGenerateData = async () => {
+    try {
+      await fetch(`${baseUrl}/api/dev/seed`, { method: "POST" });
+      await fetchAll();
+    } catch (err) {
+      console.error("Greška kod generiranja podataka:", err);
+    }
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -117,27 +116,27 @@ function Home() {
 
       <div style={{ display: "flex", gap: "2rem" }}>
         <div style={{ flex: 1 }}>
-          <h3> Popis svih radionica</h3>
+          <h3>Popis svih radionica</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
-  {radionice.map(r => (
-    <li key={r.id}
-        onClick={() => setSelectedRadionica(r)}
-        style={{
-          cursor: "pointer",
-          backgroundColor: selectedRadionica?.id === r.id ? "#d4ebff" : "#f3f3f3",
-          padding: "10px",
-          marginBottom: "8px",
-          borderRadius: "6px",
-          border: "1px solid #ccc"
-        }}>
-      <strong>{r.naziv}</strong>
-    </li>
-  ))}
-</ul>
+            {radionice.map(r => (
+              <li key={r.id}
+                  onClick={() => setSelectedRadionica(r)}
+                  style={{
+                    cursor: "pointer",
+                    backgroundColor: selectedRadionica?.id === r.id ? "#d4ebff" : "#f3f3f3",
+                    padding: "10px",
+                    marginBottom: "8px",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc"
+                  }}>
+                <strong>{r.naziv}</strong>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div style={{ flex: 1 }}>
-          <h3> Popis sudionika</h3>
+          <h3>Popis sudionika</h3>
           {selectedRadionica ? (
             <ul style={{ listStyle: "none", padding: 0 }}>
               {prisustva
@@ -161,7 +160,7 @@ function Home() {
                         }}>
                       <span>{polaznik.ime} {polaznik.prezime}</span>
                       <span style={{ fontStyle: "italic" }}>
-                        {getStatusLabel(pr.status, polaznik.spol)}
+                        {getStatusLabel(pr.status)}
                       </span>
                     </li>
                   );
