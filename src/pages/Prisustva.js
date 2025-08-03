@@ -90,12 +90,21 @@ function Prisustva() {
   };
 
   const prikaziStatus = (status, spol) => {
-  const jeZensko = spol && spol.toLowerCase() === 'žensko';
-  if (status === 'PRISUTAN') return jeZensko ? 'Prisutna' : 'Prisutan';
-  if (status === 'IZOSTAO') return jeZensko ? 'Izostala' : 'Izostao';
-  if (status === 'ODUSTAO') return jeZensko ? 'Odustala' : 'Odustao';
-  return 'Nepoznato';
-};
+    const jeZensko = spol && spol.toLowerCase().startsWith('ž');
+    if (status === 'PRISUTAN') return jeZensko ? 'Prisutna' : 'Prisutan';
+    if (status === 'IZOSTAO') return jeZensko ? 'Izostala' : 'Izostao';
+    if (status === 'ODUSTAO') return jeZensko ? 'Odustala' : 'Odustao';
+    return 'Nepoznato';
+  };
+
+  const getColor = (status) => {
+    switch (status) {
+      case 'PRISUTAN': return '#c8facc';
+      case 'IZOSTAO': return '#ffcaca';
+      case 'ODUSTAO': return '#f9f3b6';
+      default: return '#ffffff';
+    }
+  };
 
   const filtrirano = filterRadionica
     ? prisustva.filter(p => p.radionicaNaziv === filterRadionica)
@@ -156,13 +165,28 @@ function Prisustva() {
       </div>
 
       <ul>
-        {sortirano.map((p, i) => (
-          <li key={i}>
-            {p.polaznikImePrezime} – {p.radionicaNaziv} ({p.status})
-            <button onClick={() => handleEdit(p)}>Uredi</button>
-            <button onClick={() => handleDelete(p.id)}>Obriši</button>
-          </li>
-        ))}
+        {sortirano.map((p, i) => {
+          const polaznik = polaznici.find(x => `${x.ime} ${x.prezime}` === p.polaznikImePrezime);
+          const spol = polaznik?.spol;
+          return (
+            <li key={i}
+                style={{
+                  backgroundColor: getColor(p.status),
+                  padding: "10px",
+                  marginBottom: "8px",
+                  borderRadius: "6px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}>
+              <span>{p.polaznikImePrezime} – {p.radionicaNaziv} ({prikaziStatus(p.status, spol)})</span>
+              <span>
+                <button onClick={() => handleEdit(p)}>Uredi</button>{' '}
+                <button onClick={() => handleDelete(p.id)}>Obriši</button>
+              </span>
+            </li>
+          );
+        })}
       </ul>
 
       <button onClick={() => setShowStats(!showStats)}>
