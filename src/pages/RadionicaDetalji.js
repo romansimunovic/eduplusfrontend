@@ -14,23 +14,18 @@ function RadionicaDetalji() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Dohvati detalje radionice po ID-u
+        // 1. Dohvati detalje radionice
         const radionicaRes = await fetch(`${baseUrl}/api/radionice/${id}`);
         if (!radionicaRes.ok) throw new Error("Neuspješno dohvaćanje radionice");
         const radionicaData = await radionicaRes.json();
         setRadionica(radionicaData);
 
-        // Dohvati sva prisustva
-        const prisustvaRes = await fetch(`${baseUrl}/api/prisustva/view`);
+        // 2. Dohvati prisustva za TOČNO TU radionicu
+        const prisustvaRes = await fetch(`${baseUrl}/api/prisustva/view/${id}`);
         if (!prisustvaRes.ok) throw new Error("Neuspješno dohvaćanje prisustava");
         const prisustvaData = await prisustvaRes.json();
 
-        // Filtriraj prisustva za ovu radionicu prema nazivu
-        const filtrirana = prisustvaData.filter(
-          p => p.radionicaNaziv === radionicaData.naziv
-        );
-
-        setPrisustva(filtrirana);
+        setPrisustva(prisustvaData);
       } catch (err) {
         console.error(err);
         setError("Greška kod dohvaćanja podataka o radionici.");
@@ -42,11 +37,9 @@ function RadionicaDetalji() {
     fetchData();
   }, [id]);
 
-  // Broji koliko je polaznika po statusu (PRISUTAN, IZOSTAO, ODUSTAO)
   const brojPoStatusu = (status) =>
     prisustva.filter(p => p.status?.toUpperCase() === status).length;
 
-  // Formatiraj datum u hrvatski oblik dd.mm.yyyy
   const formatirajDatum = (datum) => {
     if (!datum) return '';
     const d = new Date(datum);
@@ -57,7 +50,6 @@ function RadionicaDetalji() {
     });
   };
 
-  // Prikaz statusa s obzirom na rod (ženski/muški)
   const prikaziStatus = (status, spol) => {
     if (!status) return "Nepoznato";
     const zensko = spol && spol.toLowerCase().startsWith("ž");
@@ -98,11 +90,12 @@ function RadionicaDetalji() {
           ) : (
             <ul className="polaznici-lista">
               {prisustva.map((p) => {
-                // Sigurno izvuci ime i prezime ili default
-                const imePrezime = p.polaznikImePrezime || "Nepoznati polaznik";
+                const ime = p.polaznikIme || "Nepoznato";
+                const prezime = p.polaznikPrezime || "";
+                const imePrezime = `${ime} ${prezime}`.trim();
                 const statusTekst = prikaziStatus(p.status, p.polaznikSpol);
                 return (
-                  <li key={p.id || p.polaznikId || Math.random()}>
+                  <li key={p.id}>
                     <strong>{imePrezime}</strong> — {statusTekst}
                   </li>
                 );
