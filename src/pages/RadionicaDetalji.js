@@ -11,36 +11,45 @@ function RadionicaDetalji() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchData = async () => {
+    try {
+      const radionicaRes = await fetch(`${baseUrl}/api/radionice/${id}`);
+      if (!radionicaRes.ok) throw new Error("Neuspješno dohvaćanje radionice");
+      const radionicaData = await radionicaRes.json();
+      setRadionica(radionicaData);
+
+      const prisustvaRes = await fetch(`${baseUrl}/api/prisustva/view`);
+      if (!prisustvaRes.ok) throw new Error("Neuspješno dohvaćanje prisustava");
+      const prisustvaData = await prisustvaRes.json();
+
+      const filtrirana = prisustvaData.filter(
+        p => p.radionicaNaziv === radionicaData.naziv
+      );
+
+      setPrisustva(filtrirana);
+    } catch (err) {
+      console.error(err);
+      setError("Greška kod dohvaćanja podataka o radionici.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const radionicaRes = await fetch(`${baseUrl}/api/radionice/${id}`);
-        if (!radionicaRes.ok) throw new Error("Neuspješno dohvaćanje radionice");
-        const radionicaData = await radionicaRes.json();
-        setRadionica(radionicaData);
-
-        const prisustvaRes = await fetch(`${baseUrl}/api/prisustva/view`);
-        if (!prisustvaRes.ok) throw new Error("Neuspješno dohvaćanje prisustava");
-        const prisustvaData = await prisustvaRes.json();
-
-        const filtrirana = prisustvaData.filter(
-          p => p.radionicaNaziv === radionicaData.naziv
-        );
-
-        setPrisustva(filtrirana);
-      } catch (err) {
-        console.error(err);
-        setError("Greška kod dohvaćanja podataka o radionici.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [id]);
 
-  const brojPoStatusu = (status) =>
-    prisustva.filter(p => p.status === status).length;
+  const statusi = ["PRISUTAN", "IZOSTAO", "ODUSTAO"];
+
+  const prikaziStatus = (status, spol) => {
+    const zensko = spol && spol.toLowerCase().startsWith("ž");
+    switch (status) {
+      case "PRISUTAN": return zensko ? "Prisutna" : "Prisutan";
+      case "IZOSTAO": return zensko ? "Izostala" : "Izostao";
+      case "ODUSTAO": return zensko ? "Odustala" : "Odustao";
+      default: return "Nepoznato";
+    }
+  };
 
   const formatirajDatum = (datum) => {
     if (!datum) return '';
@@ -52,13 +61,29 @@ function RadionicaDetalji() {
     });
   };
 
-  const prikaziStatus = (status, spol) => {
-    const zensko = spol && spol.toLowerCase().startsWith("ž");
-    switch (status) {
-      case "PRISUTAN": return zensko ? "Prisutna" : "Prisutan";
-      case "IZOSTAO": return zensko ? "Izostala" : "Izostao";
-      case "ODUSTAO": return zensko ? "Odustala" : "Odustao";
-      default: return "Nepoznato";
+  const brojPoStatusu = (status) =>
+    prisustva.filter(p => p.status === status).length;
+
+  const promijeniStatus = async (prisustvo) => {
+    const trenutni = prisustvo.status;
+    const index = statusi.indexOf(trenutni);
+    const novi = statusi[(index + 1) % statusi.length];
+
+    try {
+      const res = await fetch(`${baseUrl}/api/prisustva/${prisustvo.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: novi })
+      });
+      if (!res.ok) throw new Error("Neuspješno ažuriranje");
+
+      // Lokalna promjena u prikazu
+      setPrisustva(prev =>
+        prev.map(p => p.id === prisustvo.id ? { ...p, status: novi } : p)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Greška kod promjene statusa.");
     }
   };
 
@@ -89,9 +114,13 @@ function RadionicaDetalji() {
           {prisustva.length === 0 ? (
             <p>Nema prijavljenih polaznika za ovu radionicu.</p>
           ) : (
-            <ul>
-              {prisustva.map((p, index) => (
-                <li key={index}>
+            <ul className="polaznici-lista">
+              {prisustva.map((p) => (
+                <li
+                  key={p.id}
+                  onClick={() => promijeniStatus(p)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <strong>{p.polaznikImePrezime}</strong> — {prikaziStatus(p.status, p.polaznikSpol)}
                 </li>
               ))}
