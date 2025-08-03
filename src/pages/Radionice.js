@@ -10,8 +10,13 @@ function Radionice() {
   const [datum, setDatum] = useState('');
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('asc');
   const [editId, setEditId] = useState(null);
+  const [sortKey, setSortKey] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
+
+  useEffect(() => {
+    fetchRadionice();
+  }, []);
 
   const fetchRadionice = async () => {
     try {
@@ -24,10 +29,6 @@ function Radionice() {
       setError("Neuspješno dohvaćanje radionica.");
     }
   };
-
-  useEffect(() => {
-    fetchRadionice();
-  }, []);
 
   const handleAddOrUpdate = async () => {
     if (!naziv.trim() || !datum) {
@@ -47,10 +48,7 @@ function Radionice() {
         body: JSON.stringify({ naziv: naziv.trim(), datum }),
       });
 
-      if (!response.ok) {
-        const errMsg = await response.text();
-        throw new Error(`Greška: ${errMsg}`);
-      }
+      if (!response.ok) throw new Error("Greška kod spremanja.");
 
       await response.json();
       fetchRadionice();
@@ -59,13 +57,14 @@ function Radionice() {
       setEditId(null);
       setError(null);
     } catch (err) {
-      console.error("Greška kod spremanja radionice:", err);
+      console.error(err);
       setError("Neuspješno spremanje radionice.");
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Jeste li sigurni da želite obrisati ovu radionicu?")) return;
+
     try {
       const res = await fetch(`${baseUrl}/api/radionice/${id}`, {
         method: 'DELETE',
@@ -86,13 +85,25 @@ function Radionice() {
     setEditId(radionica.id);
   };
 
-  const handleSort = () => {
-    const sorted = [...radionice].sort((a, b) =>
-      sortOrder === 'asc'
-        ? a.naziv.localeCompare(b.naziv)
-        : b.naziv.localeCompare(a.naziv)
-    );
+  const handleSort = (key) => {
+    let sorted = [...radionice];
+
+    if (key === "datum") {
+      sorted.sort((a, b) =>
+        sortOrder === 'asc'
+          ? new Date(a.datum) - new Date(b.datum)
+          : new Date(b.datum) - new Date(a.datum)
+      );
+    } else {
+      sorted.sort((a, b) =>
+        sortOrder === 'asc'
+          ? a[key].localeCompare(b[key], 'hr')
+          : b[key].localeCompare(a[key], 'hr')
+      );
+    }
+
     setRadionice(sorted);
+    setSortKey(key);
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
@@ -122,9 +133,6 @@ function Radionice() {
           value={datum}
           onChange={e => setDatum(e.target.value)}
         />
-      </div>
-
-      <div className="flex-row">
         <button onClick={handleAddOrUpdate}>
           {editId ? "Spremi promjene" : "Dodaj radionicu"}
         </button>
@@ -137,8 +145,13 @@ function Radionice() {
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
-        <button onClick={handleSort}>
-          Sortiraj {sortOrder === 'asc' ? '⏶' : '⏷'}
+        <select value={sortKey} onChange={e => handleSort(e.target.value)}>
+          <option value="">Sortiraj prema</option>
+          <option value="naziv">Naziv</option>
+          <option value="datum">Datum</option>
+        </select>
+        <button onClick={() => handleSort(sortKey)}>
+          {sortOrder === 'asc' ? "⏶" : "⏷"}
         </button>
       </div>
 
@@ -148,9 +161,7 @@ function Radionice() {
             <Link to={`/radionice/${r.id}`}>
               <strong>{r.naziv}</strong>
             </Link>
-            <div>
-              📅 {formatirajDatum(r.datum)}
-            </div>
+            <div>📅 {formatirajDatum(r.datum)}</div>
             <div>
               <button className="edit" onClick={() => handleEdit(r)}>Uredi</button>
               <button className="delete" onClick={() => handleDelete(r.id)}>Obriši</button>
