@@ -35,11 +35,12 @@ function Home() {
     }
   };
 
-  const getStatusLabel = (status) => {
+  const getStatusLabel = (status, spol) => {
+    const zensko = spol === 'ženski';
     switch (status) {
-      case 'PRISUTAN': return 'Prisutan/na';
-      case 'IZOSTAO': return 'Izostao/la';
-      case 'ODUSTAO': return 'Odustao/la';
+      case 'PRISUTAN': return zensko ? 'Prisutna' : 'Prisutan';
+      case 'IZOSTAO': return zensko ? 'Izostala' : 'Izostao';
+      case 'ODUSTAO': return zensko ? 'Odustala' : 'Odustao';
       default: return 'Nepoznato';
     }
   };
@@ -160,7 +161,7 @@ function Home() {
                         }}>
                       <span>{polaznik.ime} {polaznik.prezime}</span>
                       <span style={{ fontStyle: "italic" }}>
-                        {getStatusLabel(pr.status)}
+                        {getStatusLabel(pr.status, polaznik.spol)}
                       </span>
                     </li>
                   );
