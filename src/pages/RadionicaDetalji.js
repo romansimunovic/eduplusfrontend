@@ -14,18 +14,15 @@ function RadionicaDetalji() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Dohvati podatke o radionici
         const radionicaRes = await fetch(`${baseUrl}/api/radionice/${id}`);
         if (!radionicaRes.ok) throw new Error("Neuspješno dohvaćanje radionice");
         const radionicaData = await radionicaRes.json();
         setRadionica(radionicaData);
 
-        // Dohvati sva prisustva i filtriraj ih po nazivu radionice
         const prisustvaRes = await fetch(`${baseUrl}/api/prisustva/view`);
         if (!prisustvaRes.ok) throw new Error("Neuspješno dohvaćanje prisustava");
         const prisustvaData = await prisustvaRes.json();
 
-   
         const filtrirana = prisustvaData.filter(
           p => p.radionicaNaziv === radionicaData.naziv
         );
@@ -53,6 +50,16 @@ function RadionicaDetalji() {
       month: '2-digit',
       year: 'numeric'
     });
+  };
+
+  const prikaziStatus = (status, spol) => {
+    const zensko = spol && spol.toLowerCase().startsWith("ž");
+    switch (status) {
+      case "PRISUTAN": return zensko ? "Prisutna" : "Prisutan";
+      case "IZOSTAO": return zensko ? "Izostala" : "Izostao";
+      case "ODUSTAO": return zensko ? "Odustala" : "Odustao";
+      default: return "Nepoznato";
+    }
   };
 
   if (loading) return <p>Učitavanje...</p>;
@@ -85,7 +92,7 @@ function RadionicaDetalji() {
             <ul>
               {prisustva.map((p, index) => (
                 <li key={index}>
-                  <strong>{p.polaznikImePrezime}</strong> — {p.status.toLowerCase()}
+                  <strong>{p.polaznikImePrezime}</strong> — {prikaziStatus(p.status, p.polaznikSpol)}
                 </li>
               ))}
             </ul>
