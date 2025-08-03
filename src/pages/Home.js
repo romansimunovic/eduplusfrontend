@@ -131,7 +131,6 @@ function Home() {
                     border: "1px solid #ccc"
                   }}>
                 <strong>{r.naziv}</strong><br />
-                //<small>{r.opis}</small>
               </li>
             ))}
           </ul>
