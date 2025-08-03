@@ -111,7 +111,6 @@ function Polaznici() {
           <option value="">Odaberi spol</option>
           <option value="M">Muški</option>
           <option value="Ž">Ženski</option>
-          <option value="Drugo">Drugo</option>
         </select>
         <input value={telefon} onChange={e => setTelefon(e.target.value)} placeholder="Broj mobitela" />
         <input value={grad} onChange={e => setGrad(e.target.value)} placeholder="Grad" />
