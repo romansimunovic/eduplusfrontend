@@ -108,9 +108,7 @@ function Home() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2 style={{ textAlign: "center" }}>EdukatorPlus – Evidencija prisustva</h2>
-
+    
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <button onClick={handleGenerateData}>Generiraj nove podatke</button>
       </div>
