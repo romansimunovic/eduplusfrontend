@@ -11,46 +11,42 @@ function RadionicaDetalji() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
-    try {
-      const radionicaRes = await fetch(`${baseUrl}/api/radionice/${id}`);
-      if (!radionicaRes.ok) throw new Error("Neuspješno dohvaćanje radionice");
-      const radionicaData = await radionicaRes.json();
-      setRadionica(radionicaData);
-
-      const prisustvaRes = await fetch(`${baseUrl}/api/prisustva/view`);
-      if (!prisustvaRes.ok) throw new Error("Neuspješno dohvaćanje prisustava");
-      const prisustvaData = await prisustvaRes.json();
-
-      const filtrirana = prisustvaData.filter(
-        p => p.radionicaNaziv === radionicaData.naziv
-      );
-
-      setPrisustva(filtrirana);
-    } catch (err) {
-      console.error(err);
-      setError("Greška kod dohvaćanja podataka o radionici.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Dohvati detalje radionice po ID-u
+        const radionicaRes = await fetch(`${baseUrl}/api/radionice/${id}`);
+        if (!radionicaRes.ok) throw new Error("Neuspješno dohvaćanje radionice");
+        const radionicaData = await radionicaRes.json();
+        setRadionica(radionicaData);
+
+        // Dohvati sva prisustva
+        const prisustvaRes = await fetch(`${baseUrl}/api/prisustva/view`);
+        if (!prisustvaRes.ok) throw new Error("Neuspješno dohvaćanje prisustava");
+        const prisustvaData = await prisustvaRes.json();
+
+        // Filtriraj prisustva za ovu radionicu prema nazivu
+        const filtrirana = prisustvaData.filter(
+          p => p.radionicaNaziv === radionicaData.naziv
+        );
+
+        setPrisustva(filtrirana);
+      } catch (err) {
+        console.error(err);
+        setError("Greška kod dohvaćanja podataka o radionici.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchData();
   }, [id]);
 
-  const statusi = ["PRISUTAN", "IZOSTAO", "ODUSTAO"];
+  // Broji koliko je polaznika po statusu (PRISUTAN, IZOSTAO, ODUSTAO)
+  const brojPoStatusu = (status) =>
+    prisustva.filter(p => p.status?.toUpperCase() === status).length;
 
-  const prikaziStatus = (status, spol) => {
-    const zensko = spol && spol.toLowerCase().startsWith("ž");
-    switch (status) {
-      case "PRISUTAN": return zensko ? "Prisutna" : "Prisutan";
-      case "IZOSTAO": return zensko ? "Izostala" : "Izostao";
-      case "ODUSTAO": return zensko ? "Odustala" : "Odustao";
-      default: return "Nepoznato";
-    }
-  };
-
+  // Formatiraj datum u hrvatski oblik dd.mm.yyyy
   const formatirajDatum = (datum) => {
     if (!datum) return '';
     const d = new Date(datum);
@@ -61,43 +57,29 @@ function RadionicaDetalji() {
     });
   };
 
-  const brojPoStatusu = (status) =>
-    prisustva.filter(p => p.status === status).length;
-
-  const promijeniStatus = async (prisustvo) => {
-    const trenutni = prisustvo.status;
-    const index = statusi.indexOf(trenutni);
-    const novi = statusi[(index + 1) % statusi.length];
-
-    try {
-      const res = await fetch(`${baseUrl}/api/prisustva/${prisustvo.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: novi })
-      });
-      if (!res.ok) throw new Error("Neuspješno ažuriranje");
-
-      // Lokalna promjena u prikazu
-      setPrisustva(prev =>
-        prev.map(p => p.id === prisustvo.id ? { ...p, status: novi } : p)
-      );
-    } catch (err) {
-      console.error(err);
-      alert("Greška kod promjene statusa.");
+  // Prikaz statusa s obzirom na rod (ženski/muški)
+  const prikaziStatus = (status, spol) => {
+    if (!status) return "Nepoznato";
+    const zensko = spol && spol.toLowerCase().startsWith("ž");
+    switch (status.toUpperCase()) {
+      case "PRISUTAN": return zensko ? "Prisutna" : "Prisutan";
+      case "IZOSTAO": return zensko ? "Izostala" : "Izostao";
+      case "ODUSTAO": return zensko ? "Odustala" : "Odustao";
+      default: return "Nepoznato";
     }
   };
 
   if (loading) return <p>Učitavanje...</p>;
 
   return (
-    <div className="container">
+    <div className="container radionica-detalji-container">
       <Link to="/" className="back-link">← Natrag na popis radionica</Link>
 
       {error && <p className="error">{error}</p>}
 
       {radionica ? (
         <>
-          <h2>{radionica.naziv}</h2>
+          <h2 className="radionica-naziv">{radionica.naziv}</h2>
           <p><strong>ID radionice:</strong> {radionica.id}</p>
           <p><strong>Datum održavanja:</strong> {formatirajDatum(radionica.datum)}</p>
 
@@ -115,15 +97,16 @@ function RadionicaDetalji() {
             <p>Nema prijavljenih polaznika za ovu radionicu.</p>
           ) : (
             <ul className="polaznici-lista">
-              {prisustva.map((p) => (
-                <li
-                  key={p.id}
-                  onClick={() => promijeniStatus(p)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <strong>{p.polaznikImePrezime}</strong> — {prikaziStatus(p.status, p.polaznikSpol)}
-                </li>
-              ))}
+              {prisustva.map((p) => {
+                // Sigurno izvuci ime i prezime ili default
+                const imePrezime = p.polaznikImePrezime || "Nepoznati polaznik";
+                const statusTekst = prikaziStatus(p.status, p.polaznikSpol);
+                return (
+                  <li key={p.id || p.polaznikId || Math.random()}>
+                    <strong>{imePrezime}</strong> — {statusTekst}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </>
