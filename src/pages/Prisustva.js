@@ -121,13 +121,12 @@ function Prisustva() {
 
   const selectedPolaznik = polaznici.find(p => p.id === selectedPolaznikId);
 
-const countByStatus = (statusToCount) => {
-  return prisustva.filter(p =>
-    (!selectedPolaznikId || p.polaznikId === selectedPolaznikId) &&
-    p.status === statusToCount
-  ).length;
-};
-
+  const countByStatus = (statusToCount) => {
+    return prisustva.filter(p =>
+      (!selectedPolaznikId || p.polaznikId === selectedPolaznikId) &&
+      p.status === statusToCount
+    ).length;
+  };
 
   return (
     <div className="container">
@@ -220,21 +219,21 @@ const countByStatus = (statusToCount) => {
       </div>
 
       {showStats && (
-  <div className="stat-box">
-    {selectedPolaznik && (
-      <p><strong>Statistika za:</strong> {selectedPolaznik.ime} {selectedPolaznik.prezime}</p>
-    )}
-    <p>Ukupno: {
-      prisustva.filter(p =>
-        !selectedPolaznikId || p.polaznikId === selectedPolaznikId
-      ).length
-    }</p>
-    <p>Prisutan: {countByStatus("PRISUTAN")}</p>
-    <p>Izostao: {countByStatus("IZOSTAO")}</p>
-    <p>Odustao: {countByStatus("ODUSTAO")}</p>
-  </div>
-)}
-
+        <div className="stat-box">
+          {selectedPolaznik && (
+            <p><strong>Statistika za:</strong> {selectedPolaznik.ime} {selectedPolaznik.prezime}</p>
+          )}
+          <p>Ukupno: {
+            prisustva.filter(p =>
+              !selectedPolaznikId || p.polaznikId === selectedPolaznikId
+            ).length
+          }</p>
+          <p>Prisutan: {countByStatus("PRISUTAN")}</p>
+          <p>Izostao: {countByStatus("IZOSTAO")}</p>
+          <p>Odustao: {countByStatus("ODUSTAO")}</p>
+        </div>
+      )}
+    </div>
   );
 }
 
