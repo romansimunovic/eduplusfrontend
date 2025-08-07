@@ -184,7 +184,7 @@ function Prisustva() {
 
       {selectedPolaznik && (
         <div className="stat-box" style={{ marginTop: '15px' }}>
-          <h3>📊 Statistika: {selectedPolaznik.ime} {selectedPolaznik.prezime}</h3>
+          <h3>Statistika za: {selectedPolaznik.ime} {selectedPolaznik.prezime}</h3>
           <p>Ukupno: {prisustva.filter(p => p.polaznikId === selectedPolaznikId).length}</p>
           <p>Prisutan: {countByStatus("PRISUTAN")}</p>
           <p>Izostao: {countByStatus("IZOSTAO")}</p>
