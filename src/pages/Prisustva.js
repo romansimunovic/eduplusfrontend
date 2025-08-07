@@ -119,12 +119,15 @@ function Prisustva() {
     return a[sortBy].localeCompare(b[sortBy]);
   });
 
-  const countByStatus = (s) => {
-    return prisustva.filter(p =>
-      (!selectedPolaznikId || polaznici.find(x => x.id === selectedPolaznikId)?.ime + " " + polaznici.find(x => x.id === selectedPolaznikId)?.prezime === p.polaznikImePrezime)
-      && p.status === s
-    ).length;
-  };
+  const selectedPolaznik = polaznici.find(p => p.id === selectedPolaznikId);
+
+const countByStatus = (statusToCount) => {
+  return prisustva.filter(p =>
+    (!selectedPolaznikId || p.polaznikId === selectedPolaznikId) &&
+    p.status === statusToCount
+  ).length;
+};
+
 
   return (
     <div className="container">
