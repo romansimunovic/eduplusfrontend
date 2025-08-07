@@ -1,4 +1,3 @@
-// Polaznici.js
 import React, { useEffect, useState } from 'react';
 import './App.css';
 
@@ -18,7 +17,7 @@ function Polaznici() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState("");
-  const [showStats, setShowStats] = useState(false);
+  const [selectedPolaznik, setSelectedPolaznik] = useState(null);
 
   useEffect(() => {
     fetchPolaznici();
@@ -69,14 +68,14 @@ function Polaznici() {
   const resetForm = () => {
     setIme(""); setPrezime(""); setEmail(""); setGodinaRodenja("");
     setSpol(""); setTelefon(""); setGrad(""); setStatus("");
-    setEditId(null); setError(null);
+    setEditId(null); setError(null); setSelectedPolaznik(null);
   };
 
   const handleEdit = (p) => {
     setIme(p.ime); setPrezime(p.prezime); setEmail(p.email);
     setGodinaRodenja(p.godinaRodenja); setSpol(p.spol);
     setTelefon(p.telefon); setGrad(p.grad); setStatus(p.status);
-    setEditId(p.id);
+    setEditId(p.id); setSelectedPolaznik(null);
   };
 
   const handleDelete = (id) => {
@@ -109,16 +108,16 @@ function Polaznici() {
         <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
         <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
         <input type="number" value={godinaRodenja} onChange={e => setGodinaRodenja(e.target.value)} placeholder="Godina rođenja" />
-        
+
         <select value={spol} onChange={e => setSpol(e.target.value)}>
           <option value="">Odaberi spol</option>
           <option value="M">Muški</option>
           <option value="Ž">Ženski</option>
         </select>
-        
+
         <input value={telefon} onChange={e => setTelefon(e.target.value)} placeholder="Broj mobitela" />
         <input value={grad} onChange={e => setGrad(e.target.value)} placeholder="Grad" />
-        
+
         <select value={status} onChange={e => setStatus(e.target.value)}>
           <option value="">Status</option>
           <option value="student">Student</option>
@@ -149,9 +148,30 @@ function Polaznici() {
         <option value="godinaRodenja">Po godini rođenja</option>
       </select>
 
+      {selectedPolaznik && (
+        <div className="stat-box">
+          <h3>📄 Podaci za: {selectedPolaznik.ime} {selectedPolaznik.prezime}</h3>
+          <p>📧 Email: {selectedPolaznik.email}</p>
+          <p>🎂 Godina rođenja: {selectedPolaznik.godinaRodenja}</p>
+          <p>📱 Telefon: {selectedPolaznik.telefon}</p>
+          <p>🏙️ Grad: {selectedPolaznik.grad}</p>
+          <p>🧬 Spol: {selectedPolaznik.spol === "M" ? "Muški" : "Ženski"}</p>
+          <p>🎓 Status: {selectedPolaznik.status}</p>
+          <button onClick={() => setSelectedPolaznik(null)}>Prikaži sve</button>
+        </div>
+      )}
+
       <ul className="list">
         {filtrirani.map(p => (
-          <li key={p.id}>
+          <li key={p.id} onClick={() => setSelectedPolaznik(p)}
+              style={{
+                fontWeight: selectedPolaznik?.id === p.id ? 'bold' : 'normal',
+                border: selectedPolaznik?.id === p.id ? '2px solid #000' : '1px solid #ccc',
+                borderRadius: '6px',
+                padding: '6px',
+                marginBottom: '6px',
+                cursor: 'pointer'
+              }}>
             <span>
               {p.ime} {p.prezime} ({p.email}) — {p.grad}, {p.godinaRodenja} • {p.spol}, {p.status} • 📞 {p.telefon}
             </span>
@@ -164,19 +184,6 @@ function Polaznici() {
       </ul>
 
       <p className="total">Ukupno: {filtrirani.length} polaznika</p>
-
-      <button onClick={() => setShowStats(!showStats)}>
-        {showStats ? "Sakrij statistiku" : "Prikaži statistiku"}
-      </button>
-
-      {showStats && (
-        <div className="stats">
-          <p>Rođeni prije 2000.: {polaznici.filter(p => p.godinaRodenja < 2000).length}</p>
-          <p>Rođeni 2000. i kasnije: {polaznici.filter(p => p.godinaRodenja >= 2000).length}</p>
-          <p>Muških: {polaznici.filter(p => p.spol === "M").length}</p>
-          <p>Ženskih: {polaznici.filter(p => p.spol === "Ž").length}</p>
-        </div>
-      )}
     </div>
   );
 }
