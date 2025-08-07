@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
@@ -15,6 +16,7 @@ function Prisustva() {
   const [sortBy, setSortBy] = useState('');
   const [error, setError] = useState(null);
   const [showStats, setShowStats] = useState(false);
+  const [selectedPolaznikId, setSelectedPolaznikId] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -169,9 +171,11 @@ function Prisustva() {
           const polaznik = polaznici.find(x => `${x.ime} ${x.prezime}` === p.polaznikImePrezime);
           if (!polaznik) return null;
           const spol = polaznik.spol;
+          const isSelected = polaznik.id === selectedPolaznikId;
 
           return (
             <li key={i}
+                onClick={() => setSelectedPolaznikId(polaznik.id)}
                 style={{
                   backgroundColor: getColor(p.status),
                   padding: "10px",
@@ -179,7 +183,9 @@ function Prisustva() {
                   borderRadius: "6px",
                   display: "flex",
                   justifyContent: "space-between",
-                  alignItems: "center"
+                  alignItems: "center",
+                  border: isSelected ? '2px solid #000' : '1px solid #ccc',
+                  fontWeight: isSelected ? 'bold' : 'normal'
                 }}>
               <span>{p.polaznikImePrezime} – {p.radionicaNaziv} ({prikaziStatus(p.status, spol)})</span>
               <span>
