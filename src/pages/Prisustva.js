@@ -12,6 +12,7 @@ function Prisustva() {
   const [status, setStatus] = useState('PRISUTAN');
   const [editId, setEditId] = useState(null);
   const [filterRadionica, setFilterRadionica] = useState('');
+  const [searchIme, setSearchIme] = useState('');
   const [sortBy, setSortBy] = useState('');
   const [error, setError] = useState(null);
   const [showStats, setShowStats] = useState(false);
@@ -107,9 +108,11 @@ function Prisustva() {
     }
   };
 
-  const filtrirano = filterRadionica
-    ? prisustva.filter(p => p.radionicaNaziv === filterRadionica)
-    : prisustva;
+  const filtrirano = prisustva.filter(p => {
+    const matchesRadionica = !filterRadionica || p.radionicaNaziv === filterRadionica;
+    const matchesSearch = !searchIme || p.polaznikImePrezime.toLowerCase().includes(searchIme.toLowerCase());
+    return matchesRadionica && matchesSearch;
+  });
 
   const sortirano = [...filtrirano].sort((a, b) => {
     if (!sortBy) return 0;
@@ -117,11 +120,10 @@ function Prisustva() {
   });
 
   const countByStatus = (s) => {
-    const filtered = prisustva.filter(p =>
-      (!selectedPolaznikId || polaznici.find(pz => pz.id === selectedPolaznikId)?.ime + " " + polaznici.find(pz => pz.id === selectedPolaznikId)?.prezime === p.polaznikImePrezime)
+    return prisustva.filter(p =>
+      (!selectedPolaznikId || polaznici.find(x => x.id === selectedPolaznikId)?.ime + " " + polaznici.find(x => x.id === selectedPolaznikId)?.prezime === p.polaznikImePrezime)
       && p.status === s
-    );
-    return filtered.length;
+    ).length;
   };
 
   return (
@@ -169,46 +171,54 @@ function Prisustva() {
           <option value="radionicaNaziv">Radionica</option>
           <option value="status">Status</option>
         </select>
+
+        <label>Pretraži ime:</label>
+        <input type="text" value={searchIme} onChange={e => setSearchIme(e.target.value)} placeholder="npr. Ana Horvat" />
       </div>
 
-      <ul>
-        {sortirano.map((p, i) => {
-          const polaznik = polaznici.find(x => `${x.ime} ${x.prezime}` === p.polaznikImePrezime);
-          if (!polaznik) return null;
-          const spol = polaznik.spol;
-          const isSelected = polaznik.id === selectedPolaznikId;
+      <div style={{ marginTop: "10px" }}>
+        <button onClick={() => setShowStats(!showStats)}>
+          {showStats ? 'Sakrij statistiku' : 'Prikaži statistiku'}
+        </button>
+      </div>
 
-          return (
-            <li key={i}
-                onClick={() => setSelectedPolaznikId(polaznik.id)}
-                style={{
-                  backgroundColor: getColor(p.status),
-                  padding: "10px",
-                  marginBottom: "8px",
-                  borderRadius: "6px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  border: isSelected ? '2px solid #000' : '1px solid #ccc',
-                  fontWeight: isSelected ? 'bold' : 'normal'
-                }}>
-              <span>{p.polaznikImePrezime} – {p.radionicaNaziv} ({prikaziStatus(p.status, spol)})</span>
-              <span>
-                <button onClick={() => handleEdit(p)}>Uredi</button>{' '}
-                <button onClick={() => handleDelete(p.id)}>Obriši</button>
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+      <div style={{ maxHeight: "500px", overflowY: "auto", border: "1px solid #ddd", borderRadius: "8px", padding: "5px", marginTop: "10px" }}>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {sortirano.map((p, i) => {
+            const polaznik = polaznici.find(x => `${x.ime} ${x.prezime}` === p.polaznikImePrezime);
+            if (!polaznik) return null;
+            const spol = polaznik.spol;
+            const isSelected = polaznik.id === selectedPolaznikId;
 
-      <button onClick={() => setShowStats(!showStats)}>
-        {showStats ? 'Sakrij statistiku' : 'Prikaži statistiku'}
-      </button>
+            return (
+              <li key={i}
+                  onClick={() => setSelectedPolaznikId(polaznik.id)}
+                  style={{
+                    backgroundColor: getColor(p.status),
+                    padding: "10px",
+                    marginBottom: "8px",
+                    borderRadius: "6px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    border: isSelected ? '2px solid #000' : '1px solid #ccc',
+                    fontWeight: isSelected ? 'bold' : 'normal',
+                    cursor: 'pointer'
+                  }}>
+                <span>{p.polaznikImePrezime} – {p.radionicaNaziv} ({prikaziStatus(p.status, spol)})</span>
+                <span>
+                  <button onClick={() => handleEdit(p)}>Uredi</button>{' '}
+                  <button onClick={() => handleDelete(p.id)}>Obriši</button>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
-      {showStats && selectedPolaznikId && (
+      {showStats && (
         <div className="stat-box">
-          <h4>Statistika za: {polaznici.find(p => p.id === selectedPolaznikId)?.ime} {polaznici.find(p => p.id === selectedPolaznikId)?.prezime}</h4>
+          <p>Ukupno: {filtrirano.length}</p>
           <p>Prisutan: {countByStatus("PRISUTAN")}</p>
           <p>Izostao: {countByStatus("IZOSTAO")}</p>
           <p>Odustao: {countByStatus("ODUSTAO")}</p>
