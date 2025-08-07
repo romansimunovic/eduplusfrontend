@@ -107,71 +107,74 @@ function Home() {
     }
   };
 
-  return (
-    
-      <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-        <button onClick={handleGenerateData}>Generiraj nove podatke</button>
+ return (
+  <>
+    <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+      <button onClick={handleGenerateData}>Generiraj nove podatke</button>
+    </div>
+
+    <div style={{ display: "flex", gap: "2rem" }}>
+      {/* Lijevi stupac - radionice */}
+      <div style={{ flex: 1 }}>
+        <h3>Popis svih radionica</h3>
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {radionice.map(r => (
+            <li key={r.id}
+                onClick={() => setSelectedRadionica(r)}
+                style={{
+                  cursor: "pointer",
+                  backgroundColor: selectedRadionica?.id === r.id ? "#d4ebff" : "#f3f3f3",
+                  padding: "10px",
+                  marginBottom: "8px",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc"
+                }}>
+              <strong>{r.naziv}</strong>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div style={{ display: "flex", gap: "2rem" }}>
-        <div style={{ flex: 1 }}>
-          <h3>Popis svih radionica</h3>
+      {/* Desni stupac - polaznici */}
+      <div style={{ flex: 1 }}>
+        <h3>Popis sudionika</h3>
+        {selectedRadionica ? (
           <ul style={{ listStyle: "none", padding: 0 }}>
-            {radionice.map(r => (
-              <li key={r.id}
-                  onClick={() => setSelectedRadionica(r)}
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor: selectedRadionica?.id === r.id ? "#d4ebff" : "#f3f3f3",
-                    padding: "10px",
-                    marginBottom: "8px",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc"
-                  }}>
-                <strong>{r.naziv}</strong>
-              </li>
-            ))}
+            {prisustva
+              .filter(pr => pr.radionicaId === selectedRadionica.id)
+              .map(pr => {
+                const polaznik = polaznici.find(p => p.id === pr.polaznikId);
+                if (!polaznik) return null;
+
+                return (
+                  <li key={polaznik.id}
+                      onClick={() => handleClick(polaznik)}
+                      style={{
+                        backgroundColor: getColor(pr.status),
+                        padding: "10px",
+                        marginBottom: "8px",
+                        borderRadius: "6px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        cursor: "pointer"
+                      }}>
+                    <span>{polaznik.ime} {polaznik.prezime}</span>
+                    <span style={{ fontStyle: "italic" }}>
+                      {getStatusLabel(pr.status, polaznik.spol)}
+                    </span>
+                  </li>
+                );
+              })}
           </ul>
-        </div>
-
-        <div style={{ flex: 1 }}>
-          <h3>Popis sudionika</h3>
-          {selectedRadionica ? (
-            <ul style={{ listStyle: "none", padding: 0 }}>
-              {prisustva
-                .filter(pr => pr.radionicaId === selectedRadionica.id)
-                .map(pr => {
-                  const polaznik = polaznici.find(p => p.id === pr.polaznikId);
-                  if (!polaznik) return null;
-
-                  return (
-                    <li key={polaznik.id}
-                        onClick={() => handleClick(polaznik)}
-                        style={{
-                          backgroundColor: getColor(pr.status),
-                          padding: "10px",
-                          marginBottom: "8px",
-                          borderRadius: "6px",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          cursor: "pointer"
-                        }}>
-                      <span>{polaznik.ime} {polaznik.prezime}</span>
-                      <span style={{ fontStyle: "italic" }}>
-                        {getStatusLabel(pr.status, polaznik.spol)}
-                      </span>
-                    </li>
-                  );
-                })}
-            </ul>
-          ) : (
-            <p>Odaberi radionicu za prikaz sudionika.</p>
-          )}
-        </div>
+        ) : (
+          <p>Odaberi radionicu za prikaz sudionika.</p>
+        )}
       </div>
     </div>
-  );
+  </>
+);
+
 }
 
 export default Home;
