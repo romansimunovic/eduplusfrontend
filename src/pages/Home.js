@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
 
@@ -7,7 +9,7 @@ function Home() {
   const [polaznici, setPolaznici] = useState([]);
   const [prisustva, setPrisustva] = useState([]);
   const [selectedRadionica, setSelectedRadionica] = useState(null);
-  const [loading, setLoading] = useState(false); // loader za gumb
+  const [loading, setLoading] = useState(false);
 
   const statusCycle = {
     NEPOZNATO: 'PRISUTAN',
@@ -16,10 +18,10 @@ function Home() {
     ODUSTAO: 'NEPOZNATO'
   };
 
-  // 🔔 Ping backend servera da ga "probudimo" kad se frontend pokrene
   useEffect(() => {
+    // Ping backend da se probudi
     fetch(`${baseUrl}/api/ping`).catch(err =>
-      console.warn("Ping failed (vjerojatno backend još spava):", err)
+      console.warn("Ping failed:", err)
     );
     fetchAll();
   }, []);
@@ -100,16 +102,30 @@ function Home() {
       });
     } catch (err) {
       console.error("Greška prilikom spremanja:", err);
+      toast.error("Greška pri spremanju prisustva");
     }
   };
 
   const handleGenerateData = async () => {
     setLoading(true);
+    const toastId = toast.loading("Generiram nove podatke...");
     try {
       await fetch(`${baseUrl}/api/dev/seed`, { method: "POST" });
       await fetchAll();
+      toast.update(toastId, {
+        render: "Novi podaci uspješno generirani!",
+        type: "success",
+        isLoading: false,
+        autoClose: 3000
+      });
     } catch (err) {
       console.error("Greška kod generiranja podataka:", err);
+      toast.update(toastId, {
+        render: "Greška pri generiranju podataka.",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000
+      });
     } finally {
       setLoading(false);
     }
@@ -119,7 +135,7 @@ function Home() {
     <>
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <button onClick={handleGenerateData} disabled={loading}>
-          {loading ? "Učitavanje..." : "Generiraj nove podatke"}
+          Generiraj nove podatke
         </button>
       </div>
 
@@ -182,6 +198,8 @@ function Home() {
           )}
         </div>
       </div>
+
+      <ToastContainer position="bottom-center" />
     </>
   );
 }
