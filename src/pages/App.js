@@ -1,7 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 import Home from './Home';
 import Radionice from './Radionice';
@@ -38,9 +36,6 @@ function App() {
             <Route path="/prisustva" element={<Prisustva />} />
           </Routes>
         </main>
-
-        {/* ToastContainer MORA biti tu za prikaz svih toast poruka u aplikaciji */}
-        <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </Router>
   );
