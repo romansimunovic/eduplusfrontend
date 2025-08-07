@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './App.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
@@ -117,7 +116,13 @@ function Prisustva() {
     return a[sortBy].localeCompare(b[sortBy]);
   });
 
-  const countByStatus = (s) => filtrirano.filter(p => p.status === s).length;
+  const countByStatus = (s) => {
+    const filtered = prisustva.filter(p =>
+      (!selectedPolaznikId || polaznici.find(pz => pz.id === selectedPolaznikId)?.ime + " " + polaznici.find(pz => pz.id === selectedPolaznikId)?.prezime === p.polaznikImePrezime)
+      && p.status === s
+    );
+    return filtered.length;
+  };
 
   return (
     <div className="container">
@@ -201,9 +206,9 @@ function Prisustva() {
         {showStats ? 'Sakrij statistiku' : 'Prikaži statistiku'}
       </button>
 
-      {showStats && (
+      {showStats && selectedPolaznikId && (
         <div className="stat-box">
-          <p>Ukupno: {filtrirano.length}</p>
+          <h4>Statistika za: {polaznici.find(p => p.id === selectedPolaznikId)?.ime} {polaznici.find(p => p.id === selectedPolaznikId)?.prezime}</h4>
           <p>Prisutan: {countByStatus("PRISUTAN")}</p>
           <p>Izostao: {countByStatus("IZOSTAO")}</p>
           <p>Odustao: {countByStatus("ODUSTAO")}</p>
