@@ -16,40 +16,33 @@ function RadionicaDetalji() {
       try {
         const radionicaRes = await fetch(`${baseUrl}/api/radionice/${id}`);
         if (!radionicaRes.ok) throw new Error();
-        setRadionica(await radionicaRes.json());
+        const radionicaData = await radionicaRes.json();
+        setRadionica(radionicaData);
 
-        const prisRes = await fetch(`${baseUrl}/api/prisustva/view/${id}`);
-        if (!prisRes.ok) throw new Error();
-        setPrisustva(await prisRes.json());
+        const prisustvaRes = await fetch(`${baseUrl}/api/prisustva/view/${id}`);
+        if (!prisustvaRes.ok) throw new Error();
+        const prisustvaData = await prisustvaRes.json();
+        setPrisustva(prisustvaData);
       } catch (e) {
         console.error(e);
-        setError("Greška pri dohvaćanju podataka");
+        setError("Greška pri dohvaćanju podataka.");
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [id]);
 
   if (loading) return <p>Učitavanje...</p>;
 
-  const brojPoStatusu = status =>
+  const brojPoStatusu = (status) =>
     prisustva.filter(p => p.status?.toUpperCase() === status).length;
-
-  const prikaziStatus = (status, spol) => {
-    const zensko = (spol || '').toUpperCase() === 'Ž';
-    if (!status) return "Nepoznato";
-    switch (status.toUpperCase()) {
-      case 'PRISUTAN': return zensko ? 'Prisutna' : 'Prisutan';
-      case 'IZOSTAO': return zensko ? 'Izostala' : 'Izostao';
-      case 'ODUSTAO': return zensko ? 'Odustala' : 'Odustao';
-      default: return 'Nepoznato';
-    }
-  };
 
   return (
     <div className="container radionica-detalji-container">
       <Link to="/" className="back-link">← Natrag</Link>
+
       <h2>{radionica?.naziv}</h2>
       <p><strong>ID:</strong> {radionica?.id}</p>
       <p><strong>Datum:</strong> {new Date(radionica?.datum).toLocaleDateString('hr-HR')}</p>
@@ -61,16 +54,20 @@ function RadionicaDetalji() {
         <p><strong>Odustali:</strong> {brojPoStatusu("ODUSTAO")}</p>
       </div>
 
-      <hr/>
+      <hr />
       <h3>Polaznici</h3>
-      {prisustva.length === 0 && <p>Nema polaznika</p>}
-      <ul className="polaznici-lista">
-        {prisustva.map(p => (
-          <li key={p.id}>
-            <strong>{p.polaznikImePrezime}</strong> — {prikaziStatus(p.status, p.polaznikSpol)}
-          </li>
-        ))}
-      </ul>
+      {prisustva.length === 0 ? (
+        <p>Nema polaznika</p>
+      ) : (
+        <ul className="polaznici-lista">
+          {prisustva.map(p => (
+            <li key={p.id}>
+              <strong>{p.polaznikImePrezime}</strong> — {p.rodnoOsjetljivTekst}
+            </li>
+          ))}
+        </ul>
+      )}
+
       {error && <p className="error">{error}</p>}
     </div>
   );
