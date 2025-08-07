@@ -62,49 +62,53 @@ function Home() {
   };
 
   const handleClick = async (polaznik) => {
-    if (!selectedRadionica) return;
+  if (!selectedRadionica) return;
 
-    const current = prisustva.find(p =>
-      p.polaznikId === polaznik.id && p.radionicaId === selectedRadionica.id
-    );
+  const current = prisustva.find(p =>
+    p.polaznikId === polaznik.id && p.radionicaId === selectedRadionica.id
+  );
 
-    const currentStatus = current ? current.status : "NEPOZNATO";
-    const newStatus = statusCycle[currentStatus];
+  const currentStatus = current ? current.status : "NEPOZNATO";
+  const newStatus = statusCycle[currentStatus];
 
-    const payload = {
-      polaznikId: polaznik.id,
-      radionicaId: selectedRadionica.id,
-      status: newStatus
-    };
-
-    const endpoint = current
-      ? `${baseUrl}/api/prisustva/${current.id}`
-      : `${baseUrl}/api/prisustva`;
-    const method = current ? 'PUT' : 'POST';
-
-    try {
-      const res = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) throw new Error("Greška u spremanju statusa");
-
-      setPrisustva(prev => {
-        if (current) {
-          return prev.map(p =>
-            p.id === current.id ? { ...p, status: newStatus } : p
-          );
-        } else {
-          return [...prev, { ...payload, id: Math.random() }];
-        }
-      });
-    } catch (err) {
-      console.error("Greška prilikom spremanja:", err);
-      toast.error("Greška pri spremanju prisustva");
-    }
+  const payload = {
+    polaznikId: polaznik.id,
+    radionicaId: selectedRadionica.id,
+    status: newStatus
   };
+
+  const endpoint = current
+    ? `${baseUrl}/api/prisustva/${current.id}`
+    : `${baseUrl}/api/prisustva`;
+  const method = current ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(endpoint, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error("Greška u spremanju statusa");
+
+    const responseData = await res.json(); // Ovdje dohvaćaš pravi ID!
+
+    setPrisustva(prev => {
+      if (current) {
+        return prev.map(p =>
+          p.id === current.id ? { ...p, status: newStatus } : p
+        );
+      } else {
+        return [...prev, { ...payload, id: responseData.id }];
+      }
+    });
+
+    toast.success("Prisustvo ažurirano");
+  } catch (err) {
+    console.error("Greška prilikom spremanja:", err);
+    toast.error("Greška pri spremanju prisustva");
+  }
+};
 
   const handleGenerateData = async () => {
     setLoading(true);
