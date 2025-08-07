@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const baseUrl = "https://eduplusbackend.onrender.com";
 
@@ -10,6 +8,8 @@ function Home() {
   const [prisustva, setPrisustva] = useState([]);
   const [selectedRadionica, setSelectedRadionica] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [statusMsg, setStatusMsg] = useState("");
+  const [statusType, setStatusType] = useState("");
 
   const statusCycle = {
     NEPOZNATO: 'PRISUTAN',
@@ -19,10 +19,7 @@ function Home() {
   };
 
   useEffect(() => {
-    // Ping backend da se probudi
-    fetch(`${baseUrl}/api/ping`).catch(err =>
-      console.warn("Ping failed:", err)
-    );
+    fetch(`${baseUrl}/api/ping`).catch(err => console.warn("Ping failed:", err));
     fetchAll();
   }, []);
 
@@ -39,7 +36,17 @@ function Home() {
       setSelectedRadionica(radioniceRes[0] || null);
     } catch (err) {
       console.error("Greška pri dohvaćanju podataka:", err);
+      showMessage("Greška pri dohvaćanju podataka", "error");
     }
+  };
+
+  const showMessage = (msg, type = "info") => {
+    setStatusMsg(msg);
+    setStatusType(type);
+    setTimeout(() => {
+      setStatusMsg("");
+      setStatusType("");
+    }, 3000);
   };
 
   const getStatusLabel = (status, spol) => {
@@ -62,74 +69,64 @@ function Home() {
   };
 
   const handleClick = async (polaznik) => {
-  if (!selectedRadionica) return;
+    if (!selectedRadionica) return;
 
-  const current = prisustva.find(p =>
-    p.polaznikId === polaznik.id && p.radionicaId === selectedRadionica.id
-  );
+    const current = prisustva.find(p =>
+      p.polaznikId === polaznik.id && p.radionicaId === selectedRadionica.id
+    );
 
-  const currentStatus = current ? current.status : "NEPOZNATO";
-  const newStatus = statusCycle[currentStatus];
+    const currentStatus = current ? current.status : "NEPOZNATO";
+    const newStatus = statusCycle[currentStatus];
 
-  const payload = {
-    polaznikId: polaznik.id,
-    radionicaId: selectedRadionica.id,
-    status: newStatus
+    const payload = {
+      polaznikId: polaznik.id,
+      radionicaId: selectedRadionica.id,
+      status: newStatus
+    };
+
+    const endpoint = current
+      ? `${baseUrl}/api/prisustva/${current.id}`
+      : `${baseUrl}/api/prisustva`;
+    const method = current ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Greška u spremanju statusa");
+
+      const responseData = await res.json();
+
+      setPrisustva(prev => {
+        if (current) {
+          return prev.map(p =>
+            p.id === current.id ? { ...p, status: newStatus } : p
+          );
+        } else {
+          return [...prev, { ...payload, id: responseData.id }];
+        }
+      });
+
+      showMessage("Status ažuriran", "success");
+    } catch (err) {
+      console.error("Greška prilikom spremanja:", err);
+      showMessage("Greška pri spremanju prisustva", "error");
+    }
   };
-
-  const endpoint = current
-    ? `${baseUrl}/api/prisustva/${current.id}`
-    : `${baseUrl}/api/prisustva`;
-  const method = current ? 'PUT' : 'POST';
-
-  try {
-    const res = await fetch(endpoint, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) throw new Error("Greška u spremanju statusa");
-
-    const responseData = await res.json(); // Ovdje dohvaćaš pravi ID!
-
-    setPrisustva(prev => {
-      if (current) {
-        return prev.map(p =>
-          p.id === current.id ? { ...p, status: newStatus } : p
-        );
-      } else {
-        return [...prev, { ...payload, id: responseData.id }];
-      }
-    });
-
-    toast.success("Prisustvo ažurirano");
-  } catch (err) {
-    console.error("Greška prilikom spremanja:", err);
-    toast.error("Greška pri spremanju prisustva");
-  }
-};
 
   const handleGenerateData = async () => {
     setLoading(true);
-    const toastId = toast.loading("Generiram nove podatke...");
+    showMessage("Generiram nove podatke...", "info");
     try {
       await fetch(`${baseUrl}/api/dev/seed`, { method: "POST" });
       await fetchAll();
-      toast.update(toastId, {
-        render: "Novi podaci uspješno generirani!",
-        type: "success",
-        isLoading: false,
-        autoClose: 3000
-      });
+      showMessage("Novi podaci uspješno generirani!", "success");
     } catch (err) {
       console.error("Greška kod generiranja podataka:", err);
-      toast.update(toastId, {
-        render: "Greška pri generiranju podataka.",
-        type: "error",
-        isLoading: false,
-        autoClose: 3000
-      });
+      showMessage("Greška pri generiranju podataka.", "error");
     } finally {
       setLoading(false);
     }
@@ -143,8 +140,33 @@ function Home() {
         </button>
       </div>
 
+      {/* Poruka (umjesto toastify) */}
+      {statusMsg && (
+        <div
+          style={{
+            marginBottom: "1rem",
+            padding: "10px",
+            backgroundColor:
+              statusType === "success" ? "#d4edda"
+                : statusType === "error" ? "#f8d7da"
+                : "#d1ecf1",
+            color:
+              statusType === "success" ? "#155724"
+                : statusType === "error" ? "#721c24"
+                : "#0c5460",
+            border: "1px solid",
+            borderColor:
+              statusType === "success" ? "#c3e6cb"
+                : statusType === "error" ? "#f5c6cb"
+                : "#bee5eb",
+            borderRadius: "5px"
+          }}
+        >
+          {statusMsg}
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: "2rem" }}>
-        {/* Lijevi stupac - radionice */}
         <div style={{ flex: 1 }}>
           <h3>Popis svih radionica</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
@@ -165,7 +187,6 @@ function Home() {
           </ul>
         </div>
 
-        {/* Desni stupac - polaznici */}
         <div style={{ flex: 1 }}>
           <h3>Popis sudionika</h3>
           {selectedRadionica ? (
@@ -202,8 +223,6 @@ function Home() {
           )}
         </div>
       </div>
-
-      <ToastContainer position="bottom-center" />
     </>
   );
 }
