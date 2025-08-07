@@ -123,7 +123,7 @@ function Home() {
     try {
       await fetch(`${baseUrl}/api/dev/seed`, { method: "POST" });
       await fetchAll();
-      showMessage("Novi podaci uspješno generirani!", "success");
+      showMessage("Podaci uspješno generirani!", "success");
     } catch (err) {
       console.error("Greška kod generiranja podataka:", err);
       showMessage("Greška pri generiranju podataka.", "error");
@@ -140,7 +140,7 @@ function Home() {
         </button>
       </div>
 
-      {/* Poruka (umjesto toastify) */}
+      {/* Poruka */}
       {statusMsg && (
         <div
           style={{
