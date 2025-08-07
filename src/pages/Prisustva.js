@@ -15,7 +15,6 @@ function Prisustva() {
   const [searchIme, setSearchIme] = useState('');
   const [sortBy, setSortBy] = useState('');
   const [error, setError] = useState(null);
-  const [showStats, setShowStats] = useState(false);
   const [selectedPolaznikId, setSelectedPolaznikId] = useState(null);
 
   useEffect(() => {
@@ -111,7 +110,8 @@ function Prisustva() {
   const filtrirano = prisustva.filter(p => {
     const matchesRadionica = !filterRadionica || p.radionicaNaziv === filterRadionica;
     const matchesSearch = !searchIme || p.polaznikImePrezime.toLowerCase().includes(searchIme.toLowerCase());
-    return matchesRadionica && matchesSearch;
+    const matchesSelected = !selectedPolaznikId || polaznici.find(x => x.id === selectedPolaznikId)?.ime + " " + polaznici.find(x => x.id === selectedPolaznikId)?.prezime === p.polaznikImePrezime;
+    return matchesRadionica && matchesSearch && matchesSelected;
   });
 
   const sortirano = [...filtrirano].sort((a, b) => {
@@ -176,13 +176,21 @@ function Prisustva() {
 
         <label>Pretraži ime:</label>
         <input type="text" value={searchIme} onChange={e => setSearchIme(e.target.value)} placeholder="npr. Ana Horvat" />
+
+        {selectedPolaznikId && (
+          <button onClick={() => setSelectedPolaznikId(null)}>Prikaži sve</button>
+        )}
       </div>
 
-      <div style={{ marginTop: "10px" }}>
-        <button onClick={() => setShowStats(!showStats)}>
-          {showStats ? 'Sakrij statistiku' : 'Prikaži statistiku'}
-        </button>
-      </div>
+      {selectedPolaznik && (
+        <div className="stat-box" style={{ marginTop: '15px' }}>
+          <h3>📊 Statistika: {selectedPolaznik.ime} {selectedPolaznik.prezime}</h3>
+          <p>Ukupno: {prisustva.filter(p => p.polaznikId === selectedPolaznikId).length}</p>
+          <p>Prisutan: {countByStatus("PRISUTAN")}</p>
+          <p>Izostao: {countByStatus("IZOSTAO")}</p>
+          <p>Odustao: {countByStatus("ODUSTAO")}</p>
+        </div>
+      )}
 
       <div style={{ maxHeight: "500px", overflowY: "auto", border: "1px solid #ddd", borderRadius: "8px", padding: "5px", marginTop: "10px" }}>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
@@ -217,22 +225,6 @@ function Prisustva() {
           })}
         </ul>
       </div>
-
-      {showStats && (
-        <div className="stat-box">
-          {selectedPolaznik && (
-            <p><strong>Statistika za:</strong> {selectedPolaznik.ime} {selectedPolaznik.prezime}</p>
-          )}
-          <p>Ukupno: {
-            prisustva.filter(p =>
-              !selectedPolaznikId || p.polaznikId === selectedPolaznikId
-            ).length
-          }</p>
-          <p>Prisutan: {countByStatus("PRISUTAN")}</p>
-          <p>Izostao: {countByStatus("IZOSTAO")}</p>
-          <p>Odustao: {countByStatus("ODUSTAO")}</p>
-        </div>
-      )}
     </div>
   );
 }
