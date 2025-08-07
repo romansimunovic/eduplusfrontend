@@ -220,14 +220,21 @@ const countByStatus = (statusToCount) => {
       </div>
 
       {showStats && (
-        <div className="stat-box">
-          <p>Ukupno: {filtrirano.length}</p>
-          <p>Prisutan: {countByStatus("PRISUTAN")}</p>
-          <p>Izostao: {countByStatus("IZOSTAO")}</p>
-          <p>Odustao: {countByStatus("ODUSTAO")}</p>
-        </div>
-      )}
-    </div>
+  <div className="stat-box">
+    {selectedPolaznik && (
+      <p><strong>Statistika za:</strong> {selectedPolaznik.ime} {selectedPolaznik.prezime}</p>
+    )}
+    <p>Ukupno: {
+      prisustva.filter(p =>
+        !selectedPolaznikId || p.polaznikId === selectedPolaznikId
+      ).length
+    }</p>
+    <p>Prisutan: {countByStatus("PRISUTAN")}</p>
+    <p>Izostao: {countByStatus("IZOSTAO")}</p>
+    <p>Odustao: {countByStatus("ODUSTAO")}</p>
+  </div>
+)}
+
   );
 }
 
