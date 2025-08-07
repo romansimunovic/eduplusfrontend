@@ -90,7 +90,7 @@ function Prisustva() {
   };
 
   const prikaziStatus = (status, spol) => {
-    const jeZensko = spol && spol.toLowerCase().startsWith('ž');
+    const jeZensko = (spol || '').toLowerCase().startsWith('ž');
     if (status === 'PRISUTAN') return jeZensko ? 'Prisutna' : 'Prisutan';
     if (status === 'IZOSTAO') return jeZensko ? 'Izostala' : 'Izostao';
     if (status === 'ODUSTAO') return jeZensko ? 'Odustala' : 'Odustao';
@@ -167,7 +167,9 @@ function Prisustva() {
       <ul>
         {sortirano.map((p, i) => {
           const polaznik = polaznici.find(x => `${x.ime} ${x.prezime}` === p.polaznikImePrezime);
-          const spol = polaznik?.spol;
+          if (!polaznik) return null;
+          const spol = polaznik.spol;
+
           return (
             <li key={i}
                 style={{
