@@ -7,12 +7,13 @@ import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
 import RadionicaDetalji from './RadionicaDetalji';
 import Login from './Login';
+import Register from './Register';
 
 import './App.css';
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [userRole, setUserRole] = useState(localStorage.getItem('role') || null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [userRole, setUserRole] = useState(localStorage.getItem('role'));
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
@@ -30,6 +31,7 @@ function App() {
     setUserRole(null);
   };
 
+  // Ako nije ulogiran - prikaži login
   if (!token) {
     return <Login setToken={setToken} setUserRole={setUserRole} />;
   }
@@ -56,6 +58,7 @@ function App() {
               <>
                 <li><Link to="/polaznici">Polaznici</Link></li>
                 <li><Link to="/prisustva">Prisustva</Link></li>
+                <li><Link to="/register">Dodaj korisnika</Link></li>
               </>
             )}
           </ul>
@@ -70,6 +73,7 @@ function App() {
               <>
                 <Route path="/polaznici" element={<Polaznici />} />
                 <Route path="/prisustva" element={<Prisustva />} />
+                <Route path="/register" element={<Register />} />
               </>
             )}
           </Routes>
