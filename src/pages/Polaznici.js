@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { api } from './api';
+import { api } from '../api';
 
 function Polaznici() {
   const [polaznici, setPolaznici] = useState([]);
