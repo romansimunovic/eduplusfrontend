@@ -1,67 +1,58 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { api } from '../api';            // ← važan import (putanja jer je ovaj file u /pages)
 import './App.css';
-
-const baseUrl = "https://eduplusbackend.onrender.com";
 
 function Prisustva() {
   const [prisustva, setPrisustva] = useState([]);
   const [polaznici, setPolaznici] = useState([]);
   const [radionice, setRadionice] = useState([]);
+
   const [polaznikId, setPolaznikId] = useState('');
   const [radionicaId, setRadionicaId] = useState('');
   const [status, setStatus] = useState('PRISUTAN');
   const [editId, setEditId] = useState(null);
+
   const [filterRadionica, setFilterRadionica] = useState('');
   const [searchIme, setSearchIme] = useState('');
   const [sortBy, setSortBy] = useState('');
   const [error, setError] = useState(null);
+
   const [selectedPolaznikId, setSelectedPolaznikId] = useState(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
-      const [pRes, rRes, prRes] = await Promise.all([
-        fetch(`${baseUrl}/api/polaznici`),
-        fetch(`${baseUrl}/api/radionice`),
-        fetch(`${baseUrl}/api/prisustva/view`)
-      ]);
-
       const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
-        pRes.json(), rRes.json(), prRes.json()
+        api.get('/api/polaznici'),
+        api.get('/api/radionice'),
+        api.get('/api/prisustva/view'),
       ]);
-
-      setPolaznici(polazniciData);
-      setRadionice(radioniceData);
-      setPrisustva(prisustvaData);
+      setPolaznici(Array.isArray(polazniciData) ? polazniciData : []);
+      setRadionice(Array.isArray(radioniceData) ? radioniceData : []);
+      setPrisustva(Array.isArray(prisustvaData) ? prisustvaData : []);
+      setError(null);
     } catch (err) {
       console.error(err);
-      setError("Greška prilikom dohvaćanja podataka.");
+      setError('Greška prilikom dohvaćanja podataka.');
     }
-  };
+  }
 
-  const handleAddOrUpdate = () => {
+  function handleAddOrUpdate() {
     if (!polaznikId || !radionicaId || !status) {
-      setError("Molimo odaberite sve podatke.");
+      setError('Molimo odaberite sve podatke.');
       return;
     }
     setError(null);
 
-    const method = editId ? 'PUT' : 'POST';
-    const url = editId ? `${baseUrl}/api/prisustva/${editId}` : `${baseUrl}/api/prisustva`;
+    const url = editId ? `/api/prisustva/${editId}` : `/api/prisustva`;
+    const call = editId ? api.put : api.post;
 
-    fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ polaznikId, radionicaId, status })
-    })
-      .then(res => res.json())
+    call(url, { polaznikId: Number(polaznikId), radionicaId: Number(radionicaId), status })
+      .then(() => api.get('/api/prisustva/view').then(setPrisustva))
       .then(() => {
-        fetch(`${baseUrl}/api/prisustva/view`)
-          .then(res => res.json())
-          .then(setPrisustva);
         setPolaznikId('');
         setRadionicaId('');
         setStatus('PRISUTAN');
@@ -69,11 +60,11 @@ function Prisustva() {
       })
       .catch(err => {
         console.error(err);
-        setError("Greška kod spremanja prisustva.");
+        setError('Greška kod spremanja prisustva.');
       });
-  };
+  }
 
-  const handleEdit = (prisustvo) => {
+  function handleEdit(prisustvo) {
     const polaznik = polaznici.find(p => `${p.ime} ${p.prezime}` === prisustvo.polaznikImePrezime);
     const radionica = radionice.find(r => r.naziv === prisustvo.radionicaNaziv);
     if (!polaznik || !radionica) return;
@@ -81,58 +72,66 @@ function Prisustva() {
     setRadionicaId(radionica.id);
     setStatus(prisustvo.status);
     setEditId(prisustvo.id);
-  };
+  }
 
-  const handleDelete = (id) => {
-    if (!window.confirm("Jeste li sigurni?")) return;
-    fetch(`${baseUrl}/api/prisustva/${id}`, { method: 'DELETE' })
+  function handleDelete(id) {
+    if (!window.confirm('Jeste li sigurni?')) return;
+    api.del(`/api/prisustva/${id}`)
       .then(() => setPrisustva(prev => prev.filter(p => p.id !== id)))
-      .catch(err => setError("Greška prilikom brisanja prisustva."));
-  };
+      .catch(err => setError('Greška prilikom brisanja prisustva.'));
+  }
 
-  const prikaziStatus = (status, spol) => {
+  function prikaziStatus(val, spol) {
     const jeZensko = (spol || '').toLowerCase().startsWith('ž');
-    if (status === 'PRISUTAN') return jeZensko ? 'Prisutna' : 'Prisutan';
-    if (status === 'IZOSTAO') return jeZensko ? 'Izostala' : 'Izostao';
-    if (status === 'ODUSTAO') return jeZensko ? 'Odustala' : 'Odustao';
+    if (val === 'PRISUTAN') return jeZensko ? 'Prisutna' : 'Prisutan';
+    if (val === 'IZOSTAO') return jeZensko ? 'Izostala' : 'Izostao';
+    if (val === 'ODUSTAO') return jeZensko ? 'Odustala' : 'Odustao';
     return 'Nepoznato';
-  };
+  }
 
-  const getColor = (status) => {
-    switch (status) {
+  function getColor(val) {
+    switch (val) {
       case 'PRISUTAN': return '#c8facc';
       case 'IZOSTAO': return '#ffcaca';
       case 'ODUSTAO': return '#f9f3b6';
       default: return '#ffffff';
     }
-  };
+  }
 
-  const filtrirano = prisustva.filter(p => {
-    const matchesRadionica = !filterRadionica || p.radionicaNaziv === filterRadionica;
-    const matchesSearch = !searchIme || p.polaznikImePrezime.toLowerCase().includes(searchIme.toLowerCase());
-    const matchesSelected = !selectedPolaznikId || polaznici.find(x => x.id === selectedPolaznikId)?.ime + " " + polaznici.find(x => x.id === selectedPolaznikId)?.prezime === p.polaznikImePrezime;
-    return matchesRadionica && matchesSearch && matchesSelected;
-  });
+  const selectedPolaznik = useMemo(
+    () => polaznici.find(p => p.id === selectedPolaznikId) || null,
+    [polaznici, selectedPolaznikId]
+  );
 
-  const sortirano = [...filtrirano].sort((a, b) => {
-    if (!sortBy) return 0;
-    return a[sortBy].localeCompare(b[sortBy]);
-  });
+  const filtrirano = useMemo(() => {
+    return prisustva.filter(p => {
+      const matchesRadionica = !filterRadionica || p.radionicaNaziv === filterRadionica;
+      const matchesSearch = !searchIme || p.polaznikImePrezime.toLowerCase().includes(searchIme.toLowerCase());
+      const matchesSelected = !selectedPolaznikId || p.polaznikId === selectedPolaznikId;
+      return matchesRadionica && matchesSearch && matchesSelected;
+    });
+  }, [prisustva, filterRadionica, searchIme, selectedPolaznikId]);
 
-  const selectedPolaznik = polaznici.find(p => p.id === selectedPolaznikId);
+  const sortirano = useMemo(() => {
+    if (!sortBy) return filtrirano;
+    const safe = [...filtrirano];
+    safe.sort((a, b) => {
+      const va = a[sortBy] ?? '';
+      const vb = b[sortBy] ?? '';
+      return String(va).localeCompare(String(vb), 'hr');
+    });
+    return safe;
+  }, [filtrirano, sortBy]);
 
-  const countByStatus = (statusToCount) => {
-    return prisustva.filter(p =>
-      (!selectedPolaznikId || p.polaznikId === selectedPolaznikId) &&
-      p.status === statusToCount
-    ).length;
-  };
+  const countByStatus = (statusToCount) =>
+    prisustva.filter(p => (!selectedPolaznikId || p.polaznikId === selectedPolaznikId) && p.status === statusToCount).length;
 
   return (
     <div className="container">
       <h2>Prisustva</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
+      {/* Forma za dodavanje/izmjenu */}
       <div className="flex-row">
         <select value={polaznikId} onChange={e => setPolaznikId(e.target.value)}>
           <option value="">Polaznik</option>
@@ -157,6 +156,7 @@ function Prisustva() {
         <button onClick={handleAddOrUpdate}>{editId ? 'Spremi' : 'Dodaj'}</button>
       </div>
 
+      {/* Filteri / pretraga */}
       <div className="flex-row">
         <label>Filter:</label>
         <select value={filterRadionica} onChange={e => setFilterRadionica(e.target.value)}>
@@ -175,25 +175,32 @@ function Prisustva() {
         </select>
 
         <label>Pretraži ime:</label>
-        <input type="text" value={searchIme} onChange={e => setSearchIme(e.target.value)} placeholder="npr. Ana Horvat" />
+        <input
+          type="text"
+          value={searchIme}
+          onChange={e => setSearchIme(e.target.value)}
+          placeholder="npr. Ana Horvat"
+        />
 
         {selectedPolaznikId && (
           <button onClick={() => setSelectedPolaznikId(null)}>Prikaži sve</button>
         )}
       </div>
 
+      {/* Statistika za selektiranog */}
       {selectedPolaznik && (
         <div className="stat-box" style={{ marginTop: '15px' }}>
           <h3>Statistika za: {selectedPolaznik.ime} {selectedPolaznik.prezime}</h3>
           <p>Ukupno: {prisustva.filter(p => p.polaznikId === selectedPolaznikId).length}</p>
-          <p>Prisutan: {countByStatus("PRISUTAN")}</p>
-          <p>Izostao: {countByStatus("IZOSTAO")}</p>
-          <p>Odustao: {countByStatus("ODUSTAO")}</p>
+          <p>Prisutan: {countByStatus('PRISUTAN')}</p>
+          <p>Izostao: {countByStatus('IZOSTAO')}</p>
+          <p>Odustao: {countByStatus('ODUSTAO')}</p>
         </div>
       )}
 
-      <div style={{ maxHeight: "500px", overflowY: "auto", border: "1px solid #ddd", borderRadius: "8px", padding: "5px", marginTop: "10px" }}>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+      {/* Lista (scrollable) */}
+      <div style={{ maxHeight: '500px', overflowY: 'auto', border: '1px solid #ddd', borderRadius: '8px', padding: '5px', marginTop: '10px' }}>
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {sortirano.map((p, i) => {
             const polaznik = polaznici.find(x => `${x.ime} ${x.prezime}` === p.polaznikImePrezime);
             if (!polaznik) return null;
@@ -201,24 +208,34 @@ function Prisustva() {
             const isSelected = polaznik.id === selectedPolaznikId;
 
             return (
-              <li key={i}
-                  onClick={() => setSelectedPolaznikId(polaznik.id)}
-                  style={{
-                    backgroundColor: getColor(p.status),
-                    padding: "10px",
-                    marginBottom: "8px",
-                    borderRadius: "6px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    border: isSelected ? '2px solid #000' : '1px solid #ccc',
-                    fontWeight: isSelected ? 'bold' : 'normal',
-                    cursor: 'pointer'
-                  }}>
+              <li
+                key={`${p.id}-${i}`}
+                onClick={() => setSelectedPolaznikId(polaznik.id)}
+                style={{
+                  backgroundColor: getColor(p.status),
+                  padding: '10px',
+                  marginBottom: '8px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  border: isSelected ? '2px solid #000' : '1px solid #ccc',
+                  fontWeight: isSelected ? 'bold' : 'normal',
+                  cursor: 'pointer'
+                }}
+              >
                 <span>{p.polaznikImePrezime} – {p.radionicaNaziv} ({prikaziStatus(p.status, spol)})</span>
                 <span>
-                  <button onClick={() => handleEdit(p)}>Uredi</button>{' '}
-                  <button onClick={() => handleDelete(p.id)}>Obriši</button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleEdit(p); }}
+                  >
+                    Uredi
+                  </button>{' '}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}
+                  >
+                    Obriši
+                  </button>
                 </span>
               </li>
             );
