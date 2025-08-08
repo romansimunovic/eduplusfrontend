@@ -1,8 +1,7 @@
-// Register.js
+// Lokacija: src/Register.js
 import React, { useState } from 'react';
 import './pages/App.css';
-
-const baseUrl = 'https://eduplusbackend.onrender.com';
+import { api } from './api';
 
 function Register() {
   const [email, setEmail] = useState('');
@@ -14,25 +13,22 @@ function Register() {
   const handleRegister = async () => {
     setError(null);
     setSuccess(null);
+
     if (!email || !password || !role) {
       setError('Sva polja su obavezna.');
       return;
     }
 
     try {
-      const res = await fetch(`${baseUrl}/api/auth/register?role=${role}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+      // backend prima role kao query param
+      await api.post(`/api/auth/register?role=${encodeURIComponent(role)}`, { email, password });
 
-      if (!res.ok) throw new Error();
       setSuccess('Uspješna registracija korisnika!');
       setEmail('');
       setPassword('');
       setRole('USER');
-    } catch {
-      setError('Došlo je do pogreške prilikom registracije.');
+    } catch (e) {
+      setError(`Došlo je do pogreške prilikom registracije. ${e?.message || ''}`.trim());
     }
   };
 
