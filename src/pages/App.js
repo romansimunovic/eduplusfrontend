@@ -6,8 +6,8 @@ import Radionice from './Radionice';
 import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
 import RadionicaDetalji from './RadionicaDetalji';
-import Login from './Login';
-import Register from './Register';
+import Login from '../Login';
+import Register from '../Register';
 
 import './App.css';
 
