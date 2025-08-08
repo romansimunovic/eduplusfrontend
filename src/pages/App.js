@@ -14,6 +14,7 @@ import './App.css';
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [userRole, setUserRole] = useState(localStorage.getItem('role'));
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
@@ -22,6 +23,7 @@ function App() {
       setToken(savedToken);
       setUserRole(savedRole);
     }
+    setLoading(false);
   }, []);
 
   const handleLogout = () => {
@@ -31,8 +33,9 @@ function App() {
     setUserRole(null);
   };
 
-  // Ako nije ulogiran - prikaži login
-  if (!token) {
+  if (loading) return <p>Učitavanje...</p>;
+
+  if (!token || !["ADMIN", "USER"].includes(userRole)) {
     return <Login setToken={setToken} setUserRole={setUserRole} />;
   }
 
