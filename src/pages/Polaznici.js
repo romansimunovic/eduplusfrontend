@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-
-const baseUrl = "https://eduplusbackend.onrender.com";
+import { api } from './api';
 
 function Polaznici() {
   const [polaznici, setPolaznici] = useState([]);
@@ -25,44 +24,40 @@ function Polaznici() {
 
   const fetchPolaznici = async () => {
     try {
-      const res = await fetch(`${baseUrl}/api/polaznici`);
-      const data = await res.json();
+      const data = await api.get('/api/polaznici');
       setPolaznici(Array.isArray(data) ? data : []);
-    } catch {
-      setError("Neuspješno dohvaćanje podataka.");
+      setError(null);
+    } catch (e) {
+      setError(`Neuspješno dohvaćanje podataka. ${e?.message || ""}`.trim());
     }
   };
 
-  const handleAddOrUpdate = () => {
+  const handleAddOrUpdate = async () => {
     if (!ime || !prezime || !email || !godinaRodenja || !spol || !telefon || !grad || !status) {
       setError("Sva polja su obavezna.");
       return;
     }
 
-    const godina = parseInt(godinaRodenja);
+    const godina = parseInt(godinaRodenja, 10);
     if (isNaN(godina) || godina < 1900 || godina > new Date().getFullYear()) {
       setError("Godina rođenja nije ispravna.");
       return;
     }
 
     const payload = { ime, prezime, email, godinaRodenja: godina, spol, telefon, grad, status };
-    const method = editId ? 'PUT' : 'POST';
-    const url = editId ? `${baseUrl}/api/polaznici/${editId}` : `${baseUrl}/api/polaznici`;
+    const path = editId ? `/api/polaznici/${editId}` : '/api/polaznici';
 
-    fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(() => {
-        fetchPolaznici();
-        resetForm();
-      })
-      .catch(() => setError("Greška kod spremanja polaznika."));
+    try {
+      if (editId) {
+        await api.put(path, payload);
+      } else {
+        await api.post(path, payload);
+      }
+      await fetchPolaznici();
+      resetForm();
+    } catch (e) {
+      setError(`Greška kod spremanja polaznika. ${e?.message || ""}`.trim());
+    }
   };
 
   const resetForm = () => {
@@ -78,17 +73,20 @@ function Polaznici() {
     setEditId(p.id); setSelectedPolaznik(null);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!window.confirm("Obrisati ovog polaznika?")) return;
-    fetch(`${baseUrl}/api/polaznici/${id}`, { method: 'DELETE' })
-      .then(() => fetchPolaznici())
-      .catch(() => setError("Greška kod brisanja."));
+    try {
+      await api.del(`/api/polaznici/${id}`);
+      await fetchPolaznici();
+    } catch (e) {
+      setError(`Greška kod brisanja. ${e?.message || ""}`.trim());
+    }
   };
 
   const handleSort = (key) => {
     const sorted = [...polaznici].sort((a, b) => {
       if (key === "godinaRodenja") return a[key] - b[key];
-      return a[key].localeCompare(b[key], 'hr');
+      return String(a[key] ?? '').localeCompare(String(b[key] ?? ''), 'hr');
     });
     setPolaznici(sorted);
     setSortKey(key);
@@ -163,21 +161,24 @@ function Polaznici() {
 
       <ul className="list">
         {filtrirani.map(p => (
-          <li key={p.id} onClick={() => setSelectedPolaznik(p)}
-              style={{
-                fontWeight: selectedPolaznik?.id === p.id ? 'bold' : 'normal',
-                border: selectedPolaznik?.id === p.id ? '2px solid #000' : '1px solid #ccc',
-                borderRadius: '6px',
-                padding: '6px',
-                marginBottom: '6px',
-                cursor: 'pointer'
-              }}>
+          <li
+            key={p.id}
+            onClick={() => setSelectedPolaznik(p)}
+            style={{
+              fontWeight: selectedPolaznik?.id === p.id ? 'bold' : 'normal',
+              border: selectedPolaznik?.id === p.id ? '2px solid #000' : '1px solid #ccc',
+              borderRadius: '6px',
+              padding: '6px',
+              marginBottom: '6px',
+              cursor: 'pointer'
+            }}
+          >
             <span>
               {p.ime} {p.prezime} ({p.email}) — {p.grad}, {p.godinaRodenja} • {p.spol}, {p.status} • 📞 {p.telefon}
             </span>
             <div>
-              <button onClick={() => handleEdit(p)}>Uredi</button>
-              <button className="delete" onClick={() => handleDelete(p.id)}>Obriši</button>
+              <button onClick={(e) => { e.stopPropagation(); handleEdit(p); }}>Uredi</button>
+              <button className="delete" onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}>Obriši</button>
             </div>
           </li>
         ))}
