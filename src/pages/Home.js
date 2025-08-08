@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
-const baseUrl = "https://eduplusbackend.onrender.com";
+import { api } from '../api'; 
 
 function Home() {
   const [radionice, setRadionice] = useState([]);
@@ -19,24 +18,26 @@ function Home() {
   };
 
   useEffect(() => {
-    fetch(`${baseUrl}/api/ping`).catch(err => console.warn("Ping failed:", err));
+    // ping (može vratiti non-JSON — api.handle to tolerira i vrati null)
+    api.get('/api/ping').catch(err => console.warn("Ping failed:", err));
     fetchAll();
   }, []);
 
   const fetchAll = async () => {
     try {
-      const [radioniceRes, polazniciRes, prisustvaRes] = await Promise.all([
-        fetch(`${baseUrl}/api/radionice`).then(res => res.json()),
-        fetch(`${baseUrl}/api/polaznici`).then(res => res.json()),
-        fetch(`${baseUrl}/api/prisustva`).then(res => res.json())
+      const [radioniceData, polazniciData, prisustvaData] = await Promise.all([
+        api.get('/api/radionice'),
+        api.get('/api/polaznici'),
+        api.get('/api/prisustva'),
       ]);
-      setRadionice(radioniceRes);
-      setPolaznici(polazniciRes);
-      setPrisustva(prisustvaRes);
-      setSelectedRadionica(radioniceRes[0] || null);
+      const r = Array.isArray(radioniceData) ? radioniceData : [];
+      setRadionice(r);
+      setPolaznici(Array.isArray(polazniciData) ? polazniciData : []);
+      setPrisustva(Array.isArray(prisustvaData) ? prisustvaData : []);
+      setSelectedRadionica(r[0] || null);
     } catch (err) {
       console.error("Greška pri dohvaćanju podataka:", err);
-      showMessage("Greška pri dohvaćanju podataka", "error");
+      showMessage(`Greška pri dohvaćanju podataka. ${err?.message || ""}`.trim(), "error");
     }
   };
 
@@ -84,36 +85,34 @@ function Home() {
       status: newStatus
     };
 
-    const endpoint = current
-      ? `${baseUrl}/api/prisustva/${current.id}`
-      : `${baseUrl}/api/prisustva`;
-    const method = current ? 'PUT' : 'POST';
+    const path = current ? `/api/prisustva/${current.id}` : `/api/prisustva`;
 
     try {
-      const res = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) throw new Error("Greška u spremanju statusa");
-
-      const responseData = await res.json();
-
-      setPrisustva(prev => {
-        if (current) {
-          return prev.map(p =>
-            p.id === current.id ? { ...p, status: newStatus } : p
-          );
+      if (current) {
+        await api.put(path, payload);
+      } else {
+        // backend može vratiti 201 s JSON-om ili 204 bez tijela — oba su ok
+        const created = await api.post(path, payload);
+        if (created?.id) {
+          // ako je API vratio id, iskoristi ga
+          setPrisustva(prev => [...prev, { ...payload, id: created.id }]);
         } else {
-          return [...prev, { ...payload, id: responseData.id }];
+          // fallback: povuci svježa prisustva
+          const fresh = await api.get('/api/prisustva');
+          setPrisustva(Array.isArray(fresh) ? fresh : prev => prev);
         }
-      });
+      }
+
+      if (current) {
+        setPrisustva(prev =>
+          prev.map(p => p.id === current.id ? { ...p, status: newStatus } : p)
+        );
+      }
 
       showMessage("Status ažuriran", "success");
     } catch (err) {
       console.error("Greška prilikom spremanja:", err);
-      showMessage("Greška pri spremanju prisustva", "error");
+      showMessage(`Greška pri spremanju prisustva. ${err?.message || ""}`.trim(), "error");
     }
   };
 
@@ -121,12 +120,12 @@ function Home() {
     setLoading(true);
     showMessage("Generiram nove podatke...", "info");
     try {
-      await fetch(`${baseUrl}/api/dev/seed`, { method: "POST" });
+      await api.post('/api/dev/seed', {}); // očekivan 204/200; handle to podržava
       await fetchAll();
       showMessage("Podaci uspješno generirani!", "success");
     } catch (err) {
       console.error("Greška kod generiranja podataka:", err);
-      showMessage("Greška pri generiranju podataka.", "error");
+      showMessage(`Greška pri generiranju podataka. ${err?.message || ""}`.trim(), "error");
     } finally {
       setLoading(false);
     }
@@ -136,11 +135,10 @@ function Home() {
     <>
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <button onClick={handleGenerateData} disabled={loading}>
-          Generiraj nove podatke
+          {loading ? "Molim pričekaj..." : "Generiraj nove podatke"}
         </button>
       </div>
 
-      {/* Poruka */}
       {statusMsg && (
         <div
           style={{
@@ -171,16 +169,18 @@ function Home() {
           <h3>Popis svih radionica</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {radionice.map(r => (
-              <li key={r.id}
-                  onClick={() => setSelectedRadionica(r)}
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor: selectedRadionica?.id === r.id ? "#d4ebff" : "#f3f3f3",
-                    padding: "10px",
-                    marginBottom: "8px",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc"
-                  }}>
+              <li
+                key={r.id}
+                onClick={() => setSelectedRadionica(r)}
+                style={{
+                  cursor: "pointer",
+                  backgroundColor: selectedRadionica?.id === r.id ? "#d4ebff" : "#f3f3f3",
+                  padding: "10px",
+                  marginBottom: "8px",
+                  borderRadius: "6px",
+                  border: "1px solid #ccc"
+                }}
+              >
                 <strong>{r.naziv}</strong>
               </li>
             ))}
@@ -198,18 +198,20 @@ function Home() {
                   if (!polaznik) return null;
 
                   return (
-                    <li key={polaznik.id}
-                        onClick={() => handleClick(polaznik)}
-                        style={{
-                          backgroundColor: getColor(pr.status),
-                          padding: "10px",
-                          marginBottom: "8px",
-                          borderRadius: "6px",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          cursor: "pointer"
-                        }}>
+                    <li
+                      key={polaznik.id}
+                      onClick={() => handleClick(polaznik)}
+                      style={{
+                        backgroundColor: getColor(pr.status),
+                        padding: "10px",
+                        marginBottom: "8px",
+                        borderRadius: "6px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        cursor: "pointer"
+                      }}
+                    >
                       <span>{polaznik.ime} {polaznik.prezime}</span>
                       <span style={{ fontStyle: "italic" }}>
                         {getStatusLabel(pr.status, polaznik.spol)}
