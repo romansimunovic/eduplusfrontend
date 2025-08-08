@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './App.css';
-
-const baseUrl = "https://eduplusbackend.onrender.com";
+import { api } from './api';
 
 function Radionice() {
   const [radionice, setRadionice] = useState([]);
@@ -20,62 +19,50 @@ function Radionice() {
 
   const fetchRadionice = async () => {
     try {
-      const res = await fetch(`${baseUrl}/api/radionice`);
-      if (!res.ok) throw new Error("Greška kod dohvaćanja radionica");
-      const data = await res.json();
+      const data = await api.get('/api/radionice');
       setRadionice(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-      setError("Neuspješno dohvaćanje radionica.");
+      setError(null);
+    } catch (e) {
+      console.error(e);
+      setError(`Neuspješno dohvaćanje radionica. ${e?.message || ''}`.trim());
     }
   };
 
   const handleAddOrUpdate = async () => {
     if (!naziv.trim() || !datum) {
-      setError("Naziv i datum su obavezni.");
+      setError('Naziv i datum su obavezni.');
       return;
     }
 
-    const method = editId ? 'PUT' : 'POST';
-    const url = editId
-      ? `${baseUrl}/api/radionice/${editId}`
-      : `${baseUrl}/api/radionice`;
+    const path = editId ? `/api/radionice/${editId}` : '/api/radionice';
+    const payload = { naziv: naziv.trim(), datum };
 
     try {
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ naziv: naziv.trim(), datum }),
-      });
-
-      if (!response.ok) throw new Error("Greška kod spremanja.");
-
-      await response.json();
-      fetchRadionice();
+      if (editId) {
+        await api.put(path, payload);
+      } else {
+        await api.post(path, payload);
+      }
+      await fetchRadionice();
       setNaziv('');
       setDatum('');
       setEditId(null);
       setError(null);
-    } catch (err) {
-      console.error(err);
-      setError("Neuspješno spremanje radionice.");
+    } catch (e) {
+      console.error(e);
+      setError(`Neuspješno spremanje radionice. ${e?.message || ''}`.trim());
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Jeste li sigurni da želite obrisati ovu radionicu?")) return;
+    if (!window.confirm('Jeste li sigurni da želite obrisati ovu radionicu?')) return;
 
     try {
-      const res = await fetch(`${baseUrl}/api/radionice/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!res.ok) throw new Error("Brisanje nije uspjelo.");
-
-      fetchRadionice();
-    } catch (err) {
-      console.error("Greška kod brisanja:", err);
-      setError("Neuspješno brisanje radionice.");
+      await api.del(`/api/radionice/${id}`);
+      await fetchRadionice();
+    } catch (e) {
+      console.error('Greška kod brisanja:', e);
+      setError(`Neuspješno brisanje radionice. ${e?.message || ''}`.trim());
     }
   };
 
@@ -86,9 +73,10 @@ function Radionice() {
   };
 
   const handleSort = (key) => {
-    let sorted = [...radionice];
+    if (!key) return;
 
-    if (key === "datum") {
+    const sorted = [...radionice];
+    if (key === 'datum') {
       sorted.sort((a, b) =>
         sortOrder === 'asc'
           ? new Date(a.datum) - new Date(b.datum)
@@ -97,8 +85,8 @@ function Radionice() {
     } else {
       sorted.sort((a, b) =>
         sortOrder === 'asc'
-          ? a[key].localeCompare(b[key], 'hr')
-          : b[key].localeCompare(a[key], 'hr')
+          ? String(a[key] ?? '').localeCompare(String(b[key] ?? ''), 'hr')
+          : String(b[key] ?? '').localeCompare(String(a[key] ?? ''), 'hr')
       );
     }
 
@@ -108,12 +96,14 @@ function Radionice() {
   };
 
   const filtriraneRadionice = radionice.filter(r =>
-    r.naziv.toLowerCase().includes(searchTerm.toLowerCase())
+    (r.naziv || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatirajDatum = (isoDatum) => {
-    const [yyyy, mm, dd] = isoDatum.split("-");
+    if (!isoDatum || !isoDatum.includes('-')) return isoDatum || '';
+    const [yyyy, mm, dd] = isoDatum.split('-');
     return `${dd}.${mm}.${yyyy}.`;
+    // ako želiš lokalizirano: new Date(isoDatum).toLocaleDateString('hr-HR')
   };
 
   return (
@@ -134,7 +124,7 @@ function Radionice() {
           onChange={e => setDatum(e.target.value)}
         />
         <button onClick={handleAddOrUpdate}>
-          {editId ? "Spremi promjene" : "Dodaj radionicu"}
+          {editId ? 'Spremi promjene' : 'Dodaj radionicu'}
         </button>
       </div>
 
@@ -151,7 +141,7 @@ function Radionice() {
           <option value="datum">Datum</option>
         </select>
         <button onClick={() => handleSort(sortKey)}>
-          {sortOrder === 'asc' ? "⏶" : "⏷"}
+          {sortOrder === 'asc' ? '⏶' : '⏷'}
         </button>
       </div>
 
@@ -170,7 +160,7 @@ function Radionice() {
         ))}
       </ul>
 
-      <p style={{ marginTop: "1rem" }}>Ukupno radionica: {filtriraneRadionice.length}</p>
+      <p style={{ marginTop: '1rem' }}>Ukupno radionica: {filtriraneRadionice.length}</p>
     </div>
   );
 }
