@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './pages/App.css';
 import { api } from './api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Login({ setToken, setUserRole }) {
   const [email, setEmail] = useState("");
@@ -9,6 +9,7 @@ function Login({ setToken, setUserRole }) {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,11 +29,12 @@ function Login({ setToken, setUserRole }) {
         role = data.role || null;
       }
 
-      localStorage.setItem("token", token);
-      if (role) localStorage.setItem("role", role);
+      localStorage.setItem('token', token);
+      if (role) localStorage.setItem('role', role);
+      setToken?.(token);
+      if (role) setUserRole?.(role);
 
-      setToken(token);
-      if (role) setUserRole(role);
+      navigate('/', { replace: true }); // ← preusmjeri na Home
     } catch (err) {
       setError(`Neispravni podaci za prijavu. ${err?.message || ''}`.trim());
     } finally {
@@ -50,13 +52,11 @@ function Login({ setToken, setUserRole }) {
         </div>
         <ul className="hero-bullets">
           <li>📚 Upravljanje radionicama i terminima</li>
-          <li>👥 Polaznici i kontakt podaci na jednom mjestu</li>
+          <li>👥 Polaznici i kontakti na jednom mjestu</li>
           <li>✅ Prisustva s rodno osjetljivim statusima</li>
-          <li>📊 Brze statistike i pregled po radionicama</li>
+          <li>📊 Brze statistike po radionicama</li>
         </ul>
-        <p className="hero-footnote">
-          Tip: ako nemaš račun, zatraži registraciju od administratora ili otvori “Registracija”.
-        </p>
+        <p className="hero-footnote">Tip: zatraži registraciju od admina ili otvori “Registracija”.</p>
       </div>
 
       <div className="auth-card">
@@ -78,7 +78,7 @@ function Login({ setToken, setUserRole }) {
 
           <label>
             Lozinka
-            <div className="password-wrap">
+            <div className="input-group">
               <input
                 type={showPw ? "text" : "password"}
                 placeholder="••••••••"
@@ -87,12 +87,7 @@ function Login({ setToken, setUserRole }) {
                 required
                 autoComplete="current-password"
               />
-              <button
-                type="button"
-                className="ghost-btn"
-                onClick={() => setShowPw(s => !s)}
-                aria-label={showPw ? "Sakrij lozinku" : "Prikaži lozinku"}
-              >
+              <button type="button" className="ghost-btn" onClick={() => setShowPw(s => !s)}>
                 {showPw ? "🙈" : "👁️"}
               </button>
             </div>
