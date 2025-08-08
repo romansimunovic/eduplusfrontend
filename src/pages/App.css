@@ -1,8 +1,7 @@
 /* =========================================================
-   EDUPLUS — MODERNI MINIMAL CSS (light + auto dark)
+   EDUPLUS — MODERNI MINIMAL CSS (light only)
    - koristi css varijable
    - čist fokus, tipke, kartice, liste
-   - bez "composes:" i sličnih egzotika
 ========================================================= */
 
 /* ---------- Theme vars ---------- */
@@ -23,28 +22,6 @@
   --info:#0c4a6e;       --info-bg:#e0f2fe; --info-br:#bae6fd;
 
   --focus:0 0 0 3px rgba(19,99,223,.18);
-}
-
-/* Auto-dark: po želji ostavi ili izbriši */
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#0e141f;
-    --txt:#e5e7eb;
-    --muted:#9aa5b1;
-
-    --card:#0f1929;
-    --border:#1c2b45;
-    --shadow:0 16px 40px rgba(0,0,0,.5);
-
-    --ok:#86efac;     --ok-bg:#052e1a;   --ok-br:#14532d;
-    --err:#fecaca;    --err-bg:#2b0e0e;  --err-br:#7f1d1d;
-    --info:#bae6fd;   --info-bg:#072233; --info-br:#0e7490;
-  }
-}
-
-/* Manual dark override (dodaj na <html data-theme="dark">) */
-html[data-theme="dark"]{
-  color-scheme: dark;
 }
 
 /* ---------- Base ---------- */
@@ -274,7 +251,7 @@ nav{
 .alert-success{ background:var(--ok-bg); border-color:var(--ok-br); color:var(--ok); }
 .alert-info{ background:var(--info-bg); border-color:var(--info-br); color:var(--info); }
 
-/* ---------- Tables (ako zatreba) ---------- */
+/* ---------- Tables ---------- */
 .table{
   width:100%;
   border-collapse:separate;
