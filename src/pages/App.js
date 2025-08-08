@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 import Home from './Home';
@@ -6,16 +6,44 @@ import Radionice from './Radionice';
 import Polaznici from './Polaznici';
 import Prisustva from './Prisustva';
 import RadionicaDetalji from './RadionicaDetalji';
+import Login from './Login';
 
 import './App.css';
 
 function App() {
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    // Provjera tokena u localStorage
+    const savedToken = localStorage.getItem('token');
+    const savedRole = localStorage.getItem('role');
+    if (savedToken) {
+      setToken(savedToken);
+      setUserRole(savedRole);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    setToken(null);
+    setUserRole(null);
+  };
+
+  if (!token) {
+    return <Login setToken={setToken} setUserRole={setUserRole} />;
+  }
+
   return (
     <Router>
       <div className="app-container">
         <header className="header-banner">
           <h1>EdukatorPlus</h1>
           <p>Digitalna platforma za evidenciju edukacija, polaznika i prisustva</p>
+          <button onClick={handleLogout} style={{ float: 'right' }}>
+            Odjava
+          </button>
         </header>
 
         <nav className="main-nav">
