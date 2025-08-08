@@ -1,209 +1,242 @@
-/* FONT I OSNOVNA TEMA */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+/* =========================================
+   GLOBAL VARS + THEME
+========================================= */
+:root{
+  --bg:#f4f5f7;
+  --txt:#2c2c2c;
+  --muted:#6b7280;
 
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: #f4f5f7;
-  color: #2c2c2c;
-  margin: 0;
-  padding: 1rem;
+  --brand:#0077cc;
+  --brand-2:#20c997;
+
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --shadow:0 8px 24px rgba(0,0,0,.06);
+
+  --ok:#1f6b3a;         --ok-bg:#edf9f1;   --ok-br:#c9eed7;
+  --err:#8e2232;        --err-bg:#fdebed;  --err-br:#f6c8ce;
+  --info:#0c5460;       --info-bg:#d1ecf1; --info-br:#bee5eb;
+
+  --focus:0 0 0 4px rgba(0,119,204,.18);
 }
 
-/* NASLOVI */
-h2 {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  font-weight: 700;
-}
-
-h3 {
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
-  color: #3a3a3a;
-}
-
-/* KONTEJNER */
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  background: #ffffff;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
-}
-
-/* INPUTI I GUMBI */
-input,
-select,
-button {
-  font-size: 1rem;
-  padding: 0.65rem 1rem;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  outline: none;
-  transition: 0.2s ease;
-}
-
-input:focus,
-select:focus {
-  border-color: #0077cc;
-  box-shadow: 0 0 0 3px rgba(0, 119, 204, 0.2);
-}
-
-button {
-  background-color: #0077cc;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-button:hover {
-  background-color: #005fa3;
-}
-
-button.delete {
-  background-color: #ff4d4d;
-}
-
-button.delete:hover {
-  background-color: #e63946;
-}
-
-button.edit {
-  background-color: #20c997;
-}
-
-button.edit:hover {
-  background-color: #17a689;
-}
-
-/* LAYOUT */
-.flex-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-/* LISTE */
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-li {
-  background: #f9fafb;
-  border: 1px solid #ddd;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-li:hover {
-  background: #e9f4ff;
-}
-
-/* STATUS PRISUSTVA */
-.status-prisutan {
-  background-color: #d3f9d8;
-}
-
-.status-izostao {
-  background-color: #ffe0e0;
-}
-
-.status-odustao {
-  background-color: #fff3cd;
-}
-
-.status-nepoznato {
-  background-color: #f1f1f1;
-}
-
-/* OZNAČENA RADIONICA */
-.radionica-oznacena {
-  border: 2px solid #0077cc !important;
-  background-color: #e0f0ff !important;
-  font-weight: bold;
-}
-
-/* HEADER */
-.header-banner {
-  background: linear-gradient(135deg, #0077cc, #20c997);
-  color: white;
-  padding: 2rem 1rem;
-  border-radius: 16px;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.header-banner h1 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.header-banner p {
-  font-size: 1.1rem;
-  margin-top: 0.5rem;
-  opacity: 0.95;
-}
-
-/* NAVIGACIJA */
-nav {
-  background: #ffffff;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.nav-links {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-}
-
-.nav-links li a {
-  text-decoration: none;
-  color: #2e2e2e;
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-
-.nav-links li a:hover {
-  color: #0077cc;
-}
-
-/* STATISTIKA */
-.stat-box {
-  background: #f0f4f8;
-  padding: 1rem;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  margin-top: 1rem;
-  border-left: 4px solid #0077cc;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .flex-row {
-    flex-direction: column;
-  }
-
-  input,
-  select,
-  button {
-    width: 100%;
-  }
-
-  .nav-links {
-    flex-direction: column;
-    gap: 1rem;
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1420;
+    --txt:#e5e7eb;
+    --muted:#9aa5b1;
+    --card:#121a2a;
+    --border:#21314a;
+    --shadow:0 10px 30px rgba(0,0,0,.45);
   }
 }
+
+body{
+  background:var(--bg);
+  color:var(--txt);
+}
+
+/* =========================================
+   CARDS + CONTAINERS
+========================================= */
+.container{
+  background:var(--card);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+}
+
+/* "card" helper za manje panele */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:1rem;
+  box-shadow:var(--shadow);
+}
+
+/* =========================================
+   INPUTS + LABELS + STATES
+========================================= */
+label{ font-weight:600; color:#0f2742; display:grid; gap:.4rem; }
+
+input, select, button, textarea{
+  background:#fbfdff;
+  border:1px solid #dbe4f0;
+  color:var(--txt);
+}
+
+input:focus, select:focus, textarea:focus{
+  border-color:var(--brand);
+  box-shadow:var(--focus);
+}
+
+input.is-invalid, select.is-invalid{
+  border-color:#e63946;
+  box-shadow:0 0 0 3px rgba(230,57,70,.2);
+}
+
+.helper{ font-size:.85rem; color:var(--muted); }
+
+/* grupiranje inputa + desni gumbić (toggle lozinke) */
+.input-group{ position:relative; display:flex; align-items:center; }
+.input-group .ghost-btn{
+  position:absolute; right:8px; border:none; background:transparent;
+  cursor:pointer; font-size:1rem; line-height:1; padding:.25rem .35rem;
+}
+
+/* =========================================
+   BUTTONS (utility)
+========================================= */
+.btn{
+  font-size:1rem; padding:.7rem 1rem; border-radius:12px; border:1px solid transparent;
+  font-weight:700; cursor:pointer; transition:transform .05s ease, box-shadow .15s ease, background .15s ease;
+}
+.btn:disabled{ opacity:.7; cursor:not-allowed; }
+
+.btn-primary{
+  background:var(--brand);
+  color:#fff;
+  box-shadow:0 6px 16px rgba(0,119,204,.25);
+}
+.btn-primary:hover{ transform:translateY(-1px); }
+
+.btn-outline{
+  background:transparent; color:var(--brand); border-color:var(--brand);
+}
+.btn-outline:hover{ background:rgba(0,119,204,.08); }
+
+.btn-danger{ background:#ff4d4d; color:#fff; }
+.btn-danger:hover{ background:#e63946; }
+
+.btn-success{ background:#20c997; color:#fff; }
+.btn-success:hover{ background:#17a689; }
+
+.btn-ghost{
+  background:transparent; color:inherit;
+}
+
+/* zamijeni stare button klase bez da rušiš postojeći kod */
+button.delete{ composes: btn btn-danger; }
+button.edit{ composes: btn btn-success; }
+
+/* =========================================
+   ALERTS / TOAST
+========================================= */
+.alert{
+  padding:.8rem 1rem; border-radius:12px; border:1px solid transparent; font-weight:600;
+  margin:.75rem 0;
+}
+.alert-error{ background:var(--err-bg); border-color:var(--err-br); color:var(--err); }
+.alert-success{ background:var(--ok-bg); border-color:var(--ok-br); color:var(--ok); }
+.alert-info{ background:var(--info-bg); border-color:var(--info-br); color:var(--info); }
+
+/* =========================================
+   BADGES + EMPTY STATE
+========================================= */
+.badge{
+  display:inline-block; padding:.25rem .6rem; border-radius:999px; font-size:.8rem;
+  border:1px solid var(--border); background:#f0f6ff; color:#2a5aa0; font-weight:700;
+}
+.empty{
+  padding:1rem; text-align:center; color:var(--muted); border:1px dashed var(--border); border-radius:12px;
+}
+
+/* =========================================
+   AUTH LAYOUT (Login / Register)
+========================================= */
+.auth-layout{
+  min-height:100vh;
+  display:grid; grid-template-columns:1.2fr 1fr; gap:3rem; align-items:center;
+  padding:4rem 6rem;
+}
+@media (max-width:900px){ .auth-layout{ grid-template-columns:1fr; padding:2rem 1.25rem; } }
+
+.auth-hero{ color:#0f2742; }
+.brand{ display:flex; align-items:center; gap:.75rem; }
+.logo-dot{ width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg,var(--brand),var(--brand-2)); box-shadow:0 0 0 4px rgba(45,126,247,.12); }
+.brand h1{ margin:0; font-size:2.25rem; letter-spacing:.5px; }
+.brand-tag{ margin:.25rem 0 .75rem; color:#406187; font-weight:600; }
+.hero-bullets{ margin:1rem 0 .75rem; padding-left:1.2rem; color:#244b74; }
+.hero-bullets li{ margin:.4rem 0; }
+.hero-footnote{ color:#5c7596; font-size:.95rem; }
+
+.auth-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:2rem;
+  box-shadow:var(--shadow);
+}
+.auth-card h2{ margin-top:0; text-align:center; color:#0f2742; }
+.form-grid{ display:grid; gap:1rem; margin-top:1rem; }
+
+.primary-btn{ composes: btn btn-primary; } /* helper ako već koristiš ovu klasu */
+
+/* premošti stare "login-box" ako je već u markup-u */
+.login-box{ max-width:520px; margin:2rem auto; }
+
+/* =========================================
+   HEADER BANNER (više kontrasta + responsive)
+========================================= */
+.header-banner{
+  background:linear-gradient(135deg, var(--brand), var(--brand-2));
+  color:#fff;
+}
+.header-banner h1{ letter-spacing:.3px; }
+.header-banner .sub{
+  max-width:720px; margin:.5rem auto 0; opacity:.95;
+}
+
+/* =========================================
+   LIST ITEMS + SELECTION
+========================================= */
+li{
+  background:#f9fafb;
+  border:1px solid var(--border);
+}
+li:hover{ background:#e9f4ff; }
+
+/* jasno označena selekcija */
+.selected, .radionica-oznacena{
+  border:2px solid var(--brand) !important;
+  background:#e0f0ff !important;
+  font-weight:700;
+}
+
+/* =========================================
+   STATUS PILLS (prisustva)
+========================================= */
+.status-pill{
+  padding:.2rem .5rem; border-radius:999px; font-weight:700; font-size:.85rem;
+  border:1px solid var(--border);
+}
+.status-prisutan{ background-color:#d3f9d8; }
+.status-izostao{ background-color:#ffe0e0; }
+.status-odustao{ background-color:#fff3cd; }
+.status-nepoznato{ background-color:#f1f1f1; }
+
+/* =========================================
+   NAV (malo jači hover i fokus za11y)
+========================================= */
+.nav-links li a{
+  position:relative; padding-bottom:2px;
+}
+.nav-links li a:hover,
+.nav-links li a:focus{
+  color:var(--brand);
+}
+.nav-links li a:focus{
+  outline:none; box-shadow:var(--focus);
+  border-radius:6px;
+}
+
+/* =========================================
+   UTILITIES
+========================================= */
+.grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+.flex{ display:flex; gap:1rem; }
+.center{ display:grid; place-items:center; }
+.spacer{ height:1rem; }
+.mt-1{ margin-top:.5rem; } .mt-2{ margin-top:1rem; } .mt-3{ margin-top:1.5rem; }
+.mb-1{ margin-bottom:.5rem; } .mb-2{ margin-bottom:1rem; } .mb-3{ margin-bottom:1.5rem; }
