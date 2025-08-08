@@ -12,10 +12,9 @@ import './App.css';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [userRole, setUserRole] = useState(null);
+  const [userRole, setUserRole] = useState(localStorage.getItem('role') || null);
 
   useEffect(() => {
-    // Provjera tokena u localStorage
     const savedToken = localStorage.getItem('token');
     const savedRole = localStorage.getItem('role');
     if (savedToken) {
@@ -41,17 +40,24 @@ function App() {
         <header className="header-banner">
           <h1>EdukatorPlus</h1>
           <p>Digitalna platforma za evidenciju edukacija, polaznika i prisustva</p>
-          <button onClick={handleLogout} style={{ float: 'right' }}>
-            Odjava
-          </button>
+          <div style={{ float: 'right', textAlign: 'right' }}>
+            <p style={{ marginBottom: '4px', fontSize: '0.9em' }}>
+              Prijavljen kao: <strong>{userRole}</strong>
+            </p>
+            <button onClick={handleLogout}>Odjava</button>
+          </div>
         </header>
 
         <nav className="main-nav">
           <ul className="nav-links">
             <li><Link to="/">Početna</Link></li>
             <li><Link to="/radionice">Radionice</Link></li>
-            <li><Link to="/polaznici">Polaznici</Link></li>
-            <li><Link to="/prisustva">Prisustva</Link></li>
+            {userRole === "ADMIN" && (
+              <>
+                <li><Link to="/polaznici">Polaznici</Link></li>
+                <li><Link to="/prisustva">Prisustva</Link></li>
+              </>
+            )}
           </ul>
         </nav>
 
@@ -60,8 +66,12 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/radionice" element={<Radionice />} />
             <Route path="/radionice/:id" element={<RadionicaDetalji />} />
-            <Route path="/polaznici" element={<Polaznici />} />
-            <Route path="/prisustva" element={<Prisustva />} />
+            {userRole === "ADMIN" && (
+              <>
+                <Route path="/polaznici" element={<Polaznici />} />
+                <Route path="/prisustva" element={<Prisustva />} />
+              </>
+            )}
           </Routes>
         </main>
       </div>
