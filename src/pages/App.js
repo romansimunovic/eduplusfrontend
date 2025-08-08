@@ -4,9 +4,9 @@ import Home from './Home';
 import Polaznici from './Polaznici';
 import Radionice from './Radionice';
 import RadionicaDetalji from './RadionicaDetalji';
+import Prisustva from './Prisustva';
 import Login from '../Login';
 import Register from '../Register';
-import Prisustva from './Prisustva';
 
 function RequireAuth({ children }) {
   const token = localStorage.getItem('token');
@@ -15,11 +15,13 @@ function RequireAuth({ children }) {
 
 function Layout({ children }) {
   const token = localStorage.getItem('token');
+
   const doLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    window.location.hash = '#/login';
+    window.location.href = '/login';
   };
+
   return (
     <div>
       <nav className="container" style={{ marginBottom: '1rem' }}>
@@ -27,6 +29,7 @@ function Layout({ children }) {
           <Link to="/">Početna</Link>
           <Link to="/radionice">Radionice</Link>
           <Link to="/polaznici">Polaznici</Link>
+          <Link to="/prisustva">Prisustva</Link>
           <span style={{ marginLeft: 'auto' }} />
           {token ? (
             <button className="btn btn-outline" onClick={doLogout}>Odjava</button>
@@ -46,9 +49,11 @@ function Layout({ children }) {
 export default function App() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
+      {/* Protected routes */}
       <Route
         path="/"
         element={
@@ -81,15 +86,16 @@ export default function App() {
           </RequireAuth>
         }
       />
-        <Route
-  path="/prisustva"
-  element={
-    <RequireAuth>
-      <Layout><Prisustva /></Layout>
-    </RequireAuth>
-  }
-/>
+      <Route
+        path="/prisustva"
+        element={
+          <RequireAuth>
+            <Layout><Prisustva /></Layout>
+          </RequireAuth>
+        }
+      />
 
+      {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
