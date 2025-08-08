@@ -1,89 +1,87 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-
+import React from 'react';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import Home from './Home';
-import Radionice from './Radionice';
 import Polaznici from './Polaznici';
-import Prisustva from './Prisustva';
+import Radionice from './Radionice';
 import RadionicaDetalji from './RadionicaDetalji';
 import Login from '../Login';
 import Register from '../Register';
 
-import './App.css';
+function RequireAuth({ children }) {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" replace />;
+}
 
-function App() {
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [userRole, setUserRole] = useState(localStorage.getItem('role'));
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    const savedRole = localStorage.getItem('role');
-    if (savedToken) {
-      setToken(savedToken);
-      setUserRole(savedRole);
-    }
-    setLoading(false);
-  }, []);
-
-  const handleLogout = () => {
+function Layout({ children }) {
+  const token = localStorage.getItem('token');
+  const doLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    setToken(null);
-    setUserRole(null);
+    window.location.hash = '#/login';
   };
-
-  if (loading) return <p>Učitavanje...</p>;
-
-  if (!token || !["ADMIN", "USER"].includes(userRole)) {
-    return <Login setToken={setToken} setUserRole={setUserRole} />;
-  }
-
   return (
-    <Router>
-      <div className="app-container">
-        <header className="header-banner">
-          <h1>EdukatorPlus</h1>
-          <p>Digitalna platforma za evidenciju edukacija, polaznika i prisustva</p>
-          <div style={{ float: 'right', textAlign: 'right' }}>
-            <p style={{ marginBottom: '4px', fontSize: '0.9em' }}>
-              Prijavljen kao: <strong>{userRole}</strong>
-            </p>
-            <button onClick={handleLogout}>Odjava</button>
-          </div>
-        </header>
-
-        <nav className="main-nav">
-          <ul className="nav-links">
-            <li><Link to="/">Početna</Link></li>
-            <li><Link to="/radionice">Radionice</Link></li>
-            {userRole === "ADMIN" && (
-              <>
-                <li><Link to="/polaznici">Polaznici</Link></li>
-                <li><Link to="/prisustva">Prisustva</Link></li>
-                <li><Link to="/register">Dodaj korisnika</Link></li>
-              </>
-            )}
-          </ul>
-        </nav>
-
-        <main style={{ padding: '20px' }}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/radionice" element={<Radionice />} />
-            <Route path="/radionice/:id" element={<RadionicaDetalji />} />
-            {userRole === "ADMIN" && (
-              <>
-                <Route path="/polaznici" element={<Polaznici />} />
-                <Route path="/prisustva" element={<Prisustva />} />
-                <Route path="/register" element={<Register />} />
-              </>
-            )}
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <div>
+      <nav className="container" style={{ marginBottom: '1rem' }}>
+        <div className="nav-links">
+          <Link to="/">Početna</Link>
+          <Link to="/radionice">Radionice</Link>
+          <Link to="/polaznici">Polaznici</Link>
+          <span style={{ marginLeft: 'auto' }} />
+          {token ? (
+            <button className="btn btn-outline" onClick={doLogout}>Odjava</button>
+          ) : (
+            <>
+              <Link to="/login">Prijava</Link>
+              <Link to="/register">Registracija</Link>
+            </>
+          )}
+        </div>
+      </nav>
+      {children}
+    </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      <Route
+        path="/"
+        element={
+          <RequireAuth>
+            <Layout><Home /></Layout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/polaznici"
+        element={
+          <RequireAuth>
+            <Layout><Polaznici /></Layout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/radionice"
+        element={
+          <RequireAuth>
+            <Layout><Radionice /></Layout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/radionice/:id"
+        element={
+          <RequireAuth>
+            <Layout><RadionicaDetalji /></Layout>
+          </RequireAuth>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
