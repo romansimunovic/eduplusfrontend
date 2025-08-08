@@ -6,6 +6,7 @@ import Radionice from './Radionice';
 import RadionicaDetalji from './RadionicaDetalji';
 import Login from '../Login';
 import Register from '../Register';
+import Prisustva from './Prisustva';
 
 function RequireAuth({ children }) {
   const token = localStorage.getItem('token');
@@ -80,6 +81,14 @@ export default function App() {
           </RequireAuth>
         }
       />
+        <Route
+  path="/prisustva"
+  element={
+    <RequireAuth>
+      <Layout><Prisustva /></Layout>
+    </RequireAuth>
+  }
+/>
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
