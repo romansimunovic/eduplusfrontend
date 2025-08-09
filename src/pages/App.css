@@ -273,3 +273,34 @@ nav{
   .flex-row{ flex-direction:column; }
   input, select, button{ width:100%; }
 }
+
+/* ---- FIX: password toggle da ne prekriva input na mobitelu ---- */
+.input-group {
+  position: relative;
+  display: block;
+}
+.pw-input {
+  padding-right: 44px; /* prostor za gumb */
+}
+.pw-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  /* smanji klik zonu na točan gumb */
+  padding: 0;
+  line-height: 1;
+  z-index: 2; /* iznad inputa, ali samo na tih 32x32px */
+}
+/* spriječi da child elementi šire klik zonu */
+.pw-toggle > * {
+  pointer-events: none;
+}
+
