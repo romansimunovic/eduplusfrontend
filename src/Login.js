@@ -76,22 +76,29 @@ function Login({ setToken, setUserRole }) {
             />
           </label>
 
-          <label>
-            Lozinka
-            <div className="input-group">
-              <input
-                type={showPw ? "text" : "password"}
-                placeholder="••••••••"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
-              <button type="button" className="ghost-btn" onClick={() => setShowPw(s => !s)}>
-                {showPw ? "🙈" : "👁️"}
-              </button>
-            </div>
-          </label>
+         <label>
+  Lozinka
+  <div className="input-group">
+    <input
+      type={showPw ? "text" : "password"}
+      placeholder="••••••••"
+      value={password}
+      onChange={e => setPassword(e.target.value)}
+      required
+      autoComplete="current-password"
+      className="pw-input"
+    />
+    <button
+      type="button"
+      className="ghost-btn pw-toggle"
+      aria-label={showPw ? "Sakrij lozinku" : "Prikaži lozinku"}
+      aria-pressed={showPw}
+      onClick={() => setShowPw(s => !s)}
+    >
+      {showPw ? "🙈" : "👁️"}
+    </button>
+  </div>
+</label>
 
           <button type="submit" className="primary-btn" disabled={submitting}>
             {submitting ? "Prijavljivanje..." : "Prijavi se"}
