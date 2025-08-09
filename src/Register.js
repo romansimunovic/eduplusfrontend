@@ -65,20 +65,28 @@ function Register() {
           </label>
 
           <label>
-            Lozinka
-            <div className="input-group">
-              <input
-                type={showPw ? "text" : "password"}
-                placeholder="Min. 8 znakova"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-              <button type="button" className="ghost-btn" onClick={() => setShowPw(s => !s)}>
-                {showPw ? "🙈" : "👁️"}
-              </button>
-            </div>
-          </label>
+  Lozinka
+  <div className="input-group">
+    <input
+      type={showPw ? "text" : "password"}
+      placeholder="Min. 8 znakova"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      autoComplete="new-password"
+      className="pw-input"
+    />
+    <button
+      type="button"
+      className="ghost-btn pw-toggle"
+      aria-label={showPw ? "Sakrij lozinku" : "Prikaži lozinku"}
+      aria-pressed={showPw}
+      onClick={() => setShowPw(s => !s)}
+    >
+      {showPw ? "🙈" : "👁️"}
+    </button>
+  </div>
+</label>
+
 
           <label>
             Uloga
