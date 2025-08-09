@@ -53,8 +53,7 @@ function Login({ setToken, setUserRole }) {
         <ul className="hero-bullets">
           <li>📚 Upravljanje radionicama i terminima</li>
           <li>👥 Polaznici i kontakti na jednom mjestu</li>
-          <li>✅ Prisustva s rodno osjetljivim statusima</li>
-          <li>📊 Brze statistike po radionicama</li>
+          <li>📊 Brza statistika po radionicama</li>
         </ul>
         <p className="hero-footnote">Tip: zatraži registraciju od admina ili otvori “Registracija”.</p>
       </div>
