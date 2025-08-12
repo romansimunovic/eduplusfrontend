@@ -56,6 +56,7 @@ Zbog razlike između lokalne verzije (s login/registracijom) i produkcijske verz
 	•	dev – razvojna verzija s login/registracijom i novim funkcionalnostima
 
 📂 Struktura komponenti
+
 	•	Home.jsx – Početna stranica s popisom radionica i polaznika
 	•	Radionice.jsx – Upravljanje radionicama
 	•	Polaznici.jsx – Upravljanje polaznicima
