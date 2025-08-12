@@ -1,4 +1,3 @@
-Evo ti kompletan README.md spreman za copy-paste:
 
 # 📚 EdukatorPlus – Frontend
 
@@ -7,7 +6,7 @@ Ideja je bila napraviti pregledno i jednostavno sučelje koje se povezuje na bac
 
 ---
 
-## ✨ Što aplikacija radi?
+## Što aplikacija radi?
 
 - Prikazuje i upravlja popisom radionica, polaznika i prisustava
 - Omogućuje dodavanje, uređivanje i brisanje zapisa
@@ -27,7 +26,7 @@ Ideja je bila napraviti pregledno i jednostavno sučelje koje se povezuje na bac
 
 ---
 
-## 🚀 Kako pokrenuti projekt lokalno
+## 🚀 Pokretanje projekta lokalno
 
 1. Kloniraj repozitorij  
    ```bash
@@ -50,7 +49,6 @@ http://localhost:3000
 
 
 
-⸻
 
 🌍 Deploy
 
@@ -60,7 +58,7 @@ Frontend je dostupan na:
 Backend API se nalazi na:
 🔗 https://eduplusbackend.onrender.com
 
-⸻
+
 
 🌿 Rad s granama (branch)
 
@@ -77,7 +75,7 @@ git checkout dev
 git checkout main
 
 
-⸻
+
 
 📂 Struktura komponenti
 	•	Home.jsx – Početna stranica s popisom radionica i polaznika
@@ -86,7 +84,7 @@ git checkout main
 	•	Prisustva.jsx – Evidencija prisustva s filtrima i statistikama
 	•	Login.jsx / Register.jsx – Prijava i registracija korisnika (dev grana)
 
-⸻
+
 
 🎓 Kontekst projekta
 
