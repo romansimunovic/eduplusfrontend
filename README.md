@@ -1,7 +1,3 @@
-Evo ti verzija README-a koja zvuči više kao da ju je student napisao iz prve ruke, a ne robot iz dokumentacije:
-
-⸻
-
 EdukatorPlus – Frontend
 
 EdukatorPlus je React aplikacija koju sam napravio kao frontend za istoimeni backend, a služi za jednostavno vođenje evidencije radionica, polaznika i njihovog prisustva. Sve radi preko REST API-ja, a cilj je bio napraviti moderno, pregledno i jednostavno sučelje koje će pokriti sve funkcionalnosti koje backend nudi.
