@@ -1,4 +1,3 @@
-// src/pages/App.js  (DEV branch)
 import React from 'react';
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
 
