@@ -49,11 +49,7 @@ Frontend je dostupan na:
 Backend API se nalazi na:
 🔗 https://eduplusbackend.onrender.com
 
-Rad s granama
 
-Zbog razlike između lokalne verzije (s login/registracijom) i produkcijske verzije (bez toga), koristi se rad s Git granama:
-	•	main – stabilna verzija aplikacije na Renderu (bez login/registracije)
-	•	dev – razvojna verzija s login/registracijom i novim funkcionalnostima
 
 📂 Struktura komponenti
 
