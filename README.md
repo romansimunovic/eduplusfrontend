@@ -1,59 +1,34 @@
-# EdukatorPlus Frontend
+Evo ti verzija README-a koja zvuči više kao da ju je student napisao iz prve ruke, a ne robot iz dokumentacije:
 
-**EdukatorPlus** frontend je React aplikacija koja omogućuje korisniku upravljanje edukacijskim radionicama i evidenciju polaznika putem REST API-ja.
+⸻
 
-Frontend implementira sve funkcionalnosti backend API-ja kroz moderno i responzivno korisničko sučelje.
+EdukatorPlus – Frontend
 
-## \:sparkles: Funkcionalnosti
+EdukatorPlus je React aplikacija koju sam napravio kao frontend za istoimeni backend, a služi za jednostavno vođenje evidencije radionica, polaznika i njihovog prisustva. Sve radi preko REST API-ja, a cilj je bio napraviti moderno, pregledno i jednostavno sučelje koje će pokriti sve funkcionalnosti koje backend nudi.
 
-* Dodavanje, prikaz i brisanje entiteta (Radionice, Polaznici, Prisustva)
-* Pretraživanje, sortiranje i filtriranje po raznim kriterijima
-* Statistika prisustva (po statusu i radionici)
-* Validacija korisničkih unosa i obavijesti o greškama
-* Minimalističan dizajn s osnovnim CSS-om
+Aplikacija omogućuje dodavanje, uređivanje i brisanje radionica, polaznika i prisustava, pretragu i filtriranje, pa čak i pregled statistike prisustva. Tu su i validacije kako bi se izbjegli krivi unosi, a dizajn je minimalan i lagan – bez nepotrebnih komplikacija.
 
-## \:gear: Tehnologije
+Tehnologije
 
-* React (JavaScript)
-* JSX
-* CSS
-* Fetch API
+Građena je u Reactu uz malo CSS-a, a API pozivi idu prema backendu na Renderu. Sve je rađeno s idejom da bude responzivno i lako za korištenje.
 
-## \:hammer\_and\_wrench: Pokretanje projekta
+Kako pokrenuti projekt lokalno
 
-```bash
 npm install
 npm start
-```
 
-Frontend se pokreće lokalno na:
+Nakon toga aplikacija će biti dostupna na http://localhost:3000.
 
-```
-http://localhost:3000
-```
+Deploy
 
-## \:earth\_africa: Deploy
-
-Frontend Render URL:
-
-```
+Produkcijska verzija frontenda nalazi se na:
 https://eduplusfrontend.onrender.com
-```
 
-## \:file\_folder: Struktura komponenti
+Backend veza
 
-* `Radionice.jsx` - Upravljanje radionicama
-* `Polaznici.jsx` - Upravljanje korisnicima
-* `Prisustva.jsx` - Evidencija prisustva s filtrima i statistikama
+Aplikacija se spaja na backend na adresi:
+https://eduplusbackend.onrender.com
 
-## \:link: Povezivanje s backendom
+Kontekst projekta
 
-Svi pozivi prema API-ju upućuju se na bazni URL:
-
-```js
-const baseUrl = "https://eduplusbackend.onrender.com";
-```
-
-## \:mortar\_board: Akademski kontekst
-
-Ova aplikacija je izrađena kao završni projekt u sklopu kolegija **Informacijsko-komunikacijska infrastruktura** pod mentorstvom **izv. prof. dr. sc. Tomislava Jakopeca**, uz dodatnu primjenu znanja iz kolegija **Programiranje 2 (P2)**.
+Ovo sam radio kao projekt iz kolegija Informacijsko-komunikacijska infrastruktura, pod mentorstvom izv. prof. dr. sc. Tomislava Jakopeca, uz dodatnu primjenu znanja iz Programiranja 2.
