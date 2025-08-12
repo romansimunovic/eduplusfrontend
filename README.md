@@ -1,5 +1,5 @@
 
-# 📚 EdukatorPlus – Frontend
+# EdukatorPlus – Frontend
 
 **EdukatorPlus** je React aplikacija koja služi za upravljanje edukacijskim radionicama, polaznicima i njihovim prisustvom.  
 Ideja je bila napraviti pregledno i jednostavno sučelje koje se povezuje na backend putem REST API-ja, s mogućnošću pregleda, dodavanja, uređivanja i brisanja podataka – sve u realnom vremenu.
@@ -17,7 +17,7 @@ Ideja je bila napraviti pregledno i jednostavno sučelje koje se povezuje na bac
 
 ---
 
-## 🛠️ Tehnologije
+## Tehnologije
 
 - **React** (JavaScript + JSX)
 - **CSS** za osnovno stiliziranje
@@ -26,7 +26,7 @@ Ideja je bila napraviti pregledno i jednostavno sučelje koje se povezuje na bac
 
 ---
 
-## 🚀 Pokretanje projekta lokalno
+## Pokretanje projekta lokalno
 
 1. Kloniraj repozitorij  
    ```bash
@@ -50,7 +50,7 @@ http://localhost:3000
 
 
 
-🌍 Deploy
+Deploy
 
 Frontend je dostupan na:
 🔗 https://eduplusfrontend.onrender.com
@@ -60,21 +60,11 @@ Backend API se nalazi na:
 
 
 
-🌿 Rad s granama (branch)
+Rad s granama
 
 Zbog razlike između lokalne verzije (s login/registracijom) i produkcijske verzije (bez toga), koristi se rad s Git granama:
 	•	main – stabilna verzija aplikacije na Renderu (bez login/registracije)
 	•	dev – razvojna verzija s login/registracijom i novim funkcionalnostima
-
-Primjer rada:
-
-# Prebacivanje na razvojnu granu
-git checkout dev
-
-# Povratak na glavnu granu
-git checkout main
-
-
 
 
 📂 Struktura komponenti
@@ -83,10 +73,6 @@ git checkout main
 	•	Polaznici.jsx – Upravljanje polaznicima
 	•	Prisustva.jsx – Evidencija prisustva s filtrima i statistikama
 	•	Login.jsx / Register.jsx – Prijava i registracija korisnika (dev grana)
-
-
-
-🎓 Kontekst projekta
 
 Projekt je izrađen kao završni rad iz kolegija Informacijsko-komunikacijska infrastruktura
 pod mentorstvom izv. prof. dr. sc. Tomislava Jakopeca, uz dodatnu primjenu znanja iz kolegija Programiranje 2 (P2).
