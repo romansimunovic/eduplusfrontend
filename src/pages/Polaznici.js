@@ -1,190 +1,136 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
+// src/pages/Polaznici.js
+import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../api';
+import './App.css';
 
 function Polaznici() {
   const [polaznici, setPolaznici] = useState([]);
-  const [ime, setIme] = useState("");
-  const [prezime, setPrezime] = useState("");
-  const [email, setEmail] = useState("");
-  const [godinaRodenja, setGodinaRodenja] = useState("");
-  const [spol, setSpol] = useState("");
-  const [telefon, setTelefon] = useState("");
-  const [grad, setGrad] = useState("");
-  const [status, setStatus] = useState("");
-  const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortKey, setSortKey] = useState("");
-  const [selectedPolaznik, setSelectedPolaznik] = useState(null);
+  const [search, setSearch] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
-    fetchPolaznici();
+    (async () => {
+      try {
+        const data = await api.get('/api/polaznici');
+        // uvijek sortiraj abecedno po prezimenu, pa po imenu
+        const sorted = [...(Array.isArray(data) ? data : [])].sort((a, b) => {
+          const prezCmp = String(a.prezime || '').localeCompare(String(b.prezime || ''), 'hr', { sensitivity: 'base' });
+          if (prezCmp !== 0) return prezCmp;
+          return String(a.ime || '').localeCompare(String(b.ime || ''), 'hr', { sensitivity: 'base' });
+        });
+        setPolaznici(sorted);
+        setError(null);
+        // auto-odaberi prvog pri prvom učitavanju
+        if (sorted.length && !selectedId) setSelectedId(sorted[0].id);
+      } catch (e) {
+        console.error(e);
+        setError('Greška prilikom dohvaćanja podataka.');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchPolaznici = async () => {
-    try {
-      const data = await api.get('/api/polaznici');
-      setPolaznici(Array.isArray(data) ? data : []);
-      setError(null);
-    } catch (e) {
-      setError(`Neuspješno dohvaćanje podataka. ${e?.message || ""}`.trim());
-    }
-  };
-
-  const handleAddOrUpdate = async () => {
-    if (!ime || !prezime || !email || !godinaRodenja || !spol || !telefon || !grad || !status) {
-      setError("Sva polja su obavezna.");
-      return;
-    }
-
-    const godina = parseInt(godinaRodenja, 10);
-    if (isNaN(godina) || godina < 1900 || godina > new Date().getFullYear()) {
-      setError("Godina rođenja nije ispravna.");
-      return;
-    }
-
-    const payload = { ime, prezime, email, godinaRodenja: godina, spol, telefon, grad, status };
-    const path = editId ? `/api/polaznici/${editId}` : '/api/polaznici';
-
-    try {
-      if (editId) {
-        await api.put(path, payload);
-      } else {
-        await api.post(path, payload);
-      }
-      await fetchPolaznici();
-      resetForm();
-    } catch (e) {
-      setError(`Greška kod spremanja polaznika. ${e?.message || ""}`.trim());
-    }
-  };
-
-  const resetForm = () => {
-    setIme(""); setPrezime(""); setEmail(""); setGodinaRodenja("");
-    setSpol(""); setTelefon(""); setGrad(""); setStatus("");
-    setEditId(null); setError(null); setSelectedPolaznik(null);
-  };
-
-  const handleEdit = (p) => {
-    setIme(p.ime); setPrezime(p.prezime); setEmail(p.email);
-    setGodinaRodenja(p.godinaRodenja); setSpol(p.spol);
-    setTelefon(p.telefon); setGrad(p.grad); setStatus(p.status);
-    setEditId(p.id); setSelectedPolaznik(null);
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Obrisati ovog polaznika?")) return;
-    try {
-      await api.del(`/api/polaznici/${id}`);
-      await fetchPolaznici();
-    } catch (e) {
-      setError(`Greška kod brisanja. ${e?.message || ""}`.trim());
-    }
-  };
-
-  const handleSort = (key) => {
-    const sorted = [...polaznici].sort((a, b) => {
-      if (key === "godinaRodenja") return a[key] - b[key];
-      return String(a[key] ?? '').localeCompare(String(b[key] ?? ''), 'hr');
+  const list = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const filtered = term
+      ? polaznici.filter(p => (`${p.ime} ${p.prezime}`).toLowerCase().includes(term))
+      : polaznici;
+    // osiguraj sort i nakon filtera
+    return [...filtered].sort((a, b) => {
+      const prezCmp = String(a.prezime || '').localeCompare(String(b.prezime || ''), 'hr', { sensitivity: 'base' });
+      if (prezCmp !== 0) return prezCmp;
+      return String(a.ime || '').localeCompare(String(b.ime || ''), 'hr', { sensitivity: 'base' });
     });
-    setPolaznici(sorted);
-    setSortKey(key);
-  };
+  }, [polaznici, search]);
 
-  const filtrirani = polaznici.filter(p =>
-    `${p.ime} ${p.prezime}`.toLowerCase().includes(searchTerm.toLowerCase())
+  const selected = useMemo(
+    () => list.find(p => p.id === selectedId) || polaznici.find(p => p.id === selectedId) || null,
+    [list, polaznici, selectedId]
   );
 
   return (
-    <div className="polaznici-container">
-      <h2>Polaznici</h2>
-      {error && <p className="error">{error}</p>}
+    <div className="container" style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '16px' }}>
+      <div style={{ gridColumn: '1 / 2' }}>
+        <h2>Polaznici</h2>
+        {error && <p className="error">{error}</p>}
 
-      <div className="form">
-        <input value={ime} onChange={e => setIme(e.target.value)} placeholder="Ime" />
-        <input value={prezime} onChange={e => setPrezime(e.target.value)} placeholder="Prezime" />
-        <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-        <input type="number" value={godinaRodenja} onChange={e => setGodinaRodenja(e.target.value)} placeholder="Godina rođenja" />
+        <input
+          className="search"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Pretraži po imenu ili prezimenu"
+          style={{ width: '100%', marginBottom: 8 }}
+        />
 
-        <select value={spol} onChange={e => setSpol(e.target.value)}>
-          <option value="">Odaberi spol</option>
-          <option value="M">Muški</option>
-          <option value="Ž">Ženski</option>
-        </select>
-
-        <input value={telefon} onChange={e => setTelefon(e.target.value)} placeholder="Broj mobitela" />
-        <input value={grad} onChange={e => setGrad(e.target.value)} placeholder="Grad" />
-
-        <select value={status} onChange={e => setStatus(e.target.value)}>
-          <option value="">Status</option>
-          <option value="student">Student</option>
-          <option value="zaposlen">Zaposlen</option>
-          <option value="učenik">Učenik</option>
-          <option value="nezaposlen">Nezaposlen</option>
-        </select>
-
-        <button onClick={handleAddOrUpdate}>
-          {editId ? "Spremi izmjene" : "Dodaj"}
-        </button>
+        <div style={{ maxHeight: 540, overflowY: 'auto', border: '1px solid #e3e3e3', borderRadius: 8 }}>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {list.map(p => {
+              const isActive = p.id === selectedId;
+              return (
+                <li
+                  key={p.id}
+                  onClick={() => setSelectedId(p.id)}
+                  style={{
+                    padding: '10px 12px',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid #eee',
+                    background: isActive ? '#eaf4ff' : 'white',
+                    fontWeight: isActive ? 600 : 400,
+                  }}
+                >
+                  <div>{p.prezime} {p.ime}</div>
+                  <div style={{ fontSize: 12, color: '#666' }}>{p.email}</div>
+                </li>
+              );
+            })}
+            {!list.length && (
+              <li style={{ padding: 12, color: '#666' }}>Nema rezultata.</li>
+            )}
+          </ul>
+        </div>
       </div>
 
-      <input
-        className="search"
-        value={searchTerm}
-        onChange={e => setSearchTerm(e.target.value)}
-        placeholder="Pretraži po imenu"
-      />
-
-      <select className="sort" onChange={e => handleSort(e.target.value)} value={sortKey}>
-        <option value="">Sortiraj</option>
-        <option value="ime">Po imenu</option>
-        <option value="prezime">Po prezimenu</option>
-        <option value="spol">Po spolu</option>
-        <option value="grad">Po gradu</option>
-        <option value="status">Po statusu</option>
-        <option value="godinaRodenja">Po godini rođenja</option>
-      </select>
-
-      {selectedPolaznik && (
-        <div className="stat-box">
-          <h3>📄 Podaci za: {selectedPolaznik.ime} {selectedPolaznik.prezime}</h3>
-          <p>📧 Email: {selectedPolaznik.email}</p>
-          <p>🎂 Godina rođenja: {selectedPolaznik.godinaRodenja}</p>
-          <p>📱 Telefon: {selectedPolaznik.telefon}</p>
-          <p>🏙️ Grad: {selectedPolaznik.grad}</p>
-          <p>🧬 Spol: {selectedPolaznik.spol === "M" ? "Muški" : "Ženski"}</p>
-          <p>🎓 Status: {selectedPolaznik.status}</p>
-          <button onClick={() => setSelectedPolaznik(null)}>Prikaži sve</button>
-        </div>
-      )}
-
-      <ul className="list">
-        {filtrirani.map(p => (
-          <li
-            key={p.id}
-            onClick={() => setSelectedPolaznik(p)}
+      <div style={{ gridColumn: '2 / 3' }}>
+        <h2>Detalji</h2>
+        {!selected ? (
+          <p style={{ color: '#666' }}>Odaberite polaznika s lijeve strane.</p>
+        ) : (
+          <div
             style={{
-              fontWeight: selectedPolaznik?.id === p.id ? 'bold' : 'normal',
-              border: selectedPolaznik?.id === p.id ? '2px solid #000' : '1px solid #ccc',
-              borderRadius: '6px',
-              padding: '6px',
-              marginBottom: '6px',
-              cursor: 'pointer'
+              border: '1px solid #e3e3e3',
+              borderRadius: 12,
+              padding: 16,
+              background: 'white',
+              display: 'grid',
+              gridTemplateColumns: '200px 1fr',
+              rowGap: 10,
+              columnGap: 12
             }}
           >
-            <span>
-              {p.ime} {p.prezime} ({p.email}) — {p.grad}, {p.godinaRodenja} • {p.spol}, {p.status} • 📞 {p.telefon}
-            </span>
-            <div>
-              <button onClick={(e) => { e.stopPropagation(); handleEdit(p); }}>Uredi</button>
-              <button className="delete" onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}>Obriši</button>
-            </div>
-          </li>
-        ))}
-      </ul>
+            <div style={{ color: '#666' }}>Ime i prezime</div>
+            <div><strong>{selected.ime} {selected.prezime}</strong></div>
 
-      <p className="total">Ukupno: {filtrirani.length} polaznika</p>
+            <div style={{ color: '#666' }}>Email</div>
+            <div>{selected.email || '—'}</div>
+
+            <div style={{ color: '#666' }}>Telefon</div>
+            <div>{selected.telefon || '—'}</div>
+
+            <div style={{ color: '#666' }}>Grad</div>
+            <div>{selected.grad || '—'}</div>
+
+            <div style={{ color: '#666' }}>Godina rođenja</div>
+            <div>{selected.godinaRodenja ?? '—'}</div>
+
+            <div style={{ color: '#666' }}>Spol</div>
+            <div>{selected.spol || '—'}</div>
+
+            <div style={{ color: '#666' }}>Status</div>
+            <div>{selected.status || '—'}</div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
