@@ -13,8 +13,7 @@ const DevData = React.lazy(() => import('./DevData').catch(() => ({ default: () 
 const showDev = process.env.NODE_ENV !== 'production' || process.env.REACT_APP_DEV_TOOLS === 'true';
 
 function RequireAuth({ children }) {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" replace />;
+  return localStorage.getItem('token') ? children : <Navigate to="/login" replace />;
 }
 
 function Layout({ children }) {
@@ -68,8 +67,6 @@ function Layout({ children }) {
 }
 
 export default function App() {
-  const isAdmin = (localStorage.getItem('role') || '').toUpperCase() === 'ADMIN';
-
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
@@ -116,14 +113,14 @@ export default function App() {
         }
       />
 
-    <Route
-  path="/admin/users"
-  element={
-    <RequireAuth>
-      <Layout><AdminUser /></Layout>
-    </RequireAuth>
-  }
-/>
+      <Route
+        path="/admin/users"
+        element={
+          <RequireAuth>
+            <Layout><AdminUser /></Layout>
+          </RequireAuth>
+        }
+      />
 
       {showDev && (
         <Route
