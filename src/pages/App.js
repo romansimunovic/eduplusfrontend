@@ -1,4 +1,3 @@
-// src/pages/App.js
 import React from 'react';
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import Home from './Home';
@@ -8,17 +7,10 @@ import RadionicaDetalji from './RadionicaDetalji';
 import Prisustva from './Prisustva';
 import Login from '../Login';
 import Register from '../Register';
-import AdminUser from './AdminUser'; // ✅ singular, matcha tvoj file
+import AdminUser from './AdminUser';
 
-// Dev stranica (učitavamo lijeno; prikaz samo u dev buildu)
-const DevData = React.lazy(() =>
-  import('./DevData').catch(() => ({ default: () => null }))
-);
-
-// Prikaz dev alata samo u dev buildu ili ako forsiraš flagom
-const showDev =
-  process.env.NODE_ENV !== 'production' ||
-  process.env.REACT_APP_DEV_TOOLS === 'true';
+const DevData = React.lazy(() => import('./DevData').catch(() => ({ default: () => null })));
+const showDev = process.env.NODE_ENV !== 'production' || process.env.REACT_APP_DEV_TOOLS === 'true';
 
 function RequireAuth({ children }) {
   const token = localStorage.getItem('token');
@@ -44,23 +36,18 @@ function Layout({ children }) {
           <Link to="/radionice">Radionice</Link>
           <Link to="/polaznici">Polaznici</Link>
           <Link to="/prisustva">Prisustva</Link>
-
-          {/* admin link vidljiv samo ADMIN-u */}
           {isAdmin && (
             <>
               <span style={{ opacity: 0.3 }}>|</span>
               <Link to="/admin/users" style={{ fontSize: 13, opacity: 0.95 }}>Admin korisnici</Link>
             </>
           )}
-
-          {/* dev link samo u dev buildu */}
           {showDev && (
             <>
               <span style={{ opacity: 0.3 }}>|</span>
               <Link to="/dev-data" style={{ fontSize: 13, opacity: 0.85 }}>Dev data</Link>
             </>
           )}
-
           <span style={{ marginLeft: 'auto' }} />
           {token ? (
             <button className="btn btn-outline" onClick={doLogout}>Odjava</button>
@@ -85,11 +72,9 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Public */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Protected */}
       <Route
         path="/"
         element={
@@ -131,13 +116,12 @@ export default function App() {
         }
       />
 
-      {/* Admin-only ruta */}
       <Route
         path="/admin/users"
         element={
           <RequireAuth>
             {isAdmin ? (
-              <Layout><AdminUser /></Layout> {/* ✅ singular komponenta */}
+              <Layout><AdminUser /></Layout>
             ) : (
               <Navigate to="/" replace />
             )}
@@ -145,7 +129,6 @@ export default function App() {
         }
       />
 
-      {/* Dev-only ruta */}
       {showDev && (
         <Route
           path="/dev-data"
@@ -157,7 +140,6 @@ export default function App() {
         />
       )}
 
-      {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
