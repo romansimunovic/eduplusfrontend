@@ -10,10 +10,15 @@
   --focus: 0 0 0 3px rgba(19,99,223,.18);
 }
 
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; margin: 0; font-family: Inter, sans-serif; background: var(--bg); color: var(--txt); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root {
+  height: 100%;
+  font-family: Inter, sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+}
 
-h1, h2, h3 { margin: 0 0 .75rem; }
+h1, h2, h3 { margin-bottom: .75rem; }
 h1 { font-size: 2rem; font-weight: 800; }
 h2 { font-size: 1.6rem; font-weight: 800; }
 h3 { font-size: 1.2rem; font-weight: 700; color: var(--muted); }
@@ -21,6 +26,11 @@ h3 { font-size: 1.2rem; font-weight: 700; color: var(--muted); }
 a { color: var(--brand); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
+/* Globalno makni bullet points */
+ul { list-style: none; padding: 0; margin: 0; }
+li { list-style: none; }
+
+/* Card & container */
 .container, .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -49,6 +59,7 @@ input:focus, select:focus, textarea:focus {
   box-shadow: var(--focus);
 }
 
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -58,9 +69,10 @@ input:focus, select:focus, textarea:focus {
   font-weight: 800;
   cursor: pointer;
 }
-.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary { background: var(--brand); color: #fff; border: none; }
 .btn-outline { background: transparent; border: 1px solid var(--brand); color: var(--brand); }
 
+/* Navigation */
 nav {
   background: var(--card);
   border: 1px solid var(--border);
@@ -73,6 +85,7 @@ nav {
 .nav-links a { font-weight: 800; color: var(--txt); }
 .nav-links a:hover { color: var(--brand); }
 
+/* Auth screens */
 .auth-layout {
   min-height: 100vh;
   display: flex;
@@ -92,6 +105,7 @@ nav {
 .auth-card h2 { text-align: center; margin-bottom: 1rem; }
 .form-grid { display: grid; gap: 1rem; }
 
+/* Alerts */
 .alert {
   padding: .8rem 1rem;
   border-radius: 12px;
@@ -100,3 +114,21 @@ nav {
 }
 .alert-error { background: #fef2f2; color: #7f1d1d; }
 .alert-success { background: #ecfdf5; color: #166534; }
+
+/* Lista polaznika/radionica */
+.list-item {
+  background-color: #f3f3f3;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: background 0.15s ease-in-out, transform 0.1s ease-in-out;
+}
+.list-item:hover {
+  background-color: #e8f1ff;
+  transform: translateY(-1px);
+}
+.list-item.selected {
+  background-color: #d4ebff;
+}
