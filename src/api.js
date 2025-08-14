@@ -1,5 +1,7 @@
 // src/api.js
-const baseUrl = "https://eduplusbackend.onrender.com";
+
+// Koristi .env varijablu, ako je nema, fallback na localhost
+const baseUrl = process.env.REACT_APP_API_BASE || "http://localhost:8080";
 
 function authHeaders() {
   const token = localStorage.getItem("token");
@@ -8,24 +10,23 @@ function authHeaders() {
 
 async function handle(res) {
   if (res.status === 401) {
-    // token istekao / nevažeći -> odjavi korisnika
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    // tvrdi reload da se pokaže Login
-    window.location.reload();
+    // Token istekao ili nevažeći -> logout
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    window.location.href = "/login";
     return Promise.reject(new Error("Unauthorized"));
   }
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
     throw new Error(txt || `HTTP ${res.status}`);
   }
-  // neki endpointi vraćaju 204
-  const ct = res.headers.get('content-type') || '';
-  return ct.includes('application/json') ? res.json() : null;
+  const ct = res.headers.get("content-type") || "";
+  return ct.includes("application/json") ? res.json() : null;
 }
 
 export const api = {
   baseUrl,
+
   get: (path) =>
     fetch(`${baseUrl}${path}`, {
       headers: { ...authHeaders() },
