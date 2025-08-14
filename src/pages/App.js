@@ -8,10 +8,17 @@ import RadionicaDetalji from './RadionicaDetalji';
 import Prisustva from './Prisustva';
 import Login from '../Login';
 import Register from '../Register';
+import AdminUsers from './AdminUsers'; // ✅ ispravan import
 
-// Dev stranica (samo u dev buildu je i renderamo rutu)
-const DevData = React.lazy(() => import('./DevData').catch(() => ({ default: () => null })));
-const showDev = process.env.NODE_ENV !== 'production' || process.env.REACT_APP_DEV_TOOLS === 'true';
+// Dev stranica (učitavamo lijeno; prikaz samo u dev buildu)
+const DevData = React.lazy(() =>
+  import('./DevData').catch(() => ({ default: () => null }))
+);
+
+// Prikaz dev alata samo u dev buildu ili ako forsiraš flagom
+const showDev =
+  process.env.NODE_ENV !== 'production' ||
+  process.env.REACT_APP_DEV_TOOLS === 'true';
 
 function RequireAuth({ children }) {
   const token = localStorage.getItem('token');
@@ -20,6 +27,8 @@ function RequireAuth({ children }) {
 
 function Layout({ children }) {
   const token = localStorage.getItem('token');
+  const role = (localStorage.getItem('role') || '').toUpperCase();
+  const isAdmin = role === 'ADMIN';
 
   const doLogout = () => {
     localStorage.removeItem('token');
@@ -35,6 +44,14 @@ function Layout({ children }) {
           <Link to="/radionice">Radionice</Link>
           <Link to="/polaznici">Polaznici</Link>
           <Link to="/prisustva">Prisustva</Link>
+
+          {/* admin link vidljiv samo ADMIN-u */}
+          {isAdmin && (
+            <>
+              <span style={{ opacity: 0.3 }}>|</span>
+              <Link to="/admin/users" style={{ fontSize: 13, opacity: 0.95 }}>Admin korisnici</Link>
+            </>
+          )}
 
           {/* dev link samo u dev buildu */}
           {showDev && (
@@ -64,6 +81,8 @@ function Layout({ children }) {
 }
 
 export default function App() {
+  const isAdmin = (localStorage.getItem('role') || '').toUpperCase() === 'ADMIN';
+
   return (
     <Routes>
       {/* Public */}
@@ -108,6 +127,20 @@ export default function App() {
         element={
           <RequireAuth>
             <Layout><Prisustva /></Layout>
+          </RequireAuth>
+        }
+      />
+
+      {/* Admin-only ruta */}
+      <Route
+        path="/admin/users"
+        element={
+          <RequireAuth>
+            {isAdmin ? (
+              <Layout><AdminUsers /></Layout>
+            ) : (
+              <Navigate to="/" replace />
+            )}
           </RequireAuth>
         }
       />
