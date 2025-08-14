@@ -116,18 +116,14 @@ export default function App() {
         }
       />
 
-      <Route
-        path="/admin/users"
-        element={
-          <RequireAuth>
-            {isAdmin ? (
-              <Layout><AdminUser /></Layout>
-            ) : (
-              <Navigate to="/" replace />
-            )}
-          </RequireAuth>
-        }
-      />
+    <Route
+  path="/admin/users"
+  element={
+    <RequireAuth>
+      <Layout><AdminUser /></Layout>
+    </RequireAuth>
+  }
+/>
 
       {showDev && (
         <Route
