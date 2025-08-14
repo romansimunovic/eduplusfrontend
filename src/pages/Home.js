@@ -1,3 +1,4 @@
+// src/pages/Home.js
 import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../api';
 
@@ -11,7 +12,7 @@ function Home() {
   const [statusMsg, setStatusMsg] = useState('');
   const [statusType, setStatusType] = useState('info');
 
-  // prikaz gumba za seed samo ako je korisnik ADMIN (role je u localStorage)
+  // gumb "Generiraj" samo ADMIN-u
   const isAdmin = (localStorage.getItem('role') || '').toUpperCase() === 'ADMIN';
 
   const statusCycle = {
@@ -22,13 +23,15 @@ function Home() {
   };
 
   useEffect(() => {
-    // mali ping (može vratiti non-JSON; api.get to tolerira)
+    // ping (može vratiti non-JSON; api.get to tolerira)
     api.get('/api/ping').catch(() => {});
-    fetchAll();
+    refreshOnly();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchAll = async () => {
+  /** SAMO REFRESH iz baze, bez mijenjanja podataka */
+  const refreshOnly = async () => {
+    setLoading(true);
     try {
       const [r, p, pr] = await Promise.all([
         api.get('/api/radionice'),
@@ -37,11 +40,14 @@ function Home() {
       ]);
 
       const rArr = Array.isArray(r) ? r : [];
-      setRadionice(rArr);
-      setPolaznici(Array.isArray(p) ? p : []);
-      setPrisustva(Array.isArray(pr) ? pr : []);
+      const pArr = Array.isArray(p) ? p : [];
+      const prArr = Array.isArray(pr) ? pr : [];
 
-      // ako ništa nije odabrano ili je odabrana radionica nestala, uzmi prvu po nazivu
+      setRadionice(rArr);
+      setPolaznici(pArr);
+      setPrisustva(prArr);
+
+      // ako odabrana više ne postoji, ili ništa nije odabrano -> uzmi prvu po nazivu
       if (!selectedRadionica || !rArr.find(x => x.id === selectedRadionica.id)) {
         const first = [...rArr].sort((a, b) =>
           (a.naziv || '').localeCompare(b.naziv || '', 'hr', { sensitivity: 'base' })
@@ -51,8 +57,10 @@ function Home() {
 
       showMessage('Podaci učitani.', 'success');
     } catch (err) {
-      console.error('fetchAll error:', err);
+      console.error('refreshOnly error:', err);
       showMessage(`Greška pri dohvaćanju podataka. ${err?.message || ''}`.trim(), 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,6 +93,7 @@ function Home() {
     }
   };
 
+  /** Klik na polaznika: ciklički mijenja status i sprema u DB */
   const handleClick = async (polaznik) => {
     if (!selectedRadionica) return;
 
@@ -117,12 +126,13 @@ function Home() {
     }
   };
 
+  /** ADMIN: generira nove podatke u bazi (persistira), pa radi refresh */
   const handleGenerateData = async () => {
     setLoading(true);
-    showMessage('Generiram nove podatke...', 'info');
+    showMessage('Generiram nove podatke…', 'info');
     try {
-      await api.post('/api/dev/seed', {}); // u prod profilu server vraća 403 (skriveno gumbom)
-      await fetchAll();
+      await api.post('/api/dev/seed', {});   // u prod profilu 403, ali gumb se ionako ne prikazuje
+      await refreshOnly();
       showMessage('Podaci uspješno generirani!', 'success');
     } catch (err) {
       console.error('seed error:', err);
@@ -166,14 +176,20 @@ function Home() {
 
   return (
     <>
-      <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+      {/* Akcije na vrhu */}
+      <div style={{ textAlign: 'center', marginBottom: '1rem', display: 'flex', gap: 12, justifyContent: 'center' }}>
+        <button onClick={refreshOnly} disabled={loading}>
+          {loading ? 'Učitavam…' : 'Učitaj podatke'}
+        </button>
+
         {isAdmin && (
           <button onClick={handleGenerateData} disabled={loading}>
-            {loading ? 'Molim pričekaj...' : 'Generiraj nove podatke'}
+            {loading ? 'Molim pričekaj…' : 'Generiraj nove podatke'}
           </button>
         )}
       </div>
 
+      {/* Status traka */}
       {statusMsg && (
         <div
           style={{
@@ -199,6 +215,7 @@ function Home() {
         </div>
       )}
 
+      {/* Dvostupčani prikaz */}
       <div style={{ display: 'flex', gap: '2rem' }}>
         {/* Lijevo — radionice (abecedno) */}
         <div style={{ flex: 1 }}>
