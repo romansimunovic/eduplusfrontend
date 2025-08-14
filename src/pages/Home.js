@@ -1,5 +1,5 @@
 // src/pages/Home.js
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api';
 
 function Home() {
@@ -12,13 +12,9 @@ function Home() {
   const [statusMsg, setStatusMsg] = useState('');
   const [statusType, setStatusType] = useState('info');
 
-  // ADMIN check iz localStorage (postavljaš nakon login-a)
-  const isAdmin = (localStorage.getItem('role') || '').toUpperCase() === 'ADMIN';
-
-  // Gumb "Generiraj nove podatke" prikaži SAMO lokalno (dev) kad je flag uključen
-  // U .env.development: REACT_APP_ENABLE_SEED=true
-  // U produkciji to nemoj postavljati (ili neka bude false).
-  const enableSeed = process.env.REACT_APP_ENABLE_SEED === 'true';
+  // cleanup za timeout poruke
+  const msgTidRef = useRef(null);
+  useEffect(() => () => msgTidRef.current && clearTimeout(msgTidRef.current), []);
 
   const statusCycle = {
     NEPOZNATO: 'PRISUTAN',
@@ -73,8 +69,8 @@ function Home() {
   const showMessage = (msg, type = 'info') => {
     setStatusMsg(msg);
     setStatusType(type);
-    if (showMessage._tid) clearTimeout(showMessage._tid);
-    showMessage._tid = setTimeout(() => {
+    if (msgTidRef.current) clearTimeout(msgTidRef.current);
+    msgTidRef.current = setTimeout(() => {
       setStatusMsg('');
       setStatusType('info');
     }, 3000);
@@ -121,6 +117,7 @@ function Home() {
         if (created && created.id) {
           setPrisustva(prev => [...prev, { ...payload, id: created.id }]);
         } else {
+          // fallback: refetch
           const fresh = await api.get('/api/prisustva');
           setPrisustva(Array.isArray(fresh) ? fresh : []);
         }
@@ -129,23 +126,6 @@ function Home() {
     } catch (err) {
       console.error('save status error:', err);
       showMessage(`Greška pri spremanju. ${err?.message || ''}`.trim(), 'error');
-    }
-  };
-
-  /** ADMIN (samo lokalno): generira nove podatke u bazi, pa refresh */
-  const handleGenerateData = async () => {
-    if (!enableSeed || !isAdmin) return; // safety net
-    setLoading(true);
-    showMessage('Generiram nove podatke…', 'info');
-    try {
-      await api.post('/api/dev/seed', {});  // u prod profilu nećemo ni prikazati gumb
-      await refreshOnly();
-      showMessage('Podaci uspješno generirani!', 'success');
-    } catch (err) {
-      console.error('seed error:', err);
-      showMessage(`Greška pri generiranju. ${err?.message || ''}`.trim(), 'error');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -183,6 +163,12 @@ function Home() {
 
   return (
     <>
+      {/* Akcije na vrhu */}
+      <div style={{ textAlign: 'center', marginBottom: '1rem', display: 'flex', gap: 12, justifyContent: 'center' }}>
+        <button onClick={refreshOnly} disabled={loading}>
+          {loading ? 'Učitavam…' : 'Učitaj podatke'}
+        </button>
+      </div>
 
       {/* Status traka */}
       {statusMsg && (
