@@ -1,29 +1,25 @@
+// src/pages/AdminUsers.js
 import React, { useEffect, useState } from 'react';
 import { api } from '../api';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState('');
 
   useEffect(() => {
     api.get('/api/users')
       .then(data => setUsers(Array.isArray(data) ? data : []))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+      .catch(() => setErr('Greška pri učitavanju korisnika.'));
   }, []);
 
-  if (loading) return <p>Učitavanje...</p>;
+  if (err) return <div style={{ padding: 16, background: '#f8d7da' }}>{err}</div>;
 
   return (
     <div>
       <h3>Registrirani korisnici</h3>
       <table border="1" cellPadding="6">
         <thead>
-          <tr>
-            <th>ID</th>
-            <th>Email</th>
-            <th>Uloga</th>
-          </tr>
+          <tr><th>ID</th><th>Email</th><th>Uloga</th></tr>
         </thead>
         <tbody>
           {users.map(u => (
