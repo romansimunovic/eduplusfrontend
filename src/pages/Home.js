@@ -12,8 +12,13 @@ function Home() {
   const [statusMsg, setStatusMsg] = useState('');
   const [statusType, setStatusType] = useState('info');
 
-  // gumb "Generiraj" samo ADMIN-u
+  // ADMIN check iz localStorage (postavljaš nakon login-a)
   const isAdmin = (localStorage.getItem('role') || '').toUpperCase() === 'ADMIN';
+
+  // Gumb "Generiraj nove podatke" prikaži SAMO lokalno (dev) kad je flag uključen
+  // U .env.development: REACT_APP_ENABLE_SEED=true
+  // U produkciji to nemoj postavljati (ili neka bude false).
+  const enableSeed = process.env.REACT_APP_ENABLE_SEED === 'true';
 
   const statusCycle = {
     NEPOZNATO: 'PRISUTAN',
@@ -23,7 +28,7 @@ function Home() {
   };
 
   useEffect(() => {
-    // ping (može vratiti non-JSON; api.get to tolerira)
+    // ping (može vratiti plain text; api.get to tolerira)
     api.get('/api/ping').catch(() => {});
     refreshOnly();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -47,13 +52,14 @@ function Home() {
       setPolaznici(pArr);
       setPrisustva(prArr);
 
-      // ako odabrana više ne postoji, ili ništa nije odabrano -> uzmi prvu po nazivu
-      if (!selectedRadionica || !rArr.find(x => x.id === selectedRadionica.id)) {
+      // Ako odabrana više ne postoji ili ništa nije odabrano -> uzmi prvu po nazivu
+      setSelectedRadionica(prev => {
+        if (prev && rArr.find(x => x.id === prev.id)) return prev;
         const first = [...rArr].sort((a, b) =>
           (a.naziv || '').localeCompare(b.naziv || '', 'hr', { sensitivity: 'base' })
         )[0];
-        setSelectedRadionica(first || null);
-      }
+        return first || null;
+      });
 
       showMessage('Podaci učitani.', 'success');
     } catch (err) {
@@ -126,12 +132,13 @@ function Home() {
     }
   };
 
-  /** ADMIN: generira nove podatke u bazi (persistira), pa radi refresh */
+  /** ADMIN (samo lokalno): generira nove podatke u bazi, pa refresh */
   const handleGenerateData = async () => {
+    if (!enableSeed || !isAdmin) return; // safety net
     setLoading(true);
     showMessage('Generiram nove podatke…', 'info');
     try {
-      await api.post('/api/dev/seed', {});   // u prod profilu 403, ali gumb se ionako ne prikazuje
+      await api.post('/api/dev/seed', {});  // u prod profilu nećemo ni prikazati gumb
       await refreshOnly();
       showMessage('Podaci uspješno generirani!', 'success');
     } catch (err) {
@@ -142,7 +149,7 @@ function Home() {
     }
   };
 
-  // radionice sortirane po nazivu
+  // Radionice sortirane po nazivu
   const radioniceSorted = useMemo(
     () =>
       [...radionice].sort((a, b) =>
@@ -151,7 +158,7 @@ function Home() {
     [radionice]
   );
 
-  // sudionici za odabranu radionicu (join) — sortirani po prezimenu pa imenu
+  // Sudionici za odabranu radionicu (join) — sortirani po prezimenu pa imenu
   const sudioniciSorted = useMemo(() => {
     if (!selectedRadionica) return [];
     const prForRad = prisustva.filter(pr => pr.radionicaId === selectedRadionica.id);
@@ -182,7 +189,8 @@ function Home() {
           {loading ? 'Učitavam…' : 'Učitaj podatke'}
         </button>
 
-        {isAdmin && (
+        {/* Gumb prikaži samo lokalno (enableSeed) i samo ADMIN-u */}
+        {enableSeed && isAdmin && (
           <button onClick={handleGenerateData} disabled={loading}>
             {loading ? 'Molim pričekaj…' : 'Generiraj nove podatke'}
           </button>
