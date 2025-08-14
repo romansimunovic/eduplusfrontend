@@ -1,46 +1,53 @@
 // Lokacija: src/Login.js
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './pages/App.css';
 import { api } from './api';
-import { Link, useNavigate } from 'react-router-dom';
 
-function Login({ setToken, setUserRole }) {
+// Sigurno dekodiranje JWT (podržava URL-safe Base64 i padding)
+function decodeJwt(token) {
+  try {
+    const base = token.split('.')[1] || '';
+    const pad = base.length % 4 === 2 ? '==' : base.length % 4 === 3 ? '=' : '';
+    const norm = base.replace(/-/g, '+').replace(/_/g, '/') + pad;
+    return JSON.parse(atob(norm));
+  } catch {
+    return null;
+  }
+}
+
+export default function Login() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState(''); // sve znakove dopuštamo
+  const [password, setPassword] = useState(''); // dopuštamo sve znakove
   const [showPw, setShowPw] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setError(null);
+    setError('');
     setSubmitting(true);
 
     try {
-      const res = await api.post('/api/auth/login', { email: email.trim(), password });
-      const data = res?.data || res;
+      // Backend vraća JSON s { token, ... } ili 401/400 s tekstom
+      const res = await api.post('/api/auth/login', {
+        email: email.trim(),
+        password, // BE smije primiti sve znakove
+      });
 
-      if (!data?.token) throw new Error('Nedostaje token u odgovoru API-ja.');
+      // naš api.handle već vraća JSON objekt (ne {data:...})
+      const data = res || {};
+      if (!data.token) throw new Error('API nije vratio token.');
 
-      const token = data.token;
-      let role = null;
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1] || ''));
-        role = payload?.role || data.role || null;
-      } catch {
-        role = data.role || null;
-      }
+      const { token } = data;
+      const payload = decodeJwt(token);
+      const role = (payload && payload.role) || data.role || null;
 
-      // Spremaj u localStorage
       localStorage.setItem('token', token);
       if (role) localStorage.setItem('role', role);
 
-      // Ako je roditelj komponenta proslijedio settere — postavi im
-      setToken?.(token);
-      if (role) setUserRole?.(role);
-
-      // Preusmjeri na Home
+      // idi na početnu
       navigate('/', { replace: true });
     } catch (err) {
       const msg = (err?.message || '').trim();
@@ -48,7 +55,7 @@ function Login({ setToken, setUserRole }) {
     } finally {
       setSubmitting(false);
     }
-  };
+  }
 
   return (
     <div className="auth-layout">
@@ -126,5 +133,3 @@ function Login({ setToken, setUserRole }) {
     </div>
   );
 }
-
-export default Login;
