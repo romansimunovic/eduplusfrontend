@@ -1,25 +1,24 @@
 // Lokacija: src/Register.js
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './pages/App.css';
 import { api } from './api';
-import { Link, useNavigate } from 'react-router-dom';
 
-function Register() {
+export default function Register() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState(''); // bez ikakvih ograničenja
+  const [password, setPassword] = useState(''); // dopuštamo sve znakove
   const [showPw, setShowPw] = useState(false);
   const [role, setRole] = useState('USER');
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
-    e?.preventDefault?.();
-    setError(null);
-    setSuccess(null);
+  async function handleRegister(e) {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
 
-    // Minimalna provjera: polja moraju biti popunjena
     if (!email || !password || !role) {
       setError('Sva polja su obavezna.');
       return;
@@ -27,15 +26,14 @@ function Register() {
 
     setSubmitting(true);
     try {
-      // 1) Primarno: role u query paramu (tvoj originalni API)
+      // Primarno: role kao query param (tvoj originalni BE)
       try {
         await api.post(`/api/auth/register?role=${encodeURIComponent(role)}`, {
-          // email reže whitespace, lozinka NE — smije sadržavati sve (dijakritiku, razmake, itd.)
           email: email.trim(),
-          password,
+          password, // BE smije primiti sve znakove
         });
       } catch {
-        // 2) Fallback: role u body-ju (ako backend tako očekuje)
+        // Fallback: role u body-ju (ako BE tako očekuje)
         await api.post('/api/auth/register', {
           email: email.trim(),
           password,
@@ -43,16 +41,15 @@ function Register() {
         });
       }
 
-      // Uspjeh (API može vratiti 200/201 s JSON-om ili 204 bez body-ja — oba su OK)
       setSuccess('Uspješna registracija! Preusmjeravam na prijavu…');
       setTimeout(() => navigate('/login', { replace: true }), 700);
-    } catch (e2) {
-      const msg = (e2?.message || '').trim();
+    } catch (err) {
+      const msg = (err?.message || '').trim();
       setError(msg ? `Greška pri registraciji: ${msg}` : 'Greška pri registraciji. Pokušaj ponovno.');
     } finally {
       setSubmitting(false);
     }
-  };
+  }
 
   return (
     <div className="auth-layout">
@@ -97,12 +94,12 @@ function Register() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
-                className="pw-input"     // ← mobilni fix (dodaj CSS patch)
+                className="pw-input"
                 required
               />
               <button
                 type="button"
-                className="ghost-btn pw-toggle" // ← mobilni fix (dodaj CSS patch)
+                className="ghost-btn pw-toggle"
                 aria-label={showPw ? 'Sakrij lozinku' : 'Prikaži lozinku'}
                 aria-pressed={showPw}
                 onClick={() => setShowPw((s) => !s)}
@@ -132,5 +129,3 @@ function Register() {
     </div>
   );
 }
-
-export default Register;
