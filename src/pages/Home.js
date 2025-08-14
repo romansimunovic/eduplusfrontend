@@ -82,20 +82,20 @@ export default function Home() {
 
   // admin/dev: regeneriraj u bazi pa ponovno učitaj
   const handleSeed = async () => {
-    if (!isAdmin || !enableSeed) return;
-    setLoading(true);
-    showMessage('Generiram nove podatke…', 'info');
-    try {
-      await api.post('/api/dev/seed', {});
-      await refreshOnly();
-      showMessage('Novi podaci generirani!', 'success');
-    } catch (err) {
-      console.error('seed error:', err);
-      showMessage(`Greška pri generiranju. ${err?.message || ''}`.trim(), 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!isAdmin || !enableSeed) return;
+  setLoading(true);
+  showMessage('Generiram nove podatke…', 'info');
+  try {
+    await api.post('/api/dev/seed', {}); // backend generira i sprema
+    await refreshOnly(); // povlači friško iz baze
+    showMessage('Novi podaci generirani!', 'success');
+  } catch (err) {
+    console.error('seed error:', err);
+    showMessage(`Greška pri generiranju. ${err?.message || ''}`.trim(), 'error');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getStatusLabel = (status, spol) => {
     const zensko = (spol || '').toUpperCase() === 'Ž';
