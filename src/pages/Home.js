@@ -11,8 +11,8 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
   const [statusType, setStatusType] = useState('info');
+  const [lastSync, setLastSync] = useState(null);
 
-  // cleanup za timeout poruke
   const msgTidRef = useRef(null);
   useEffect(() => () => msgTidRef.current && clearTimeout(msgTidRef.current), []);
 
@@ -30,7 +30,7 @@ function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** SAMO REFRESH iz baze, bez mijenjanja podataka */
+  /** Ručni refresh iz baze */
   const refreshOnly = async () => {
     setLoading(true);
     try {
@@ -57,6 +57,7 @@ function Home() {
         return first || null;
       });
 
+      setLastSync(new Date());
       showMessage('Podaci učitani.', 'success');
     } catch (err) {
       console.error('refreshOnly error:', err);
@@ -164,10 +165,22 @@ function Home() {
   return (
     <>
       {/* Akcije na vrhu */}
-      <div style={{ textAlign: 'center', marginBottom: '1rem', display: 'flex', gap: 12, justifyContent: 'center' }}>
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '1rem',
+        display: 'flex',
+        gap: 12,
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
         <button onClick={refreshOnly} disabled={loading}>
-          {loading ? 'Učitavam…' : 'Učitaj podatke'}
+          {loading ? 'Učitavam…' : 'Osvježi'}
         </button>
+        {lastSync && (
+          <small style={{ opacity: 0.7 }}>
+            zadnje ažuriranje: {lastSync.toLocaleTimeString()}
+          </small>
+        )}
       </div>
 
       {/* Status traka */}
