@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api';
 
-function Home() {
+export default function Home() {
   const [radionice, setRadionice] = useState([]);
   const [polaznici, setPolaznici] = useState([]);
   const [prisustva, setPrisustva] = useState([]);
@@ -16,6 +16,11 @@ function Home() {
   const msgTidRef = useRef(null);
   useEffect(() => () => msgTidRef.current && clearTimeout(msgTidRef.current), []);
 
+  // prikaz gumba za seed: samo ADMIN + (dev build ili REACT_APP_ENABLE_SEED=true)
+  const isAdmin = (localStorage.getItem('role') || '').toUpperCase() === 'ADMIN';
+  const enableSeed =
+    process.env.NODE_ENV !== 'production' || process.env.REACT_APP_ENABLE_SEED === 'true';
+
   const statusCycle = {
     NEPOZNATO: 'PRISUTAN',
     PRISUTAN: 'IZOSTAO',
@@ -24,13 +29,22 @@ function Home() {
   };
 
   useEffect(() => {
-    // ping (može vratiti plain text; api.get to tolerira)
     api.get('/api/ping').catch(() => {});
     refreshOnly();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Ručni refresh iz baze */
+  const showMessage = (msg, type = 'info') => {
+    setStatusMsg(msg);
+    setStatusType(type);
+    if (msgTidRef.current) clearTimeout(msgTidRef.current);
+    msgTidRef.current = setTimeout(() => {
+      setStatusMsg('');
+      setStatusType('info');
+    }, 3000);
+  };
+
+  // samo povuci iz baze (ništa ne brišemo)
   const refreshOnly = async () => {
     setLoading(true);
     try {
@@ -48,7 +62,6 @@ function Home() {
       setPolaznici(pArr);
       setPrisustva(prArr);
 
-      // Ako odabrana više ne postoji ili ništa nije odabrano -> uzmi prvu po nazivu
       setSelectedRadionica(prev => {
         if (prev && rArr.find(x => x.id === prev.id)) return prev;
         const first = [...rArr].sort((a, b) =>
@@ -67,14 +80,21 @@ function Home() {
     }
   };
 
-  const showMessage = (msg, type = 'info') => {
-    setStatusMsg(msg);
-    setStatusType(type);
-    if (msgTidRef.current) clearTimeout(msgTidRef.current);
-    msgTidRef.current = setTimeout(() => {
-      setStatusMsg('');
-      setStatusType('info');
-    }, 3000);
+  // admin/dev: regeneriraj u bazi pa ponovno učitaj
+  const handleSeed = async () => {
+    if (!isAdmin || !enableSeed) return;
+    setLoading(true);
+    showMessage('Generiram nove podatke…', 'info');
+    try {
+      await api.post('/api/dev/seed', {});
+      await refreshOnly();
+      showMessage('Novi podaci generirani!', 'success');
+    } catch (err) {
+      console.error('seed error:', err);
+      showMessage(`Greška pri generiranju. ${err?.message || ''}`.trim(), 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getStatusLabel = (status, spol) => {
@@ -96,7 +116,7 @@ function Home() {
     }
   };
 
-  /** Klik na polaznika: ciklički mijenja status i sprema u DB */
+  // klik na polaznika: promijeni status i spremi u DB
   const handleClick = async (polaznik) => {
     if (!selectedRadionica) return;
 
@@ -106,7 +126,6 @@ function Home() {
 
     const currentStatus = current ? current.status : 'NEPOZNATO';
     const newStatus = statusCycle[currentStatus];
-
     const payload = { polaznikId: polaznik.id, radionicaId: selectedRadionica.id, status: newStatus };
 
     try {
@@ -118,7 +137,6 @@ function Home() {
         if (created && created.id) {
           setPrisustva(prev => [...prev, { ...payload, id: created.id }]);
         } else {
-          // fallback: refetch
           const fresh = await api.get('/api/prisustva');
           setPrisustva(Array.isArray(fresh) ? fresh : []);
         }
@@ -130,7 +148,6 @@ function Home() {
     }
   };
 
-  // Radionice sortirane po nazivu
   const radioniceSorted = useMemo(
     () =>
       [...radionice].sort((a, b) =>
@@ -139,7 +156,6 @@ function Home() {
     [radionice]
   );
 
-  // Sudionici za odabranu radionicu (join) — sortirani po prezimenu pa imenu
   const sudioniciSorted = useMemo(() => {
     if (!selectedRadionica) return [];
     const prForRad = prisustva.filter(pr => pr.radionicaId === selectedRadionica.id);
@@ -164,7 +180,6 @@ function Home() {
 
   return (
     <>
-      {/* Akcije na vrhu */}
       <div style={{
         textAlign: 'center',
         marginBottom: '1rem',
@@ -173,9 +188,16 @@ function Home() {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-        <button onClick={refreshOnly} disabled={loading}>
+        <button className="btn btn-outline" onClick={refreshOnly} disabled={loading}>
           {loading ? 'Učitavam…' : 'Osvježi'}
         </button>
+
+        {enableSeed && isAdmin && (
+          <button className="btn btn-primary" onClick={handleSeed} disabled={loading}>
+            {loading ? 'Molim pričekaj…' : 'Generiraj nove podatke'}
+          </button>
+        )}
+
         {lastSync && (
           <small style={{ opacity: 0.7 }}>
             zadnje ažuriranje: {lastSync.toLocaleTimeString()}
@@ -183,49 +205,27 @@ function Home() {
         )}
       </div>
 
-      {/* Status traka */}
       {statusMsg && (
         <div
-          style={{
-            marginBottom: '1rem',
-            padding: '10px',
-            backgroundColor:
-              statusType === 'success' ? '#d4edda'
-              : statusType === 'error' ? '#f8d7da'
-              : '#d1ecf1',
-            color:
-              statusType === 'success' ? '#155724'
-              : statusType === 'error' ? '#721c24'
-              : '#0c5460',
-            border: '1px solid',
-            borderColor:
-              statusType === 'success' ? '#c3e6cb'
-              : statusType === 'error' ? '#f5c6cb'
-              : '#bee5eb',
-            borderRadius: '5px'
-          }}
+          className={`alert ${statusType === 'success' ? 'alert-success' : statusType === 'error' ? 'alert-error' : 'alert-info'}`}
+          style={{ marginBottom: '1rem' }}
         >
           {statusMsg}
         </div>
       )}
 
-      {/* Dvostupčani prikaz */}
-      <div style={{ display: 'flex', gap: '2rem' }}>
-        {/* Lijevo — radionice (abecedno) */}
+      <div className="container" style={{ display: 'flex', gap: '2rem' }}>
         <div style={{ flex: 1 }}>
           <h3>Popis svih radionica</h3>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <ul>
             {radioniceSorted.map(r => (
               <li
                 key={r.id}
                 onClick={() => setSelectedRadionica(r)}
+                className={selectedRadionica?.id === r.id ? 'radionica-oznacena' : ''}
                 style={{
                   cursor: 'pointer',
-                  backgroundColor: selectedRadionica?.id === r.id ? '#d4ebff' : '#f3f3f3',
-                  padding: '10px',
-                  marginBottom: '8px',
-                  borderRadius: '6px',
-                  border: '1px solid #ccc'
+                  backgroundColor: selectedRadionica?.id === r.id ? '#e0f0ff' : '#f6f9ff'
                 }}
               >
                 <strong>{r.naziv}</strong>
@@ -234,20 +234,16 @@ function Home() {
           </ul>
         </div>
 
-        {/* Desno — sudionici (abecedno po prezimenu) */}
         <div style={{ flex: 1 }}>
           <h3>Popis sudionika</h3>
           {selectedRadionica ? (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+            <ul>
               {sudioniciSorted.map(({ prisustvo: pr, polaznik: pol }) => (
                 <li
                   key={`${selectedRadionica.id}-${pol.id}`}
                   onClick={() => handleClick(pol)}
                   style={{
                     backgroundColor: getColor(pr.status),
-                    padding: '10px',
-                    marginBottom: '8px',
-                    borderRadius: '6px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -255,7 +251,7 @@ function Home() {
                   }}
                 >
                   <span>{pol.ime} {pol.prezime}</span>
-                  <span style={{ fontStyle: 'italic' }}>
+                  <span className="status-pill" style={{ fontStyle: 'italic' }}>
                     {getStatusLabel(pr.status, pol.spol)}
                   </span>
                 </li>
@@ -269,5 +265,3 @@ function Home() {
     </>
   );
 }
-
-export default Home;
