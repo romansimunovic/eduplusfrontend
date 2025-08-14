@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../api';
 
@@ -12,6 +11,9 @@ function Home() {
   const [statusMsg, setStatusMsg] = useState('');
   const [statusType, setStatusType] = useState('info');
 
+  // prikaz gumba za seed samo ako je korisnik ADMIN (role je u localStorage)
+  const isAdmin = (localStorage.getItem('role') || '').toUpperCase() === 'ADMIN';
+
   const statusCycle = {
     NEPOZNATO: 'PRISUTAN',
     PRISUTAN: 'IZOSTAO',
@@ -20,9 +22,10 @@ function Home() {
   };
 
   useEffect(() => {
-    // "Ping" backend (možda ne vraća JSON — api.get to tolerira)
+    // mali ping (može vratiti non-JSON; api.get to tolerira)
     api.get('/api/ping').catch(() => {});
     fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAll = async () => {
@@ -33,20 +36,22 @@ function Home() {
         api.get('/api/prisustva'),
       ]);
 
-      const radioniceArr = Array.isArray(r) ? r : [];
-      setRadionice(radioniceArr);
+      const rArr = Array.isArray(r) ? r : [];
+      setRadionice(rArr);
       setPolaznici(Array.isArray(p) ? p : []);
       setPrisustva(Array.isArray(pr) ? pr : []);
 
-      // ako ništa nije odabrano, uzmi prvu po nazivu
-      if (!selectedRadionica && radioniceArr.length > 0) {
-        const first = [...radioniceArr].sort((a, b) =>
+      // ako ništa nije odabrano ili je odabrana radionica nestala, uzmi prvu po nazivu
+      if (!selectedRadionica || !rArr.find(x => x.id === selectedRadionica.id)) {
+        const first = [...rArr].sort((a, b) =>
           (a.naziv || '').localeCompare(b.naziv || '', 'hr', { sensitivity: 'base' })
         )[0];
-        setSelectedRadionica(first);
+        setSelectedRadionica(first || null);
       }
+
       showMessage('Podaci učitani.', 'success');
     } catch (err) {
+      console.error('fetchAll error:', err);
       showMessage(`Greška pri dohvaćanju podataka. ${err?.message || ''}`.trim(), 'error');
     }
   };
@@ -54,8 +59,8 @@ function Home() {
   const showMessage = (msg, type = 'info') => {
     setStatusMsg(msg);
     setStatusType(type);
-    if (showMessage._timeoutId) clearTimeout(showMessage._timeoutId);
-    showMessage._timeoutId = setTimeout(() => {
+    if (showMessage._tid) clearTimeout(showMessage._tid);
+    showMessage._tid = setTimeout(() => {
       setStatusMsg('');
       setStatusType('info');
     }, 3000);
@@ -64,27 +69,19 @@ function Home() {
   const getStatusLabel = (status, spol) => {
     const zensko = (spol || '').toUpperCase() === 'Ž';
     switch (status) {
-      case 'PRISUTAN':
-        return zensko ? 'Prisutna' : 'Prisutan';
-      case 'IZOSTAO':
-        return zensko ? 'Izostala' : 'Izostao';
-      case 'ODUSTAO':
-        return zensko ? 'Odustala' : 'Odustao';
-      default:
-        return 'Nepoznato';
+      case 'PRISUTAN': return zensko ? 'Prisutna' : 'Prisutan';
+      case 'IZOSTAO': return zensko ? 'Izostala' : 'Izostao';
+      case 'ODUSTAO': return zensko ? 'Odustala' : 'Odustao';
+      default: return 'Nepoznato';
     }
   };
 
   const getColor = (status) => {
     switch (status) {
-      case 'PRISUTAN':
-        return '#c8facc';
-      case 'IZOSTAO':
-        return '#ffcaca';
-      case 'ODUSTAO':
-        return '#f9f3b6';
-      default:
-        return '#ffffff';
+      case 'PRISUTAN': return '#c8facc';
+      case 'IZOSTAO': return '#ffcaca';
+      case 'ODUSTAO': return '#f9f3b6';
+      default: return '#ffffff';
     }
   };
 
@@ -92,38 +89,30 @@ function Home() {
     if (!selectedRadionica) return;
 
     const current = prisustva.find(
-      (p) => p.polaznikId === polaznik.id && p.radionicaId === selectedRadionica.id
+      p => p.polaznikId === polaznik.id && p.radionicaId === selectedRadionica.id
     );
 
     const currentStatus = current ? current.status : 'NEPOZNATO';
     const newStatus = statusCycle[currentStatus];
 
-    const payload = {
-      polaznikId: polaznik.id,
-      radionicaId: selectedRadionica.id,
-      status: newStatus,
-    };
+    const payload = { polaznikId: polaznik.id, radionicaId: selectedRadionica.id, status: newStatus };
 
     try {
       if (current) {
         await api.put(`/api/prisustva/${current.id}`, payload);
-        // lokalno ažuriraj
-        setPrisustva((prev) =>
-          prev.map((p) => (p.id === current.id ? { ...p, status: newStatus } : p))
-        );
+        setPrisustva(prev => prev.map(p => (p.id === current.id ? { ...p, status: newStatus } : p)));
       } else {
         const created = await api.post('/api/prisustva', payload);
         if (created && created.id) {
-          setPrisustva((prev) => [...prev, { ...payload, id: created.id }]);
+          setPrisustva(prev => [...prev, { ...payload, id: created.id }]);
         } else {
-          // ako backend vrati 204 bez tijela, povuci svježe
           const fresh = await api.get('/api/prisustva');
           setPrisustva(Array.isArray(fresh) ? fresh : []);
         }
       }
-
       showMessage('Status ažuriran.', 'success');
     } catch (err) {
+      console.error('save status error:', err);
       showMessage(`Greška pri spremanju. ${err?.message || ''}`.trim(), 'error');
     }
   };
@@ -132,10 +121,11 @@ function Home() {
     setLoading(true);
     showMessage('Generiram nove podatke...', 'info');
     try {
-      await api.post('/api/dev/seed', {});
+      await api.post('/api/dev/seed', {}); // u prod profilu server vraća 403 (skriveno gumbom)
       await fetchAll();
       showMessage('Podaci uspješno generirani!', 'success');
     } catch (err) {
+      console.error('seed error:', err);
       showMessage(`Greška pri generiranju. ${err?.message || ''}`.trim(), 'error');
     } finally {
       setLoading(false);
@@ -151,39 +141,37 @@ function Home() {
     [radionice]
   );
 
-  // sudionici za odabranu radionicu, sortirani po PREZIMENU
+  // sudionici za odabranu radionicu (join) — sortirani po prezimenu pa imenu
   const sudioniciSorted = useMemo(() => {
     if (!selectedRadionica) return [];
-    // skupi prisustva za radionicu
-    const prForRad = prisustva.filter((pr) => pr.radionicaId === selectedRadionica.id);
+    const prForRad = prisustva.filter(pr => pr.radionicaId === selectedRadionica.id);
 
-    // join na polaznike
-    const withPolaznik = prForRad
-      .map((pr) => {
-        const pol = polaznici.find((p) => p.id === pr.polaznikId);
-        if (!pol) return null;
-        return { prisustvo: pr, polaznik: pol };
+    const joined = prForRad
+      .map(pr => {
+        const pol = polaznici.find(p => p.id === pr.polaznikId);
+        return pol ? { prisustvo: pr, polaznik: pol } : null;
       })
       .filter(Boolean);
 
-    // sort po prezimenu (fallback na ime)
-    return withPolaznik.sort((a, b) => {
-      const aPrez = a.polaznik.prezime || '';
-      const bPrez = b.polaznik.prezime || '';
-      const prezCmp = aPrez.localeCompare(bPrez, 'hr', { sensitivity: 'base' });
+    return joined.sort((a, b) => {
+      const ap = a.polaznik.prezime || '';
+      const bp = b.polaznik.prezime || '';
+      const prezCmp = ap.localeCompare(bp, 'hr', { sensitivity: 'base' });
       if (prezCmp !== 0) return prezCmp;
-      const aIme = a.polaznik.ime || '';
-      const bIme = b.polaznik.ime || '';
-      return aIme.localeCompare(bIme, 'hr', { sensitivity: 'base' });
+      const ai = a.polaznik.ime || '';
+      const bi = b.polaznik.ime || '';
+      return ai.localeCompare(bi, 'hr', { sensitivity: 'base' });
     });
   }, [selectedRadionica, prisustva, polaznici]);
 
   return (
     <>
       <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-        <button onClick={handleGenerateData} disabled={loading}>
-          {loading ? 'Molim pričekaj...' : 'Generiraj nove podatke'}
-        </button>
+        {isAdmin && (
+          <button onClick={handleGenerateData} disabled={loading}>
+            {loading ? 'Molim pričekaj...' : 'Generiraj nove podatke'}
+          </button>
+        )}
       </div>
 
       {statusMsg && (
@@ -192,25 +180,19 @@ function Home() {
             marginBottom: '1rem',
             padding: '10px',
             backgroundColor:
-              statusType === 'success'
-                ? '#d4edda'
-                : statusType === 'error'
-                ? '#f8d7da'
-                : '#d1ecf1',
+              statusType === 'success' ? '#d4edda'
+              : statusType === 'error' ? '#f8d7da'
+              : '#d1ecf1',
             color:
-              statusType === 'success'
-                ? '#155724'
-                : statusType === 'error'
-                ? '#721c24'
-                : '#0c5460',
+              statusType === 'success' ? '#155724'
+              : statusType === 'error' ? '#721c24'
+              : '#0c5460',
             border: '1px solid',
             borderColor:
-              statusType === 'success'
-                ? '#c3e6cb'
-                : statusType === 'error'
-                ? '#f5c6cb'
-                : '#bee5eb',
-            borderRadius: '5px',
+              statusType === 'success' ? '#c3e6cb'
+              : statusType === 'error' ? '#f5c6cb'
+              : '#bee5eb',
+            borderRadius: '5px'
           }}
         >
           {statusMsg}
@@ -218,11 +200,11 @@ function Home() {
       )}
 
       <div style={{ display: 'flex', gap: '2rem' }}>
-        {/* Lijevi stupac — radionice (sortirano po nazivu) */}
+        {/* Lijevo — radionice (abecedno) */}
         <div style={{ flex: 1 }}>
           <h3>Popis svih radionica</h3>
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {radioniceSorted.map((r) => (
+            {radioniceSorted.map(r => (
               <li
                 key={r.id}
                 onClick={() => setSelectedRadionica(r)}
@@ -232,7 +214,7 @@ function Home() {
                   padding: '10px',
                   marginBottom: '8px',
                   borderRadius: '6px',
-                  border: '1px solid #ccc',
+                  border: '1px solid #ccc'
                 }}
               >
                 <strong>{r.naziv}</strong>
@@ -241,7 +223,7 @@ function Home() {
           </ul>
         </div>
 
-        {/* Desni stupac — sudionici (sortirano po prezimenu) */}
+        {/* Desno — sudionici (abecedno po prezimenu) */}
         <div style={{ flex: 1 }}>
           <h3>Popis sudionika</h3>
           {selectedRadionica ? (
@@ -258,12 +240,10 @@ function Home() {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    cursor: 'pointer',
+                    cursor: 'pointer'
                   }}
                 >
-                  <span>
-                    {pol.ime} {pol.prezime}
-                  </span>
+                  <span>{pol.ime} {pol.prezime}</span>
                   <span style={{ fontStyle: 'italic' }}>
                     {getStatusLabel(pr.status, pol.spol)}
                   </span>
