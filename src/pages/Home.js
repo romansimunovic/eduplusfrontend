@@ -183,19 +183,6 @@ function Home() {
 
   return (
     <>
-      {/* Akcije na vrhu */}
-      <div style={{ textAlign: 'center', marginBottom: '1rem', display: 'flex', gap: 12, justifyContent: 'center' }}>
-        <button onClick={refreshOnly} disabled={loading}>
-          {loading ? 'Učitavam…' : 'Učitaj podatke'}
-        </button>
-
-        {/* Gumb prikaži samo lokalno (enableSeed) i samo ADMIN-u */}
-        {enableSeed && isAdmin && (
-          <button onClick={handleGenerateData} disabled={loading}>
-            {loading ? 'Molim pričekaj…' : 'Generiraj nove podatke'}
-          </button>
-        )}
-      </div>
 
       {/* Status traka */}
       {statusMsg && (
