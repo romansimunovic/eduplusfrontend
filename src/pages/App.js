@@ -8,7 +8,7 @@ import RadionicaDetalji from './RadionicaDetalji';
 import Prisustva from './Prisustva';
 import Login from '../Login';
 import Register from '../Register';
-import AdminUsers from './AdminUsers'; // ✅ ispravan import
+import AdminUser from './AdminUser'; // ✅ singular, matcha tvoj file
 
 // Dev stranica (učitavamo lijeno; prikaz samo u dev buildu)
 const DevData = React.lazy(() =>
@@ -137,7 +137,7 @@ export default function App() {
         element={
           <RequireAuth>
             {isAdmin ? (
-              <Layout><AdminUsers /></Layout>
+              <Layout><AdminUser /></Layout> {/* ✅ singular komponenta */}
             ) : (
               <Navigate to="/" replace />
             )}
@@ -145,7 +145,7 @@ export default function App() {
         }
       />
 
-      {/* Dev-only ruta (vidljiva samo u dev buildu / s REACT_APP_DEV_TOOLS=true) */}
+      {/* Dev-only ruta */}
       {showDev && (
         <Route
           path="/dev-data"
