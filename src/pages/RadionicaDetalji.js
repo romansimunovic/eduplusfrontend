@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import './App.css';
-import { api } from '../api'; // <-- prilagodi putanju po strukturi projekta
-
+import { api } from '../api'; 
 function RadionicaDetalji() {
   const { id } = useParams();
   const [radionica, setRadionica] = useState(null);
