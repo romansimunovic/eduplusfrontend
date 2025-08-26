@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { api } from '../api';            // ← važan import (putanja jer je ovaj file u /pages)
+import { api } from '../api';           
 import './App.css';
 
 function Prisustva() {
@@ -187,7 +187,7 @@ function Prisustva() {
         )}
       </div>
 
-      {/* Statistika za selektiranog */}
+      {/* Statistika za odabranog */}
       {selectedPolaznik && (
         <div className="stat-box" style={{ marginTop: '15px' }}>
           <h3>Statistika za: {selectedPolaznik.ime} {selectedPolaznik.prezime}</h3>

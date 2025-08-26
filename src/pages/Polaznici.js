@@ -1,4 +1,3 @@
-// src/pages/Polaznici.js
 import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../api';
 import './App.css';
@@ -21,7 +20,7 @@ function Polaznici() {
         });
         setPolaznici(sorted);
         setError(null);
-        // auto-odaberi prvog pri prvom učitavanju
+        // automatski odaberi prvog pri prvom učitavanju
         if (sorted.length && !selectedId) setSelectedId(sorted[0].id);
       } catch (e) {
         console.error(e);

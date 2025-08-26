@@ -1,8 +1,3 @@
-// src/api.js
-
-// BAZNI URL iz .env (REACT_APP_API_BASE), npr.
-// REACT_APP_API_BASE=https://eduplusbackend.onrender.com
-// Fallback: http://localhost:8080
 const ENV_BASE = process.env.REACT_APP_API_BASE;
 const DEFAULT_BASE = "http://localhost:8080";
 const baseUrl = (ENV_BASE && ENV_BASE.trim()) || DEFAULT_BASE;

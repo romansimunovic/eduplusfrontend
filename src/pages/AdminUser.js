@@ -1,4 +1,3 @@
-// src/pages/AdminUsers.js
 import React, { useEffect, useState } from 'react';
 import { api } from '../api';
 
