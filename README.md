@@ -6,3 +6,4 @@
 - Sučelje je minimalističko i responzivno, prilagođeno i za desktop i za mobitel.
 
 _Projekt je izrađen kao završni rad iz kolegija Informacijsko-komunikacijska infrastruktura uz mentorstvo izv. prof. dr. sc. Tomislava Jakopeca, a u izradi su korišteni React, CSS, Fetch API i Render za hosting._
+_Dodatno, u pisanju koda korišten je ChatGPT Plus._
