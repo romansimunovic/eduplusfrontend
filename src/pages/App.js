@@ -10,10 +10,10 @@ function App() {
   return (
     <>
       <nav style={{ padding: 10, background: "#eee", display: "flex", gap: 12 }}>
-        <Link to="/">🏠 Početna</Link>
-        <Link to="/polaznici">👥 Polaznici</Link>
-        <Link to="/radionice">🧩 Radionice</Link>
-        <Link to="/prisustva">📋 Prisustva</Link>
+        <Link to="/"> Početna</Link>
+        <Link to="/polaznici"> Polaznici</Link>
+        <Link to="/radionice"> Radionice</Link>
+        <Link to="/prisustva"> Prisustva</Link>
       </nav>
 
       <Routes>
