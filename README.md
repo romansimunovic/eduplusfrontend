@@ -1,6 +1,4 @@
-EduPlus Frontend
-
-Ovo je frontend dio aplikacije EduPlus, izrađen u sklopu kolegija Informacijsko-komunikacijska infrastruktura pod mentorstvom izv. prof. dr. sc. Tomislava Jakopeca.
+Ovo je frontend dio aplikacije EduPlus, koja je nastala u sklopu kolegija Informacijsko-komunikacijska infrastruktura pod mentorstvom izv. prof. dr. sc. Tomislava Jakopeca.
 U dokumentaciji i kodu korišten je i ChatGPT Plus kao podrška u razvoju.
 
 Aplikacija je razvijena u Reactu i koristi lokalne JSON datoteke kao izvor podataka umjesto aktivnog API-ja.
