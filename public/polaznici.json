@@ -1,0 +1,5 @@
+[
+  { "id": 1, "ime": "Ana", "prezime": "Horvat", "spol": "žensko", "grad": "Osijek", "status": "student" },
+  { "id": 2, "ime": "Ivan", "prezime": "Marić", "spol": "muško", "grad": "Zagreb", "status": "zaposlen" },
+  { "id": 3, "ime": "Mia", "prezime": "Kovač", "spol": "žensko", "grad": "Rijeka", "status": "učenik" }
+]

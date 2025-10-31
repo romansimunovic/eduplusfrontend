@@ -1,0 +1,5 @@
+[
+  { "id": 1, "polaznikId": 1, "radionicaId": 1, "status": "PRISUTAN" },
+  { "id": 2, "polaznikId": 2, "radionicaId": 1, "status": "IZOSTAO" },
+  { "id": 3, "polaznikId": 3, "radionicaId": 2, "status": "NEPOZNATO" }
+]
