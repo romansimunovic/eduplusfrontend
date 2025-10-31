@@ -1,20 +1,21 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Polaznici from "./pages/Polaznici";
-import Radionice from "./pages/Radionice";
-import Prisustva from "./pages/Prisustva";
-import RadionicaDetalji from "./pages/RadionicaDetalji";
-
-<nav style={{ padding: 10, background: "#eee", display: "flex", gap: 12 }}>
-  <a href="/">🏠 Početna</a>
-  <a href="/polaznici">👥 Polaznici</a>
-  <a href="/radionice">📚 Radionice</a>
-  <a href="/prisustva">✅ Prisustva</a>
-</nav>
+import React from "react";
+import { Routes, Route, Link } from "react-router-dom";
+import Home from "./Home";
+import Polaznici from "./Polaznici";
+import Radionice from "./Radionice";
+import Prisustva from "./Prisustva";
+import RadionicaDetalji from "./RadionicaDetalji";
 
 function App() {
   return (
-    <Router>
+    <>
+      <nav style={{ padding: 10, background: "#eee", display: "flex", gap: 12 }}>
+        <Link to="/">🏠 Početna</Link>
+        <Link to="/polaznici">👥 Polaznici</Link>
+        <Link to="/radionice">🧩 Radionice</Link>
+        <Link to="/prisustva">📋 Prisustva</Link>
+      </nav>
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/polaznici" element={<Polaznici />} />
@@ -22,7 +23,7 @@ function App() {
         <Route path="/prisustva" element={<Prisustva />} />
         <Route path="/radionice/:id" element={<RadionicaDetalji />} />
       </Routes>
-    </Router>
+    </>
   );
 }
 
