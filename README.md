@@ -1,78 +1,47 @@
-EdukatorPlus je web aplikacija za jednostavno vođenje edukacijskih radionica, polaznika i evidencije prisustva.
-Sastoji se od React frontenda i Spring Boot backenda povezanih s PostgreSQL (Neon) bazom podataka.
+EduPlus Frontend
 
-Opis
-Aplikacija omogućuje unos, uređivanje i brisanje radionica i polaznika, vođenje prisustva po radionici te prikaz statistike u stvarnom vremenu.
-Sučelje je jednostavno, responzivno i prilagođeno za korištenje na računalima i mobilnim uređajima.
+Ovo je frontend dio aplikacije EduPlus, izrađen u sklopu kolegija Informacijsko-komunikacijska infrastruktura pod mentorstvom izv. prof. dr. sc. Tomislava Jakopeca.
+U dokumentaciji i kodu korišten je i ChatGPT Plus kao podrška u razvoju.
 
-Glavne funkcionalnosti
+Aplikacija je razvijena u Reactu i koristi lokalne JSON datoteke kao izvor podataka umjesto aktivnog API-ja.
+Cilj projekta je prikazati kako funkcionira jednostavno frontend sučelje koje može raditi neovisno o backendu, uz mogućnost budućeg povezivanja na pravu bazu podataka ili REST API.
 
-Pregled i upravljanje radionicama i polaznicima
+Funkcionalnosti:
+
+Pregled svih radionica
+
+Pregled svih polaznika
 
 Evidencija prisustva po radionici
 
-Pretraživanje i filtriranje podataka
+Detaljan prikaz svake radionice i prisutnosti sudionika
 
-Statistika prisustva
+Aplikacija koristi HashRouter za jednostavnije pokretanje i deploy, što omogućuje prikaz svih stranica bez potrebe za backendom.
+Svi podaci (radionice, polaznici, prisustva) nalaze se u .json datotekama unutar mape public.
 
-Generiranje testnih podataka pomoću Faker biblioteke
+Pokretanje aplikacije:
 
-Tehnologije
-
-Frontend: React, CSS, Fetch API
-Backend: Spring Boot, Java, JPA, PostgreSQL
-Hosting:
-
-Frontend: Vercel
-
-Backend: Render
-
-Baza: Neon PostgreSQL
-
-Pokretanje projekta
-Frontend
-git clone https://github.com/romansimunovic/eduplusfrontend.git
-cd eduplusfrontend
+Instalirati ovisnosti pomoću naredbe
 npm install
+
+Pokrenuti razvojni poslužitelj
 npm start
 
+Za izradu produkcijskog builda
+npm run build
 
-Aplikacija se otvara na http://localhost:3000
+Za lokalni pregled builda
+serve -s build
 
-Backend
-git clone https://github.com/romansimunovic/eduplusbackend.git
-cd eduplusbackend
-mvn spring-boot:run
+Aplikacija se po pokretanju otvara na adresi http://localhost:3000.
 
+Korištene tehnologije:
 
-Backend se pokreće na http://localhost:8080
+React (Create React App)
 
-Deploy
+React Router (HashRouter)
 
-Frontend: Vercel
+HTML, CSS i JavaScript
 
-Backend: Render
-
-Baza: Neon PostgreSQL
-
-Aplikacija koristi REST API endpoint:
-https://eduplus-backend.onrender.com/api
-
-Frontend koristi .env.production postavke:
-
-REACT_APP_API_BASE=https://eduplus-backend.onrender.com
-REACT_APP_ENABLE_SEED=false
-
-Dostupna verzija
-
-Frontend aplikacija:
-https://eduplusfrontend-7g1zwv814-romansimunovics-projects.vercel.app/#/login
-
-Backend API:
-https://eduplus-backend.onrender.com/api
-
-Projekt EdukatorPlus je izrađen kao završni rad iz kolegija Informacijsko-komunikacijska infrastruktura na Filozofskom fakultetu u Osijeku pod mentorstvom izv. prof. dr. sc. Tomislava Jakopeca.
-
-Dio dokumentacije i koda izrađen je uz pomoć alata ChatGPT Plus.
-
-Autor:Roman Šimunović,  Filozofski fakultet Osijek
+Napomena:
+Ova verzija aplikacije koristi statičke podatke i služi kao edukativni primjer frontenda koji se može proširiti dodavanjem aktivnog API-ja ili baze podataka.
