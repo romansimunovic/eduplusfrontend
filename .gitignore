@@ -43,10 +43,9 @@ coverage/
 *.tmp
 *.orig
 
-#Build artifacts
 *.zip
 *.tar.gz
 
-#Deployment
+#Deploy
 .vercel/
 .netlify/
