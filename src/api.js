@@ -1,13 +1,16 @@
-export const api = {
-  get: (path) => {
-    if (path.includes('polaznici')) return fetch('/polaznici.json').then(r => r.json());
-    if (path.includes('radionice')) return fetch('/radionice.json').then(r => r.json());
-    if (path.includes('prisustva')) return fetch('/prisustva.json').then(r => r.json());
-    return Promise.resolve([]);
-  },
-  post: () => Promise.resolve({}),
-  put: () => Promise.resolve({}),
-  del: () => Promise.resolve({}),
-};
+// src/api.js
+import axios from "axios";
 
-export default api;
+const api = axios.create({
+  baseURL: "/api",
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("jwt_token");
+  if (token) {
+    config.headers.Authorization = "Bearer " + token;
+  }
+  return config;
+});
+
+export { api };

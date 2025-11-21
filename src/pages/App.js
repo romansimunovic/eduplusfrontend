@@ -1,30 +1,64 @@
-import React from "react";
-import { Routes, Route, Link } from "react-router-dom";
-import Home from "./Home";
-import Polaznici from "./Polaznici";
-import Radionice from "./Radionice";
-import Prisustva from "./Prisustva";
-import RadionicaDetalji from "./RadionicaDetalji";
+import { Routes, Route, Link, Navigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthProvider, AuthContext } from "./AuthContext";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Polaznici from "./pages/Polaznici";
+import Radionice from "./pages/Radionice";
+import Prisustva from "./pages/Prisustva";
+import RadionicaDetalji from "./pages/RadionicaDetalji";
 
-function App() {
+function ProtectedRoute({ children, adminOnly }) {
+  const { user } = useContext(AuthContext);
+  if (!user) return <Navigate to="/login" />;
+  if (adminOnly && user.role !== "ADMIN") return <Navigate to="/" />;
+  return children;
+}
+
+function Navbar() {
+  const { user, setToken } = useContext(AuthContext);
   return (
-    <>
-      <nav style={{ padding: 10, background: "#eee", display: "flex", gap: 12 }}>
-        <Link to="/"> Početna</Link>
-        <Link to="/polaznici"> Polaznici</Link>
-        <Link to="/radionice"> Radionice</Link>
-        <Link to="/prisustva"> Prisustva</Link>
-      </nav>
-
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/polaznici" element={<Polaznici />} />
-        <Route path="/radionice" element={<Radionice />} />
-        <Route path="/prisustva" element={<Prisustva />} />
-        <Route path="/radionice/:id" element={<RadionicaDetalji />} />
-      </Routes>
-    </>
+    <nav>
+      <Link to="/">Početna</Link>
+      <Link to="/radionice">Radionice</Link>
+      <Link to="/polaznici">Polaznici</Link>
+      <Link to="/prisustva">Prisustva</Link>
+      {!user && <Link to="/login">Prijava</Link>}
+      {!user && <Link to="/register">Registracija</Link>}
+      {user && <span style={{ marginLeft: 24 }}>{user.email} ({user.role})</span>}
+      {user && <button onClick={() => { setToken(""); }}>Odjava</button>}
+    </nav>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/radionice" element={
+          <ProtectedRoute><Radionice/></ProtectedRoute>
+        }/>
+        <Route path="/polaznici" element={
+          <ProtectedRoute><Polaznici/></ProtectedRoute>
+        }/>
+        <Route path="/prisustva" element={
+          <ProtectedRoute><Prisustva/></ProtectedRoute>
+        }/>
+        <Route path="/radionice/:id" element={
+          <ProtectedRoute><RadionicaDetalji/></ProtectedRoute>
+        }/>
+        {/* Admin only example */}
+        {/* <Route path="/admin" element={
+          <ProtectedRoute adminOnly={true}>
+            <AdminDashboard/>
+          </ProtectedRoute>
+        }/> */}
+      </Routes>
+    </AuthProvider>
+  );
+}

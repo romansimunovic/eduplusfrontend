@@ -1,137 +1,90 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { api } from '../api';
-import './App.css';
+import { ThemeContext } from './App';
 
 function Polaznici() {
   const [polaznici, setPolaznici] = useState([]);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState(null);
+  const { largeFont } = useContext(ThemeContext);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await api.get('/api/polaznici');
-        // uvijek sortiraj abecedno po prezimenu, pa po imenu
-        const sorted = [...(Array.isArray(data) ? data : [])].sort((a, b) => {
-          const prezCmp = String(a.prezime || '').localeCompare(String(b.prezime || ''), 'hr', { sensitivity: 'base' });
-          if (prezCmp !== 0) return prezCmp;
-          return String(a.ime || '').localeCompare(String(b.ime || ''), 'hr', { sensitivity: 'base' });
-        });
+    api.get('/api/polaznici')
+      .then(data => {
+        const sorted = [...(Array.isArray(data) ? data : [])]
+          .sort((a, b) => {
+            const p1 = String(a.prezime || '').localeCompare(String(b.prezime || ''));
+            if (p1 !== 0) return p1;
+            return String(a.ime || '').localeCompare(String(b.ime || ''));
+          });
         setPolaznici(sorted);
-        setError(null);
-        // automatski odaberi prvog pri prvom učitavanju
-        if (sorted.length && !selectedId) setSelectedId(sorted[0].id);
-      } catch (e) {
-        console.error(e);
-        setError('Greška prilikom dohvaćanja podataka.');
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        if (!selectedId && sorted.length) setSelectedId(sorted[0].id);
+      })
+      .catch(e => setError('Greška kod dohvata polaznika'));
   }, []);
 
   const list = useMemo(() => {
     const term = search.trim().toLowerCase();
-    const filtered = term
+    return (term
       ? polaznici.filter(p => (`${p.ime} ${p.prezime}`).toLowerCase().includes(term))
-      : polaznici;
-    // osiguraj sort i nakon filtera
-    return [...filtered].sort((a, b) => {
-      const prezCmp = String(a.prezime || '').localeCompare(String(b.prezime || ''), 'hr', { sensitivity: 'base' });
-      if (prezCmp !== 0) return prezCmp;
-      return String(a.ime || '').localeCompare(String(b.ime || ''), 'hr', { sensitivity: 'base' });
-    });
+      : polaznici
+    ).sort((a, b) => String(a.prezime).localeCompare(String(b.prezime)));
   }, [polaznici, search]);
 
   const selected = useMemo(
-    () => list.find(p => p.id === selectedId) || polaznici.find(p => p.id === selectedId) || null,
-    [list, polaznici, selectedId]
+    () => list.find(p => p.id === selectedId) || null,
+    [list, selectedId]
   );
 
   return (
-    <div className="container" style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '16px' }}>
-      <div style={{ gridColumn: '1 / 2' }}>
-        <h2>Polaznici</h2>
-        {error && <p className="error">{error}</p>}
-
-        <input
-          className="search"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Pretraži po imenu ili prezimenu"
-          style={{ width: '100%', marginBottom: 8 }}
-        />
-
-        <div style={{ maxHeight: 540, overflowY: 'auto', border: '1px solid #e3e3e3', borderRadius: 8 }}>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {list.map(p => {
-              const isActive = p.id === selectedId;
-              return (
-                <li
-                  key={p.id}
-                  onClick={() => setSelectedId(p.id)}
-                  style={{
-                    padding: '10px 12px',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #eee',
-                    background: isActive ? '#eaf4ff' : 'white',
-                    fontWeight: isActive ? 600 : 400,
-                  }}
-                >
-                  <div>{p.prezime} {p.ime}</div>
-                  <div style={{ fontSize: 12, color: '#666' }}>{p.email}</div>
-                </li>
-              );
-            })}
-            {!list.length && (
-              <li style={{ padding: 12, color: '#666' }}>Nema rezultata.</li>
-            )}
-          </ul>
-        </div>
-      </div>
-
-      <div style={{ gridColumn: '2 / 3' }}>
-        <h2>Detalji</h2>
-        {!selected ? (
-          <p style={{ color: '#666' }}>Odaberite polaznika s lijeve strane.</p>
-        ) : (
-          <div
+    <div className="container">
+      <h2>Polaznici</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <input
+        aria-label="Traži polaznika"
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        placeholder="Pretraži ime ili prezime"
+        style={{ width: '100%', marginBottom: 8 }}
+      />
+      <ul>
+        {list.map(p => (
+          <li
+            key={p.id}
+            onClick={() => setSelectedId(p.id)}
             style={{
-              border: '1px solid #e3e3e3',
-              borderRadius: 12,
-              padding: 16,
-              background: 'white',
-              display: 'grid',
-              gridTemplateColumns: '200px 1fr',
-              rowGap: 10,
-              columnGap: 12
+              padding: '10px 16px', cursor: 'pointer',
+              background: p.id === selectedId ? '#eaf4ff' : 'white', fontWeight: p.id === selectedId ? 600 : 400
             }}
           >
-            <div style={{ color: '#666' }}>Ime i prezime</div>
-            <div><strong>{selected.ime} {selected.prezime}</strong></div>
-
-            <div style={{ color: '#666' }}>Email</div>
-            <div>{selected.email || '—'}</div>
-
-            <div style={{ color: '#666' }}>Telefon</div>
-            <div>{selected.telefon || '—'}</div>
-
-            <div style={{ color: '#666' }}>Grad</div>
-            <div>{selected.grad || '—'}</div>
-
-            <div style={{ color: '#666' }}>Godina rođenja</div>
-            <div>{selected.godinaRodenja ?? '—'}</div>
-
-            <div style={{ color: '#666' }}>Spol</div>
-            <div>{selected.spol || '—'}</div>
-
-            <div style={{ color: '#666' }}>Status</div>
-            <div>{selected.status || '—'}</div>
+            <span>{p.prezime} {p.ime}</span>
+            <span style={{ color: '#666', fontSize: '0.96em', marginLeft: 8 }}>{p.email}</span>
+          </li>
+        ))}
+        {list.length === 0 && <li>Nema rezultata.</li>}
+      </ul>
+      <div>
+        <h3>Detalji</h3>
+        {!selected ? (
+          <p>Odaberite polaznika s lijeve strane.</p>
+        ) : (
+          <div style={{
+            border: '1px solid #e3e3e3', borderRadius: 12,
+            padding: 16, background: 'white', marginTop: 12,
+            fontSize: largeFont ? '1.2em' : '1em'
+          }}>
+            <div><strong>Ime i prezime:</strong> {selected.ime} {selected.prezime}</div>
+            <div><strong>Email:</strong> {selected.email ?? '—'}</div>
+            <div><strong>Telefon:</strong> {selected.telefon ?? '—'}</div>
+            <div><strong>Grad:</strong> {selected.grad ?? '—'}</div>
+            <div><strong>Godina rođenja:</strong> {selected.godinaRodenja ?? '—'}</div>
+            <div><strong>Spol:</strong> {selected.spol ?? '—'}</div>
+            <div><strong>Status:</strong> {selected.status ?? '—'}</div>
           </div>
         )}
       </div>
     </div>
   );
 }
-
 export default Polaznici;
