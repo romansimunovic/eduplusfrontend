@@ -1,4 +1,3 @@
-// src/App.js
 import { Routes, Route, Link, Navigate } from "react-router-dom";
 import { useContext, useState, useEffect } from "react";
 import { AuthProvider, AuthContext } from "./AuthContext";
