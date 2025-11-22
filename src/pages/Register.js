@@ -1,8 +1,8 @@
 // src/pages/Register.js
 import { useState } from "react";
-import { api } from "../api";
+import { api } from "../api/api";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from '../AuthContext';
+import { AuthContext } from '../context/AuthContext';
 
 export default function Register() {
   const [email, setEmail] = useState("");

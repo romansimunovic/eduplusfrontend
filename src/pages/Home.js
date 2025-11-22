@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { api } from '../api';
+import { api } from '../api/api';
 
 export default function Home() {
   const [radionice, setRadionice] = useState([]);

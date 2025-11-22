@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { api } from "../api";
+import { api } from "../api/api";
 
 export default function Polaznici() {
   const [polaznici, setPolaznici] = useState([]);
