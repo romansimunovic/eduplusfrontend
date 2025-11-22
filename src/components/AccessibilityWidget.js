@@ -9,7 +9,7 @@ export default function AccessibilityWidget({ setLargeFont, setHighContrast, set
         aria-label="Pristupačnost"
         onClick={() => setOpen(o => !o)}
         style={{ fontSize: "2em", borderRadius: "50%", width: 52, height: 52, boxShadow: "0 2px 10px rgba(0,0,0,0.13)", background: "#ffe066", border: "none", cursor: "pointer" }}
-      >🧑‍🦽</button>
+      >Pristupačnost</button>
       {open &&
         <div className="accessibility-controls">
           <label>
