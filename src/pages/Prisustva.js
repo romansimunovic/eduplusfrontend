@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { api } from '../api';
-import { ThemeContext } from './App';
+import { AuthContext } from '../AuthContext';
 
 function Prisustva() {
   const [prisustva, setPrisustva] = useState([]);
@@ -12,7 +12,7 @@ function Prisustva() {
   const [editId, setEditId] = useState(null);
   const [searchIme, setSearchIme] = useState('');
   const [error, setError] = useState('');
-  const { largeFont } = useContext(ThemeContext);
+
 
   useEffect(() => { fetchData(); }, []);
   async function fetchData() {

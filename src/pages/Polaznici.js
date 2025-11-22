@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { api } from '../api';
-import { ThemeContext } from './App';
+import { AuthContext } from '../AuthContext';
 
 function Polaznici() {
   const [polaznici, setPolaznici] = useState([]);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState(null);
-  const { largeFont } = useContext(ThemeContext);
 
   useEffect(() => {
     api.get('/api/polaznici')

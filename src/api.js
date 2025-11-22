@@ -1,9 +1,11 @@
 // src/api.js
 import axios from "axios";
 
+// api.js
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: process.env.REACT_APP_API_URL || "/api",
 });
+
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("jwt_token");

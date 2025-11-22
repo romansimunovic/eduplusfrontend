@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
 import { api } from '../api';
-import { ThemeContext } from './App';
+import { AuthContext } from '../AuthContext'; 
 
 export default function Home() {
   const [radionice, setRadionice] = useState([]);
@@ -9,7 +9,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
   const msgTidRef = useRef(null);
-  const { largeFont } = useContext(ThemeContext);
 
   useEffect(() => {
     refreshAll();
@@ -36,7 +35,8 @@ export default function Home() {
 
   return (
     <div className="container">
-      <h2 style={{ fontSize: largeFont ? '2.5em' : '1.85em' }}>Pregled radionica i polaznika</h2>
+      {/* Nemoj koristiti largeFont ako ga nema u AuthContext! */}
+      <h2>Pregled radionica i polaznika</h2>
       <button onClick={refreshAll} disabled={loading}>
         {loading ? 'Učitavam...' : 'Osvježi'}
       </button>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from "react-router-dom";
 import { api } from '../api';
-import { ThemeContext } from './App';
+import { AuthContext } from '../AuthContext';
 
 function Radionice() {
   const [radionice, setRadionice] = useState([]);
@@ -10,7 +10,6 @@ function Radionice() {
   const [searchTerm, setSearchTerm] = useState('');
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState('');
-  const { largeFont } = useContext(ThemeContext);
 
   useEffect(() => { fetchRadionice(); }, []);
 

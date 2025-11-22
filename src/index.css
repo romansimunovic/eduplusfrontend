@@ -9,10 +9,7 @@ body.dark-mode {
   background: #21262c;
   color: #f5f6fa;
 }
-body.large-font, .large-font * {
-  font-size: 1.16em !important;
-  font-weight: 600 !important;
-}
+
 nav a {
   margin-right: 16px;
   color: inherit;
