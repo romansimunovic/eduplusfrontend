@@ -1,5 +1,6 @@
+// src/App.js
 import { Routes, Route, Link, Navigate } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { AuthProvider, AuthContext } from "./AuthContext";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -8,6 +9,7 @@ import Polaznici from "./pages/Polaznici";
 import Radionice from "./pages/Radionice";
 import Prisustva from "./pages/Prisustva";
 import RadionicaDetalji from "./pages/RadionicaDetalji";
+import AccessibilityWidget from "./components/AccessibilityWidget";
 
 function ProtectedRoute({ children, adminOnly }) {
   const { user } = useContext(AuthContext);
@@ -27,37 +29,49 @@ function Navbar() {
       {!user && <Link to="/login">Prijava</Link>}
       {!user && <Link to="/register">Registracija</Link>}
       {user && <span style={{ marginLeft: 24 }}>{user.email} ({user.role})</span>}
-      {user && <button onClick={() => { setToken(""); }}>Odjava</button>}
+      {user && <button onClick={() => setToken("")}>Odjava</button>}
     </nav>
   );
 }
 
 export default function App() {
+  const [largeFont, setLargeFont] = useState(false);
+  const [highContrast, setHighContrast] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    document.body.classList.toggle('large-font', largeFont);
+    document.body.classList.toggle('high-contrast', highContrast);
+    document.body.classList.toggle('dark-mode', darkMode);
+  }, [largeFont, highContrast, darkMode]);
+
   return (
     <AuthProvider>
       <Navbar />
+      <AccessibilityWidget
+        setLargeFont={setLargeFont}
+        setHighContrast={setHighContrast}
+        setDarkMode={setDarkMode}
+        largeFont={largeFont}
+        highContrast={highContrast}
+        darkMode={darkMode}
+      />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/radionice" element={
-          <ProtectedRoute><Radionice/></ProtectedRoute>
-        }/>
-        <Route path="/polaznici" element={
-          <ProtectedRoute><Polaznici/></ProtectedRoute>
-        }/>
-        <Route path="/prisustva" element={
-          <ProtectedRoute><Prisustva/></ProtectedRoute>
-        }/>
-        <Route path="/radionice/:id" element={
-          <ProtectedRoute><RadionicaDetalji/></ProtectedRoute>
-        }/>
+        <Route path="/radionice" element={<ProtectedRoute><Radionice /></ProtectedRoute>} />
+        <Route path="/polaznici" element={<ProtectedRoute><Polaznici /></ProtectedRoute>} />
+        <Route path="/prisustva" element={<ProtectedRoute><Prisustva /></ProtectedRoute>} />
+        <Route path="/radionice/:id" element={<ProtectedRoute><RadionicaDetalji /></ProtectedRoute>} />
         {/* Admin only example */}
-        {/* <Route path="/admin" element={
+        {/*
+        <Route path="/admin" element={
           <ProtectedRoute adminOnly={true}>
             <AdminDashboard/>
           </ProtectedRoute>
-        }/> */}
+        }/>
+        */}
       </Routes>
     </AuthProvider>
   );
