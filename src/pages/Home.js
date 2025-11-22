@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { api } from '../api';
-import { AuthContext } from '../AuthContext'; 
 
 export default function Home() {
   const [radionice, setRadionice] = useState([]);
   const [polaznici, setPolaznici] = useState([]);
-  const [prisustva, setPrisustva] = useState([]);
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
   const msgTidRef = useRef(null);
@@ -18,12 +16,12 @@ export default function Home() {
   const refreshAll = async () => {
     setLoading(true);
     try {
-      const [r, p, pr] = await Promise.all([
-        api.get('/radionice'), api.get('/polaznici'), api.get('/prisustva'),
+      const [r, p] = await Promise.all([
+        api.get('/radionice'),
+        api.get('/polaznici')
       ]);
-      setRadionice(Array.isArray(r) ? r : []);
-      setPolaznici(Array.isArray(p) ? p : []);
-      setPrisustva(Array.isArray(pr) ? pr : []);
+      setRadionice(Array.isArray(r.data) ? r.data : []);
+      setPolaznici(Array.isArray(p.data) ? p.data : []);
       setStatusMsg('Podaci učitani.');
       msgTidRef.current = setTimeout(() => setStatusMsg(''), 2000);
     } catch {
@@ -35,27 +33,65 @@ export default function Home() {
 
   return (
     <div className="container">
-      {/* Nemoj koristiti largeFont ako ga nema u AuthContext! */}
       <h2>Pregled radionica i polaznika</h2>
       <button onClick={refreshAll} disabled={loading}>
         {loading ? 'Učitavam...' : 'Osvježi'}
       </button>
       {statusMsg && <div className="alert">{statusMsg}</div>}
+      
       <section>
         <h3>Radionice ({radionice.length})</h3>
-        <ul>
-          {radionice.map(r => (
-            <li key={r.id}><strong>{r.naziv}</strong> ({r.datum})</li>
-          ))}
-        </ul>
+        <table style={{ width: "100%", marginBottom: 20, borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{background:"#f2f4fa"}}>
+              <th style={{padding:8}}>Naziv</th>
+              <th style={{padding:8}}>Datum</th>
+              <th style={{padding:8}}>Tip</th>
+              <th style={{padding:8}}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {radionice.map(r => (
+              <tr key={r.id}>
+                <td style={{padding:8}}>{r.naziv}</td>
+                <td style={{padding:8}}>{r.datum}</td>
+                <td style={{padding:8}}>{r.tip || "—"}</td>
+                <td style={{padding:8}}>
+                  {r.aktivna ? <span style={{color: "#148814"}}>Aktivna</span> : <span style={{color: "#b90020"}}>Neaktivna</span>}
+                </td>
+              </tr>
+            ))}
+            {radionice.length === 0 && (
+              <tr><td colSpan={4} style={{padding:8}}>Nema rezultata.</td></tr>
+            )}
+          </tbody>
+        </table>
       </section>
       <section>
         <h3>Polaznici ({polaznici.length})</h3>
-        <ul>
-          {polaznici.map(p => (
-            <li key={p.id}>{p.prezime} {p.ime} ({p.email})</li>
-          ))}
-        </ul>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{background:"#f2f4fa"}}>
+              <th style={{padding:8}}>Ime i prezime</th>
+              <th style={{padding:8}}>Email</th>
+              <th style={{padding:8}}>Grad</th>
+              <th style={{padding:8}}>Godina rođenja</th>
+            </tr>
+          </thead>
+          <tbody>
+            {polaznici.map(p => (
+              <tr key={p.id}>
+                <td style={{padding:8}}>{p.prezime} {p.ime}</td>
+                <td style={{padding:8}}>{p.email}</td>
+                <td style={{padding:8}}>{p.grad || "—"}</td>
+                <td style={{padding:8}}>{p.godinaRodenja || "—"}</td>
+              </tr>
+            ))}
+            {polaznici.length === 0 && (
+              <tr><td colSpan={4} style={{padding:8}}>Nema rezultata.</td></tr>
+            )}
+          </tbody>
+        </table>
       </section>
     </div>
   );
