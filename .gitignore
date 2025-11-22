@@ -1,51 +1,77 @@
-# Dependencies
-node_modules/
-
-# Build output
+# --- JAVA / SPRING BOOT ---
+*.class
+*.jar
+*.war
+*.log
+*.tmp
+target/
 build/
+out/
+.apt_generated/
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+.vscode/
+
+# Maven/Gradle Wrapper
+.mvn/
+mvnw*
+!mvnw
+!mvnw.cmd
+
+# Yarn/Node wrapper
+.yarn/
+.yarnrc.yml
+.pnp.*
+
+# NetBeans
+nbproject/private/
+nbbuild/
 dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-vite-error.log*
-
-# OS / system files
+# OS-SPECIFIC / TEMP FILES
 .DS_Store
 Thumbs.db
 
-# IDE
-.vscode/
-.idea/
-
-# Env files
+# --- SENSITIVE ---
+# Nikada ne šalji u repozitorij!
 .env
-.env.local
-.env.development
-.env.production
-.env.test
-.env.*.local
+.env.*
+application.properties
+application.yml
+application-*.yml
 
-# Parcel / Vite / others cache
-.cache/
-.parcel-cache/
-.eslintcache
+# SQL skripte (opcionalno ignoriraj ako ne želiš auto-run)
+src/main/resources/data.sql
+src/main/resources/schema.sql
 
-# Test coverage
+# Keyovi / certifikati
+*.pem
+*.crt
+*.key
+
+# Docker (ako koristiš Docker fileove lokalno)
+docker-compose.*
+Dockerfile
+
+# --- REACT / FRONTEND ---
+# dependencies
+node_modules/
+
+# production
+build/
+
+# misc
+.npm
+.npmrc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# testing
 coverage/
-
-# Temp files
-*.swp
-*.bak
-*.tmp
-*.orig
-
-# Archives
-*.zip
-*.tar.gz
-
-# Deployment dirs
-.vercel/
-.netlify/
