@@ -18,7 +18,7 @@ function Prisustva() {
   async function fetchData() {
     try {
       const [polazniciData, radioniceData, prisustvaData] = await Promise.all([
-        api.get('/api/polaznici'), api.get('/api/radionice'), api.get('/api/prisustva/view'),
+        api.get('/polaznici'), api.get('/radionice'), api.get('/prisustva/view'),
       ]);
       setPolaznici(Array.isArray(polazniciData) ? polazniciData : []);
       setRadionice(Array.isArray(radioniceData) ? radioniceData : []);
@@ -29,10 +29,10 @@ function Prisustva() {
   function handleAddOrUpdate() {
     if (!polaznikId || !radionicaId || !status) { setError('Odaberi sve podatke.'); return; }
     setError('');
-    const url = editId ? `/api/prisustva/${editId}` : `/api/prisustva`;
+    const url = editId ? `/prisustva/${editId}` : `/prisustva`;
     const call = editId ? api.put : api.post;
     call(url, { polaznikId: Number(polaznikId), radionicaId: Number(radionicaId), status })
-      .then(() => api.get('/api/prisustva/view').then(setPrisustva))
+      .then(() => api.get('/prisustva/view').then(setPrisustva))
       .then(() => { setPolaznikId(''); setRadionicaId(''); setStatus('PRISUTAN'); setEditId(null); })
       .catch(() => setError('Greška kod spremanja.'));
   }
@@ -46,7 +46,7 @@ function Prisustva() {
 
   function handleDelete(id) {
     if (!window.confirm('Jeste li sigurni?')) return;
-    api.del(`/api/prisustva/${id}`).then(() => setPrisustva(prev => prev.filter(p => p.id !== id))).catch(() => setError('Greška kod brisanja.'));
+    api.del(`prisustva/${id}`).then(() => setPrisustva(prev => prev.filter(p => p.id !== id))).catch(() => setError('Greška kod brisanja.'));
   }
 
   function prikaziStatus(val, spol) {

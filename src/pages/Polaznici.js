@@ -9,7 +9,7 @@ function Polaznici() {
   const [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
-    api.get('/api/polaznici')
+    api.get('/polaznici')
       .then(data => {
         const sorted = [...(Array.isArray(data) ? data : [])]
           .sort((a, b) => {

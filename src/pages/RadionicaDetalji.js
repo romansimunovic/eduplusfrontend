@@ -7,8 +7,8 @@ function RadionicaDetalji() {
   const [prisustva, setPrisustva] = useState([]);
   const [error, setError] = useState(null);
   useEffect(() => {
-    api.get(`/api/radionice/${id}`).then(r => setRadionica(r || null)).catch(() => setError('Greška'));
-    api.get(`/api/prisustva/view/${id}`).then(pr => setPrisustva(Array.isArray(pr) ? pr : [])).catch(() => setError('Greška'));
+    api.get(`/radionice/${id}`).then(r => setRadionica(r || null)).catch(() => setError('Greška'));
+    api.get(`/prisustva/view/${id}`).then(pr => setPrisustva(Array.isArray(pr) ? pr : [])).catch(() => setError('Greška'));
   }, [id]);
   if (!radionica) return <p>Učitavanje...</p>;
   return (

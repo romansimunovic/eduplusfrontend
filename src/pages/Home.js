@@ -19,7 +19,7 @@ export default function Home() {
     setLoading(true);
     try {
       const [r, p, pr] = await Promise.all([
-        api.get('/api/radionice'), api.get('/api/polaznici'), api.get('/api/prisustva'),
+        api.get('/radionice'), api.get('/polaznici'), api.get('/prisustva'),
       ]);
       setRadionice(Array.isArray(r) ? r : []);
       setPolaznici(Array.isArray(p) ? p : []);

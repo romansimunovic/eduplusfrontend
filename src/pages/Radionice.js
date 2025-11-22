@@ -15,7 +15,7 @@ function Radionice() {
 
   const fetchRadionice = async () => {
     try {
-      const data = await api.get('/api/radionice');
+      const data = await api.get('/radionice');
       setRadionice(Array.isArray(data) ? data : []);
     } catch (e) { setError("Neuspješno dohvaćanje."); }
   };
@@ -37,7 +37,7 @@ function Radionice() {
   const handleEdit = (r) => { setNaziv(r.naziv); setDatum(r.datum); setEditId(r.id); };
   const handleDelete = async (id) => {
     if (!window.confirm('Obrisati radionicu?')) return;
-    try { await api.del(`/api/radionice/${id}`); await fetchRadionice(); }
+    try { await api.del(`/radionice/${id}`); await fetchRadionice(); }
     catch { setError('Greška kod brisanja.'); }
   };
 
